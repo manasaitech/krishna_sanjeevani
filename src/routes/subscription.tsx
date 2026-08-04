@@ -17,7 +17,7 @@ export const Route = createFileRoute("/subscription")({
       { property: "og:description", content: "Choose the plan that fits your practice." },
     ],
   }),
-  component: Subscription;
+  component: Subscription,
 });
 
 function Subscription() {
