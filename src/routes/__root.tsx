@@ -79,11 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Stream Krishna Sanjeevani ragas and surāvalis for stress relief, sleep, focus and pregnancy wellness.",
+          "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care.",
       },
       { name: "theme-color", content: "#F8F6F2" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
+      { name: "twitter:title", content: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
+      { property: "og:description", content: "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care." },
+      { name: "twitter:description", content: "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/JsFUiiK1GpVxqMRGHe5uMezquCb2/social-images/social-1785842187968-social-image.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/JsFUiiK1GpVxqMRGHe5uMezquCb2/social-images/social-1785842187968-social-image.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Healing surāvalis for stress relief, sleep, focus and pregnancy wellness. Streaming only, guided by listening instructions.",
+          "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care.",
       },
     ],
   }),
