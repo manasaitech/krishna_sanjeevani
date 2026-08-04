@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategoryRouteImport } from './routes/category'
+import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as ProgramProgramIdRouteImport } from './routes/program.$programId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -26,9 +29,19 @@ const CategoryRoute = CategoryRouteImport.update({
   path: '/category',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneyRoute = JourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayerRoute = PlayerRouteImport.update({
@@ -46,54 +59,92 @@ const WelcomeRoute = WelcomeRouteImport.update({
   path: '/welcome',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProgramProgramIdRoute = ProgramProgramIdRouteImport.update({
+  id: '/program/$programId',
+  path: '/program/$programId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/category': typeof CategoryRoute
+  '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/journey': typeof JourneyRoute
   '/player': typeof PlayerRoute
   '/search': typeof SearchRoute
   '/welcome': typeof WelcomeRoute
+  '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/category': typeof CategoryRoute
+  '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/journey': typeof JourneyRoute
   '/player': typeof PlayerRoute
   '/search': typeof SearchRoute
   '/welcome': typeof WelcomeRoute
+  '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/category': typeof CategoryRoute
+  '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/journey': typeof JourneyRoute
   '/player': typeof PlayerRoute
   '/search': typeof SearchRoute
   '/welcome': typeof WelcomeRoute
+  '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/category' | '/home' | '/player' | '/search' | '/welcome'
+  fullPaths:
+    | '/'
+    | '/category'
+    | '/favorites'
+    | '/home'
+    | '/journey'
+    | '/player'
+    | '/search'
+    | '/welcome'
+    | '/program/$programId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/category' | '/home' | '/player' | '/search' | '/welcome'
+  to:
+    | '/'
+    | '/category'
+    | '/favorites'
+    | '/home'
+    | '/journey'
+    | '/player'
+    | '/search'
+    | '/welcome'
+    | '/program/$programId'
   id:
     | '__root__'
     | '/'
     | '/category'
+    | '/favorites'
     | '/home'
+    | '/journey'
     | '/player'
     | '/search'
     | '/welcome'
+    | '/program/$programId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CategoryRoute: typeof CategoryRoute
+  FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
+  JourneyRoute: typeof JourneyRoute
   PlayerRoute: typeof PlayerRoute
   SearchRoute: typeof SearchRoute
   WelcomeRoute: typeof WelcomeRoute
+  ProgramProgramIdRoute: typeof ProgramProgramIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -112,11 +163,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journey': {
+      id: '/journey'
+      path: '/journey'
+      fullPath: '/journey'
+      preLoaderRoute: typeof JourneyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player': {
@@ -140,16 +205,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WelcomeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/program/$programId': {
+      id: '/program/$programId'
+      path: '/program/$programId'
+      fullPath: '/program/$programId'
+      preLoaderRoute: typeof ProgramProgramIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoryRoute: CategoryRoute,
+  FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
+  JourneyRoute: JourneyRoute,
   PlayerRoute: PlayerRoute,
   SearchRoute: SearchRoute,
   WelcomeRoute: WelcomeRoute,
+  ProgramProgramIdRoute: ProgramProgramIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

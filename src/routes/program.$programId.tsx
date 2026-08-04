@@ -3,7 +3,7 @@ import { BookmarkCheck, Bookmark, CalendarDays, Check, ListMusic, Play } from "l
 import { AppShell } from "@/components/AppShell";
 import { TrackRow } from "@/components/cards";
 import { useApp } from "@/lib/app-state";
-import { programById, trackById } from "@/lib/content";
+import { programById, trackById, type Program } from "@/lib/content";
 
 export const Route = createFileRoute("/program/$programId")({
   loader: ({ params }) => {
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/program/$programId")({
 });
 
 function ProgramDetails() {
-  const { program } = Route.useLoaderData();
+  const { program } = Route.useLoaderData() as { program: Program };
   const { savedPrograms, toggleSavedProgram, play } = useApp();
   const saved = savedPrograms.includes(program.id);
   const list = program.trackIds.map((id) => trackById(id)!).filter(Boolean);
