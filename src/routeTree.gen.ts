@@ -14,8 +14,12 @@ import { Route as CategoryRouteImport } from './routes/category'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as JourneyRouteImport } from './routes/journey'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PlayerRouteImport } from './routes/player'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SessionCompleteRouteImport } from './routes/session-complete'
+import { Route as SubscriptionRouteImport } from './routes/subscription'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as ProgramProgramIdRouteImport } from './routes/program.$programId'
 
@@ -44,14 +48,34 @@ const JourneyRoute = JourneyRouteImport.update({
   path: '/journey',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayerRoute = PlayerRouteImport.update({
   id: '/player',
   path: '/player',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionCompleteRoute = SessionCompleteRouteImport.update({
+  id: '/session-complete',
+  path: '/session-complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscriptionRoute = SubscriptionRouteImport.update({
+  id: '/subscription',
+  path: '/subscription',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WelcomeRoute = WelcomeRouteImport.update({
@@ -71,8 +95,12 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
+  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/session-complete': typeof SessionCompleteRoute
+  '/subscription': typeof SubscriptionRoute
   '/welcome': typeof WelcomeRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
@@ -82,8 +110,12 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
+  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/session-complete': typeof SessionCompleteRoute
+  '/subscription': typeof SubscriptionRoute
   '/welcome': typeof WelcomeRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
@@ -94,8 +126,12 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
+  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/session-complete': typeof SessionCompleteRoute
+  '/subscription': typeof SubscriptionRoute
   '/welcome': typeof WelcomeRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
@@ -107,8 +143,12 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/home'
     | '/journey'
+    | '/notifications'
     | '/player'
+    | '/profile'
     | '/search'
+    | '/session-complete'
+    | '/subscription'
     | '/welcome'
     | '/program/$programId'
   fileRoutesByTo: FileRoutesByTo
@@ -118,8 +158,12 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/home'
     | '/journey'
+    | '/notifications'
     | '/player'
+    | '/profile'
     | '/search'
+    | '/session-complete'
+    | '/subscription'
     | '/welcome'
     | '/program/$programId'
   id:
@@ -129,8 +173,12 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/home'
     | '/journey'
+    | '/notifications'
     | '/player'
+    | '/profile'
     | '/search'
+    | '/session-complete'
+    | '/subscription'
     | '/welcome'
     | '/program/$programId'
   fileRoutesById: FileRoutesById
@@ -141,8 +189,12 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
   JourneyRoute: typeof JourneyRoute
+  NotificationsRoute: typeof NotificationsRoute
   PlayerRoute: typeof PlayerRoute
+  ProfileRoute: typeof ProfileRoute
   SearchRoute: typeof SearchRoute
+  SessionCompleteRoute: typeof SessionCompleteRoute
+  SubscriptionRoute: typeof SubscriptionRoute
   WelcomeRoute: typeof WelcomeRoute
   ProgramProgramIdRoute: typeof ProgramProgramIdRoute
 }
@@ -184,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JourneyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/player': {
       id: '/player'
       path: '/player'
@@ -191,11 +250,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/session-complete': {
+      id: '/session-complete'
+      path: '/session-complete'
+      fullPath: '/session-complete'
+      preLoaderRoute: typeof SessionCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscription': {
+      id: '/subscription'
+      path: '/subscription'
+      fullPath: '/subscription'
+      preLoaderRoute: typeof SubscriptionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/welcome': {
@@ -221,8 +301,12 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
   JourneyRoute: JourneyRoute,
+  NotificationsRoute: NotificationsRoute,
   PlayerRoute: PlayerRoute,
+  ProfileRoute: ProfileRoute,
   SearchRoute: SearchRoute,
+  SessionCompleteRoute: SessionCompleteRoute,
+  SubscriptionRoute: SubscriptionRoute,
   WelcomeRoute: WelcomeRoute,
   ProgramProgramIdRoute: ProgramProgramIdRoute,
 }
