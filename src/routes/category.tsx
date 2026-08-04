@@ -29,12 +29,6 @@ const icons: Record<CategoryId, typeof Flower> = {
   pregnancy: Baby,
 };
 
-const swatch: Record<CategoryId, string> = {
-  devotional: "data-[c=devotional]:bg-cat",
-  secular: "",
-  pregnancy: "",
-};
-
 function CategoryScreen() {
   const { category, setCategory } = useApp();
   const navigate = useNavigate();
@@ -68,7 +62,7 @@ function CategoryScreen() {
                   aria-pressed={active}
                   className={`press animate-rise group w-full overflow-hidden rounded-card border bg-surface p-5 text-left shadow-soft hover:shadow-lift focus-visible:ring-2 focus-visible:ring-cat focus-visible:outline-none ${
                     active ? "border-cat ring-1 ring-cat" : "border-border"
-                  } ${swatch[c.id]}`}
+                  }`}
                   style={{ animationDelay: `${i * 70}ms` }}
                 >
                   <div className="flex items-start gap-4">
