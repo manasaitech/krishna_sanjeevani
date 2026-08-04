@@ -10,33 +10,206 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as CategoryRouteImport } from './routes/category'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as JourneyRouteImport } from './routes/journey'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as PlayerRouteImport } from './routes/player'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SessionCompleteRouteImport } from './routes/session-complete'
+import { Route as SubscriptionRouteImport } from './routes/subscription'
+import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as ProgramProgramIdRouteImport } from './routes/program.$programId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoryRoute = CategoryRouteImport.update({
+  id: '/category',
+  path: '/category',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneyRoute = JourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayerRoute = PlayerRouteImport.update({
+  id: '/player',
+  path: '/player',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionCompleteRoute = SessionCompleteRouteImport.update({
+  id: '/session-complete',
+  path: '/session-complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscriptionRoute = SubscriptionRouteImport.update({
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgramProgramIdRoute = ProgramProgramIdRouteImport.update({
+  id: '/program/$programId',
+  path: '/program/$programId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/category': typeof CategoryRoute
+  '/favorites': typeof FavoritesRoute
+  '/home': typeof HomeRoute
+  '/journey': typeof JourneyRoute
+  '/notifications': typeof NotificationsRoute
+  '/player': typeof PlayerRoute
+  '/profile': typeof ProfileRoute
+  '/search': typeof SearchRoute
+  '/session-complete': typeof SessionCompleteRoute
+  '/subscription': typeof SubscriptionRoute
+  '/welcome': typeof WelcomeRoute
+  '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/category': typeof CategoryRoute
+  '/favorites': typeof FavoritesRoute
+  '/home': typeof HomeRoute
+  '/journey': typeof JourneyRoute
+  '/notifications': typeof NotificationsRoute
+  '/player': typeof PlayerRoute
+  '/profile': typeof ProfileRoute
+  '/search': typeof SearchRoute
+  '/session-complete': typeof SessionCompleteRoute
+  '/subscription': typeof SubscriptionRoute
+  '/welcome': typeof WelcomeRoute
+  '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/category': typeof CategoryRoute
+  '/favorites': typeof FavoritesRoute
+  '/home': typeof HomeRoute
+  '/journey': typeof JourneyRoute
+  '/notifications': typeof NotificationsRoute
+  '/player': typeof PlayerRoute
+  '/profile': typeof ProfileRoute
+  '/search': typeof SearchRoute
+  '/session-complete': typeof SessionCompleteRoute
+  '/subscription': typeof SubscriptionRoute
+  '/welcome': typeof WelcomeRoute
+  '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/category'
+    | '/favorites'
+    | '/home'
+    | '/journey'
+    | '/notifications'
+    | '/player'
+    | '/profile'
+    | '/search'
+    | '/session-complete'
+    | '/subscription'
+    | '/welcome'
+    | '/program/$programId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/category'
+    | '/favorites'
+    | '/home'
+    | '/journey'
+    | '/notifications'
+    | '/player'
+    | '/profile'
+    | '/search'
+    | '/session-complete'
+    | '/subscription'
+    | '/welcome'
+    | '/program/$programId'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/category'
+    | '/favorites'
+    | '/home'
+    | '/journey'
+    | '/notifications'
+    | '/player'
+    | '/profile'
+    | '/search'
+    | '/session-complete'
+    | '/subscription'
+    | '/welcome'
+    | '/program/$programId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  CategoryRoute: typeof CategoryRoute
+  FavoritesRoute: typeof FavoritesRoute
+  HomeRoute: typeof HomeRoute
+  JourneyRoute: typeof JourneyRoute
+  NotificationsRoute: typeof NotificationsRoute
+  PlayerRoute: typeof PlayerRoute
+  ProfileRoute: typeof ProfileRoute
+  SearchRoute: typeof SearchRoute
+  SessionCompleteRoute: typeof SessionCompleteRoute
+  SubscriptionRoute: typeof SubscriptionRoute
+  WelcomeRoute: typeof WelcomeRoute
+  ProgramProgramIdRoute: typeof ProgramProgramIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +221,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/category': {
+      id: '/category'
+      path: '/category'
+      fullPath: '/category'
+      preLoaderRoute: typeof CategoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journey': {
+      id: '/journey'
+      path: '/journey'
+      fullPath: '/journey'
+      preLoaderRoute: typeof JourneyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/player': {
+      id: '/player'
+      path: '/player'
+      fullPath: '/player'
+      preLoaderRoute: typeof PlayerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/session-complete': {
+      id: '/session-complete'
+      path: '/session-complete'
+      fullPath: '/session-complete'
+      preLoaderRoute: typeof SessionCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscription': {
+      id: '/subscription'
+      path: '/subscription'
+      fullPath: '/subscription'
+      preLoaderRoute: typeof SubscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/program/$programId': {
+      id: '/program/$programId'
+      path: '/program/$programId'
+      fullPath: '/program/$programId'
+      preLoaderRoute: typeof ProgramProgramIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  CategoryRoute: CategoryRoute,
+  FavoritesRoute: FavoritesRoute,
+  HomeRoute: HomeRoute,
+  JourneyRoute: JourneyRoute,
+  NotificationsRoute: NotificationsRoute,
+  PlayerRoute: PlayerRoute,
+  ProfileRoute: ProfileRoute,
+  SearchRoute: SearchRoute,
+  SessionCompleteRoute: SessionCompleteRoute,
+  SubscriptionRoute: SubscriptionRoute,
+  WelcomeRoute: WelcomeRoute,
+  ProgramProgramIdRoute: ProgramProgramIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
