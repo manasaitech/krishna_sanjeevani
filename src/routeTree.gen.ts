@@ -20,6 +20,7 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgramsRouteImport } from './routes/programs'
+import { Route as RecentRouteImport } from './routes/recent'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SessionCompleteRouteImport } from './routes/session-complete'
 import { Route as SubscriptionRouteImport } from './routes/subscription'
@@ -81,6 +82,11 @@ const ProgramsRoute = ProgramsRouteImport.update({
   path: '/programs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecentRoute = RecentRouteImport.update({
+  id: '/recent',
+  path: '/recent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
+  '/recent': typeof RecentRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
+  '/recent': typeof RecentRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
+  '/recent': typeof RecentRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/player'
     | '/profile'
     | '/programs'
+    | '/recent'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/player'
     | '/profile'
     | '/programs'
+    | '/recent'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/player'
     | '/profile'
     | '/programs'
+    | '/recent'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   PlayerRoute: typeof PlayerRoute
   ProfileRoute: typeof ProfileRoute
   ProgramsRoute: typeof ProgramsRoute
+  RecentRoute: typeof RecentRoute
   SearchRoute: typeof SearchRoute
   SessionCompleteRoute: typeof SessionCompleteRoute
   SubscriptionRoute: typeof SubscriptionRoute
@@ -317,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgramsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recent': {
+      id: '/recent'
+      path: '/recent'
+      fullPath: '/recent'
+      preLoaderRoute: typeof RecentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlayerRoute: PlayerRoute,
   ProfileRoute: ProfileRoute,
   ProgramsRoute: ProgramsRoute,
+  RecentRoute: RecentRoute,
   SearchRoute: SearchRoute,
   SessionCompleteRoute: SessionCompleteRoute,
   SubscriptionRoute: SubscriptionRoute,

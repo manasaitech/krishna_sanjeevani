@@ -33,7 +33,7 @@ function Recent() {
           key={day}
           title={day}
           hint={`${tracks.slice(i * 4, i * 4 + 4).length} sessions`}
-          className={i === 0 ? "mt-0" : undefined}
+          className={i === 0 ? "mt-0" : ""}
         >
           <div className="rounded-card border border-border bg-surface/60 p-2 md:p-3">
             {tracks.slice(i * 4, i * 4 + 4).map((t, idx) => (
