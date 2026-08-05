@@ -1,7 +1,7 @@
 export interface Env {
   // Bindings
   DB: D1Database;
-  SONG_BUCKET: R2Bucket;
+  BUCKET: R2Bucket;
   CACHE: KVNamespace;
 
   // Secrets & Configs
