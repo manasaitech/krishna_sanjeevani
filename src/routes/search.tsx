@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Clock, Search as SearchIcon, TrendingUp, X } from "lucide-react";
+import { Search as SearchIcon, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { Chip, Rail, Section } from "@/components/layout-bits";
-import { ProgramCard, TrackRow } from "@/components/cards";
-import { EmptyState, ListLoading } from "@/components/States";
+import { CardGrid, Chip, Panel, Section } from "@/components/layout-bits";
+import { ProgramCard, TrackTile } from "@/components/cards";
+import { EmptyState } from "@/components/States";
 import {
   categories,
   programs,
@@ -13,7 +13,6 @@ import {
   tracks,
   trendingSearches,
 } from "@/lib/content";
-import { useApp } from "@/lib/app-state";
 
 export const Route = createFileRoute("/search")({
   head: () => ({
@@ -22,175 +21,151 @@ export const Route = createFileRoute("/search")({
       {
         name: "description",
         content:
-          "Search Krishna Sanjeevani ragas, surāvalis, purposes and therapeutic programs.",
+          "Search the therapeutic library by raga, purpose or program — trending searches, purpose filters and instant results.",
       },
       { property: "og:title", content: "Search — Krishna Sanjeevani" },
       {
         property: "og:description",
-        content: "Find a raga by name, purpose, or pregnancy month.",
+        content: "Find ragas, purposes and programs across the therapeutic library.",
       },
     ],
   }),
-  component: SearchScreen,
+  component: Search,
 });
 
-function SearchScreen() {
-  const { setCategory } = useApp();
+function Search() {
   const [q, setQ] = useState("");
-  const [typing, setTyping] = useState(false);
+  const [purpose, setPurpose] = useState<string | null>(null);
 
   const results = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return null;
-    return {
-      tracks: tracks.filter((t) =>
-        [t.title, t.raga, t.purpose, t.subtitle].join(" ").toLowerCase().includes(s),
-      ),
-      programs: programs.filter((p) =>
-        [p.title, p.subtitle].join(" ").toLowerCase().includes(s),
-      ),
-    };
+    const needle = q.trim().toLowerCase();
+    return tracks.filter((t) => {
+      const matchesPurpose = purpose ? t.purpose === purpose : true;
+      if (!needle) return matchesPurpose && (purpose !== null || false);
+      return (
+        matchesPurpose &&
+        [t.title, t.raga, t.purpose, t.subtitle].some((f) =>
+          f.toLowerCase().includes(needle),
+        )
+      );
+    });
+  }, [q, purpose]);
+
+  const programResults = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return [];
+    return programs.filter((p) =>
+      [p.title, p.subtitle, p.description].some((f) => f.toLowerCase().includes(needle)),
+    );
   }, [q]);
 
-  const onChange = (value: string) => {
-    setQ(value);
-    setTyping(true);
-    window.setTimeout(() => setTyping(false), 320);
-  };
+  const searching = q.trim().length > 0 || purpose !== null;
 
   return (
-    <AppShell bare>
-      <h1 className="animate-rise mt-2 text-[24px] leading-tight font-semibold">Search</h1>
-
-      <div className="animate-rise mt-5 flex items-center gap-3 rounded-field border border-border bg-surface px-4 shadow-soft focus-within:ring-2 focus-within:ring-cat">
-        <SearchIcon className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
+    <AppShell title="Search" subtitle="Ragas, purposes and programs">
+      <div className="animate-rise relative mx-auto max-w-3xl">
+        <SearchIcon className="pointer-events-none absolute top-1/2 left-5 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <input
+          autoFocus
           value={q}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Raga, purpose, or program"
-          aria-label="Search ragas, purposes and programs"
-          className="min-h-13 min-w-0 flex-1 bg-transparent text-[15px] placeholder:text-muted-foreground focus:outline-none"
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search ragas, purposes, programs"
+          aria-label="Search the library"
+          className="min-h-14 w-full rounded-field border border-border bg-surface pr-14 pl-14 text-[15px] shadow-soft outline-none placeholder:text-muted-foreground focus-visible:border-cat focus-visible:ring-2 focus-visible:ring-cat/30 md:min-h-16 md:text-[17px]"
         />
         {q && (
           <button
             onClick={() => setQ("")}
             aria-label="Clear search"
-            className="press grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-foreground"
+            className="press absolute top-1/2 right-4 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-secondary"
           >
             <X className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {!results ? (
-        <>
-          <Section title="Recent searches">
-            <ul className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft">
-              {recentSearches.map((r) => (
-                <li key={r}>
+      <div className="no-scrollbar -mx-5 mt-6 flex gap-2.5 overflow-x-auto px-5 md:-mx-8 md:justify-center md:px-8">
+        <Chip active={purpose === null} onClick={() => setPurpose(null)}>
+          All purposes
+        </Chip>
+        {purposes.map((p) => (
+          <Chip key={p} active={purpose === p} onClick={() => setPurpose(p)}>
+            {p}
+          </Chip>
+        ))}
+      </div>
+
+      {!searching ? (
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          <Panel title="Trending searches">
+            <ul className="space-y-1">
+              {trendingSearches.map((s, i) => (
+                <li key={s}>
                   <button
-                    onClick={() => onChange(r)}
-                    className="press flex min-h-13 w-full items-center gap-3 px-4 text-left text-sm"
+                    onClick={() => setQ(s)}
+                    className="press flex w-full items-center gap-3 rounded-btn px-2 py-2.5 text-left text-[14px] hover:bg-secondary"
                   >
-                    <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{r}</span>
+                    <span className="w-4 text-[13px] font-semibold text-cat">{i + 1}</span>
+                    {s}
                   </button>
                 </li>
               ))}
             </ul>
-          </Section>
+          </Panel>
 
-          <Section title="Trending">
+          <Panel title="Recent searches">
             <div className="flex flex-wrap gap-2.5">
-              {trendingSearches.map((t) => (
-                <Chip key={t} onClick={() => onChange(t)}>
-                  <span className="inline-flex items-center gap-2">
-                    <TrendingUp className="h-3.5 w-3.5" />
-                    {t}
-                  </span>
+              {recentSearches.map((s) => (
+                <Chip key={s} onClick={() => setQ(s)}>
+                  {s}
                 </Chip>
               ))}
             </div>
-          </Section>
+          </Panel>
 
-          <Section title="Browse paths">
-            <div className="grid gap-3 sm:grid-cols-3">
-              {categories.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setCategory(c.id)}
-                  className="press overflow-hidden rounded-card border border-border bg-surface text-left shadow-soft hover:shadow-lift"
-                >
-                  <img
-                    src={c.art}
-                    alt=""
-                    width={1024}
-                    height={1024}
-                    loading="lazy"
-                    className="h-24 w-full object-cover"
-                  />
-                  <span className="block p-4 text-sm font-semibold">{c.name}</span>
-                </button>
-              ))}
-            </div>
-          </Section>
-
-          <Section title="Purposes">
-            <div className="flex flex-wrap gap-2.5">
-              {purposes.map((p) => (
-                <Chip key={p} onClick={() => onChange(p)}>
-                  {p}
-                </Chip>
-              ))}
-            </div>
-          </Section>
-
-          <Section title="Suggested tracks">
+          <Panel title="Browse categories">
             <div className="space-y-3">
-              {tracks.slice(0, 3).map((t) => (
-                <TrackRow key={t.id} track={t} />
+              {categories.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex items-center gap-3 rounded-2xl border border-border p-3"
+                >
+                  <img src={c.art} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-semibold">{c.name}</p>
+                    <p className="truncate text-[12px] text-muted-foreground">
+                      {c.description}
+                    </p>
+                  </div>
+                </div>
               ))}
             </div>
-          </Section>
-
-          <Section title="Suggested programs">
-            <Rail>
-              {programs.map((p) => (
-                <ProgramCard key={p.id} program={p} />
-              ))}
-            </Rail>
-          </Section>
-        </>
-      ) : typing ? (
-        <div className="mt-8">
-          <ListLoading count={3} />
-        </div>
-      ) : results.tracks.length === 0 && results.programs.length === 0 ? (
-        <div className="mt-10">
-          <EmptyState
-            icon={<SearchIcon className="h-6 w-6" />}
-            title={`No results for "${q}"`}
-            body="Try a raga name like Neelambari, a purpose like Sleep, or a pregnancy month."
-          />
+          </Panel>
         </div>
       ) : (
         <>
-          {results.tracks.length > 0 && (
-            <Section title="Tracks" hint={`${results.tracks.length} found`}>
-              <div className="space-y-3">
-                {results.tracks.map((t) => (
-                  <TrackRow key={t.id} track={t} />
+          <Section title="Sessions" hint={`${results.length} results`}>
+            {results.length === 0 ? (
+              <EmptyState
+                title="No sessions match"
+                body="Try a raga name like Neelambari, or pick a purpose chip above."
+              />
+            ) : (
+              <CardGrid>
+                {results.map((t) => (
+                  <TrackTile key={t.id} track={t} />
+                ))}
+              </CardGrid>
+            )}
+          </Section>
+
+          {programResults.length > 0 && (
+            <Section title="Programs" hint={`${programResults.length} results`}>
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {programResults.map((p) => (
+                  <ProgramCard key={p.id} program={p} wide />
                 ))}
               </div>
-            </Section>
-          )}
-          {results.programs.length > 0 && (
-            <Section title="Programs">
-              <Rail>
-                {results.programs.map((p) => (
-                  <ProgramCard key={p.id} program={p} />
-                ))}
-              </Rail>
             </Section>
           )}
         </>
