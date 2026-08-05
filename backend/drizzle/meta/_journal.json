@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1785923291743,
-      "tag": "0000_perpetual_domino",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1785923590059,
-      "tag": "0001_serious_starfox",
+      "when": 1785928778609,
+      "tag": "0000_lumpy_arclight",
       "breakpoints": true
     }
   ]
