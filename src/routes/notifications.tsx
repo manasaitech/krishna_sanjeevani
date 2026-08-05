@@ -30,7 +30,7 @@ function Notifications() {
   const groups = ["Today", "Earlier"];
 
   return (
-    <AppShell title="Notifications" subtitle="Reminders and updates" back="/home">
+    <AppShell title="Notifications" subtitle="Reminders and updates">
       {groups.map((g) => {
         const items = notifications.filter((n) => n.group === g);
         if (!items.length) return null;

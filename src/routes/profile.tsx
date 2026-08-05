@@ -71,7 +71,7 @@ function Profile() {
   const cat = categories.find((c) => c.id === category)!;
 
   return (
-    <AppShell bare>
+    <AppShell>
       <div className="animate-rise mt-2 flex items-center gap-4 rounded-card border border-border bg-surface p-5 shadow-soft">
         <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-cat text-xl font-semibold text-cat-foreground">
           A

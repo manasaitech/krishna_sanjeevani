@@ -24,7 +24,7 @@ function Subscription() {
   const [selected, setSelected] = useState("premium");
 
   return (
-    <AppShell title="Plans" subtitle="Cancel any time" back="/profile" mini={false}>
+    <AppShell title="Plans" subtitle="Cancel any time">
       <div className="mt-2 grid gap-4 sm:grid-cols-2">
         {plans.map((p) => {
           const active = selected === p.id;

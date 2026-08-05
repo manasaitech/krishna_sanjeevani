@@ -62,7 +62,7 @@ function Journey() {
   const today = tracks.find((t) => t.id === "t5")!;
 
   return (
-    <AppShell bare>
+    <AppShell>
       <header className="animate-rise mt-2">
         <p className="text-[11px] font-semibold tracking-[0.18em] text-cat uppercase">
           Pregnancy journey

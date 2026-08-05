@@ -40,7 +40,7 @@ function ProgramDetails() {
   const list = program.trackIds.map((id) => trackById(id)!).filter(Boolean);
 
   return (
-    <AppShell bare>
+    <AppShell>
       <div className="animate-rise relative -mx-5 -mt-4 overflow-hidden sm:mx-0 sm:rounded-card">
         <img
           src={program.art}
