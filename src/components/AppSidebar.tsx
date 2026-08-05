@@ -39,7 +39,7 @@ function NavList({
 }: {
   label: string;
   items: readonly { to: string; label: string; icon: React.ElementType }[];
-  onNavigate?: () => void;
+  onNavigate?: (() => void) | undefined;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
