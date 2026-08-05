@@ -8,3 +8,4 @@ export * from "./subscription";
 export * from "./notification";
 export * from "./admin";
 export * from "./analytics";
+export * from "./stream";

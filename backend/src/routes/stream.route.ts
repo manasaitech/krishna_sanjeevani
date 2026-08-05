@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { SignJWT, jwtVerify } from "jose";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { getDB } from "../shared/db/client";
 import { tracks } from "../shared/db/schema/track";
+import { streamSessions } from "../shared/db/schema/stream";
 import { StorageService } from "../modules/storage/storage.service";
 import { requireAuth } from "../modules/auth/auth.middleware";
 import { UnauthorizedError, ForbiddenError, NotFoundError, ValidationError } from "../shared/errors";
@@ -12,57 +12,54 @@ import { logger } from "../shared/logger";
 
 const stream = new Hono<{ Bindings: Env }>();
 
-/**
- * Helper to sign a short-lived, track-specific streaming ticket.
- */
-async function generateStreamTicket(
-  userId: string,
-  userRole: string,
-  trackId: string,
-  secret: string
-): Promise<string> {
-  const encSecret = new TextEncoder().encode(secret);
-  return new SignJWT({
-    sub: userId,
-    role: userRole,
-    trackId: trackId,
-    stream: true,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("2h") // expires in 2 hours
-    .sign(encSecret);
-}
+const SESSION_LIFETIME_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Helper to verify a streaming ticket and ensure it matches the requested track.
+ * Verifies a streaming session ticket and extends its expiration (sliding window).
  */
-async function verifyStreamTicket(
+async function verifyAndExtendSession(
+  db: any,
   ticket: string | undefined,
-  trackId: string,
-  secret: string
+  trackId: string
 ) {
   if (!ticket) {
     throw new UnauthorizedError("Streaming ticket is required");
   }
 
-  try {
-    const encSecret = new TextEncoder().encode(secret);
-    const { payload } = await jwtVerify(ticket, encSecret);
+  // Find active streaming session
+  const result = await db
+    .select()
+    .from(streamSessions)
+    .where(eq(streamSessions.id, ticket))
+    .limit(1);
 
-    if (payload.trackId !== trackId || !payload.stream) {
-      throw new ForbiddenError("Invalid streaming ticket scope");
-    }
+  const session = result[0];
 
-    return {
-      userId: payload.sub as string,
-      role: payload.role as string,
-    };
-  } catch (err) {
-    if (err instanceof ForbiddenError) throw err;
-    logger.warn("Stream ticket verification failed", err);
-    throw new UnauthorizedError("Expired or invalid streaming ticket");
+  if (!session) {
+    throw new UnauthorizedError("Invalid streaming session");
   }
+
+  // Check if session belongs to the correct track
+  if (session.trackId !== trackId) {
+    throw new ForbiddenError("Streaming ticket is not scoped for this track");
+  }
+
+  // Verify expiry
+  const now = Date.now();
+  if (session.expiresAt < now) {
+    // Clean up expired session
+    await db.delete(streamSessions).where(eq(streamSessions.id, ticket));
+    throw new UnauthorizedError("Streaming session has expired");
+  }
+
+  // Slide expiration window: extend by another 5 minutes
+  const newExpiry = now + SESSION_LIFETIME_MS;
+  await db
+    .update(streamSessions)
+    .set({ expiresAt: newExpiry })
+    .where(eq(streamSessions.id, ticket));
+
+  return session;
 }
 
 /**
@@ -89,7 +86,7 @@ async function verifyTrackAccess(c: any, trackId: string, userRole: string) {
   return track;
 }
 
-// ── POST Request Playback Ticket (Bearer Auth) ──────────
+// ── POST Create Playback Session (Bearer Auth) ──────────
 stream.post("/:trackId/ticket", requireAuth(), async (c) => {
   const trackId = c.req.param("trackId");
   if (!trackId) {
@@ -98,19 +95,37 @@ stream.post("/:trackId/ticket", requireAuth(), async (c) => {
   const userId = c.get("userId" as never) as string;
   const userRole = c.get("userRole" as never) as string;
 
-  logger.info("Generating streaming ticket for playback", { trackId, userId });
+  logger.info("Creating stream session for playback", { trackId, userId });
 
   // 1. Verify permissions
   await verifyTrackAccess(c, trackId, userRole);
 
-  // 2. Generate short-lived streaming ticket
-  const ticket = await generateStreamTicket(userId, userRole, trackId, c.env.JWT_ACCESS_SECRET);
+  // 2. Clear old sessions for this user on this track to prevent spam/abuse
+  const db = getDB(c.env);
+  await db
+    .delete(streamSessions)
+    .where(and(eq(streamSessions.userId, userId), eq(streamSessions.trackId, trackId)));
+
+  // 3. Generate secure random session token
+  const ticket = crypto.randomUUID();
+  const now = Date.now();
+  const expiresAt = now + SESSION_LIFETIME_MS;
+
+  // 4. Save session to D1
+  await db.insert(streamSessions).values({
+    id: ticket,
+    userId,
+    trackId,
+    expiresAt,
+    createdAt: now,
+  });
+
   const streamUrl = `/api/v1/stream/${trackId}/master.m3u8?ticket=${encodeURIComponent(ticket)}`;
 
   return ApiResponse.success(c, {
     ticket,
     streamUrl,
-  }, "Streaming ticket issued successfully");
+  }, "Streaming session created successfully");
 });
 
 // ── GET Playlists (master.m3u8) ─────────────────────────
@@ -123,8 +138,9 @@ stream.get("/:trackId/master.m3u8", async (c) => {
 
   logger.info("Stream request: master playlist", { trackId });
 
-  // 1. Verify Authentication & Track Scope
-  await verifyStreamTicket(ticket, trackId, c.env.JWT_ACCESS_SECRET);
+  // 1. Verify & Extend session
+  const db = getDB(c.env);
+  await verifyAndExtendSession(db, ticket, trackId);
 
   // 2. Load Playlist from R2
   const storage = new StorageService(c.env.BUCKET);
@@ -188,8 +204,9 @@ stream.get("/:trackId/keys/:keyName", async (c) => {
 
   logger.info("Stream request: decryption key", { trackId, keyName });
 
-  // 1. Verify Authentication & Track Scope
-  await verifyStreamTicket(ticket, trackId, c.env.JWT_ACCESS_SECRET);
+  // 1. Verify & Extend session
+  const db = getDB(c.env);
+  await verifyAndExtendSession(db, ticket, trackId);
 
   // 2. Load Key from R2
   const storage = new StorageService(c.env.BUCKET);
@@ -217,8 +234,9 @@ stream.get("/:trackId/audio/:segmentName", async (c) => {
   }
   const ticket = c.req.query("ticket");
 
-  // 1. Verify Authentication & Track Scope
-  await verifyStreamTicket(ticket, trackId, c.env.JWT_ACCESS_SECRET);
+  // 1. Verify & Extend session
+  const db = getDB(c.env);
+  await verifyAndExtendSession(db, ticket, trackId);
 
   // 2. Stream Segment from R2
   const storage = new StorageService(c.env.BUCKET);
