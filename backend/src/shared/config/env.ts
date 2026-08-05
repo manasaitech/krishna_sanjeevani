@@ -3,6 +3,7 @@ export interface Env {
   DB: D1Database;
   BUCKET: R2Bucket;
   CACHE: KVNamespace;
+  MEDIA_QUEUE: Queue;
 
   // Secrets & Configs
   JWT_ACCESS_SECRET: string;

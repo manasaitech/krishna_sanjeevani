@@ -28,6 +28,21 @@
 			"bucket_name": "krishna-sanjeevani-storage"
 		}
 	],
+	"queues": {
+		"producers": [
+			{
+				"binding": "MEDIA_QUEUE",
+				"queue": "krishna-sanjeevani-media-queue"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "krishna-sanjeevani-media-queue",
+				"max_batch_size": 10,
+				"max_batch_timeout": 5
+			}
+		]
+	},
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

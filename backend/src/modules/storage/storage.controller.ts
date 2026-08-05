@@ -48,6 +48,18 @@ export class StorageController {
     // Upload to R2
     const result = await service.uploadFile(key, buffer, file.type);
 
+    // Publish event to Cloudflare Queue for async media processing (HLS/FFmpeg conversion)
+    const trackId = crypto.randomUUID();
+    await c.env.MEDIA_QUEUE.send({
+      trackId,
+      key: result.key,
+      size: result.size,
+      contentType: result.contentType,
+      timestamp: Date.now(),
+    });
+
+    logger.info("Media Pipeline: Message sent to queue", { trackId, key });
+
     return ApiResponse.success(
       c,
       {
