@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   ChevronRight,
@@ -67,27 +67,38 @@ function Row({
 }
 
 function Profile() {
-  const { category } = useApp();
+  const { category, user, logout } = useApp();
+  const navigate = useNavigate();
   const cat = categories.find((c) => c.id === category)!;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate({ to: "/welcome" });
+  };
+
+  const name = user?.profile?.fullName || "Guest User";
+  const email = user?.email || "guest@example.com";
+  const role = user?.role || "guest";
+  const initial = name.charAt(0).toUpperCase();
 
   return (
     <AppShell>
       <div className="animate-rise mt-2 flex items-center gap-4 rounded-card border border-border bg-surface p-5 shadow-soft">
-        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-cat text-xl font-semibold text-cat-foreground">
-          A
+        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-cat text-xl font-semibold text-cat-foreground uppercase">
+          {initial}
         </span>
         <div className="min-w-0">
-          <h1 className="truncate text-[19px] font-semibold">Ananya Rao</h1>
-          <p className="truncate text-xs text-muted-foreground">ananya@example.com</p>
-          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-cat-light px-3 py-1 text-[11px] font-semibold text-cat">
-            <Crown className="h-3 w-3" /> Premium
+          <h1 className="truncate text-[19px] font-semibold">{name}</h1>
+          <p className="truncate text-xs text-muted-foreground">{email}</p>
+          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-cat-light px-3 py-1 text-[11px] font-semibold text-cat capitalize">
+            <Crown className="h-3 w-3" /> {role}
           </span>
         </div>
       </div>
 
       <Section title="Your plan">
         <div className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft">
-          <Row icon={Crown} label="Subscription" value="Premium · monthly" to="/subscription" />
+          <Row icon={Crown} label="Subscription" value={`${role} · monthly`} to="/subscription" />
           <Row icon={Sparkles} label="Listening path" value={cat.name} to="/category" />
         </div>
       </Section>
@@ -115,12 +126,12 @@ function Profile() {
         </div>
       </Section>
 
-      <Link
-        to="/welcome"
-        className="press mt-8 flex min-h-13 items-center justify-center gap-2 rounded-btn border border-border bg-surface text-sm font-semibold text-destructive"
+      <button
+        onClick={handleLogout}
+        className="press mt-8 flex min-h-13 w-full items-center justify-center gap-2 rounded-btn border border-border bg-surface text-sm font-semibold text-destructive"
       >
         <LogOut className="h-4 w-4" /> Log out
-      </Link>
+      </button>
       <p className="mt-6 text-center text-[12px] text-muted-foreground">Version 1.0.0</p>
     </AppShell>
   );

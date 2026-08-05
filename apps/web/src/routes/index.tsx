@@ -27,8 +27,11 @@ function Splash() {
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("ks_access_token");
+    const targetRoute = token ? "/home" : "/welcome";
+
     const a = window.setTimeout(() => setLeaving(true), 1900);
-    const b = window.setTimeout(() => navigate({ to: "/welcome" }), 2400);
+    const b = window.setTimeout(() => navigate({ to: targetRoute }), 2400);
     return () => {
       window.clearTimeout(a);
       window.clearTimeout(b);

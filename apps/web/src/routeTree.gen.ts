@@ -16,11 +16,13 @@ import { Route as CategoryRouteImport } from './routes/category'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as JourneyRouteImport } from './routes/journey'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgramsRouteImport } from './routes/programs'
 import { Route as RecentRouteImport } from './routes/recent'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SessionCompleteRouteImport } from './routes/session-complete'
 import { Route as SubscriptionRouteImport } from './routes/subscription'
@@ -62,6 +64,11 @@ const JourneyRoute = JourneyRouteImport.update({
   path: '/journey',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
@@ -85,6 +92,11 @@ const ProgramsRoute = ProgramsRouteImport.update({
 const RecentRoute = RecentRouteImport.update({
   id: '/recent',
   path: '/recent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -121,11 +133,13 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
+  '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
   '/recent': typeof RecentRoute
+  '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -140,11 +154,13 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
+  '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
   '/recent': typeof RecentRoute
+  '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -160,11 +176,13 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
+  '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
   '/recent': typeof RecentRoute
+  '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -181,11 +199,13 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/home'
     | '/journey'
+    | '/login'
     | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
     | '/recent'
+    | '/register'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -200,11 +220,13 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/home'
     | '/journey'
+    | '/login'
     | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
     | '/recent'
+    | '/register'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -219,11 +241,13 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/home'
     | '/journey'
+    | '/login'
     | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
     | '/recent'
+    | '/register'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -239,11 +263,13 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
   JourneyRoute: typeof JourneyRoute
+  LoginRoute: typeof LoginRoute
   NotificationsRoute: typeof NotificationsRoute
   PlayerRoute: typeof PlayerRoute
   ProfileRoute: typeof ProfileRoute
   ProgramsRoute: typeof ProgramsRoute
   RecentRoute: typeof RecentRoute
+  RegisterRoute: typeof RegisterRoute
   SearchRoute: typeof SearchRoute
   SessionCompleteRoute: typeof SessionCompleteRoute
   SubscriptionRoute: typeof SubscriptionRoute
@@ -302,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JourneyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notifications': {
       id: '/notifications'
       path: '/notifications'
@@ -335,6 +368,13 @@ declare module '@tanstack/react-router' {
       path: '/recent'
       fullPath: '/recent'
       preLoaderRoute: typeof RecentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -383,11 +423,13 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
   JourneyRoute: JourneyRoute,
+  LoginRoute: LoginRoute,
   NotificationsRoute: NotificationsRoute,
   PlayerRoute: PlayerRoute,
   ProfileRoute: ProfileRoute,
   ProgramsRoute: ProgramsRoute,
   RecentRoute: RecentRoute,
+  RegisterRoute: RegisterRoute,
   SearchRoute: SearchRoute,
   SessionCompleteRoute: SessionCompleteRoute,
   SubscriptionRoute: SubscriptionRoute,

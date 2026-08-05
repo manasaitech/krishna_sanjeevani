@@ -51,20 +51,20 @@ function Welcome() {
 
         <div className="mt-auto space-y-3 pt-10">
           <Link
-            to="/category"
+            to="/login"
             className="press flex min-h-13 w-full items-center justify-center rounded-btn bg-primary px-6 text-[15px] font-semibold text-primary-foreground shadow-soft hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             Continue
           </Link>
           <div className="grid grid-cols-2 gap-3">
             <Link
-              to="/category"
+              to="/login"
               className="press flex min-h-12 items-center justify-center rounded-btn border border-border bg-surface text-sm font-semibold"
             >
               Sign in
             </Link>
             <Link
-              to="/category"
+              to="/register"
               className="press flex min-h-12 items-center justify-center rounded-btn border border-border bg-surface text-sm font-semibold"
             >
               Create account
@@ -80,13 +80,13 @@ function Welcome() {
           </div>
 
           <Link
-            to="/category"
+            to="/login"
             className="press flex min-h-12 w-full items-center justify-center gap-2.5 rounded-btn border border-border bg-surface text-sm font-semibold"
           >
             <Chrome className="h-4 w-4" /> Continue with Google
           </Link>
           <Link
-            to="/category"
+            to="/login"
             className="press flex min-h-12 w-full items-center justify-center gap-2.5 rounded-btn border border-border bg-surface text-sm font-semibold"
           >
             <Apple className="h-4 w-4" /> Continue with Apple
