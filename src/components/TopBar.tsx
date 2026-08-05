@@ -22,7 +22,13 @@ function greeting() {
   return "Good evening";
 }
 
-export function TopBar({ title, subtitle }: { title?: string; subtitle?: string }) {
+export function TopBar({
+  title,
+  subtitle,
+}: {
+  title?: string | undefined;
+  subtitle?: string | undefined;
+}) {
   const { category, setCategory } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
