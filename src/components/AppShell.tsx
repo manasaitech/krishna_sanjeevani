@@ -5,8 +5,8 @@ import { PlayerBar } from "@/components/PlayerBar";
 import { cn } from "@/lib/utils";
 
 type Props = {
-  title?: string;
-  subtitle?: string;
+  title?: string | undefined;
+  subtitle?: string | undefined;
   children: ReactNode;
   /** Constrain content width; defaults to the wide streaming layout. */
   narrow?: boolean;
