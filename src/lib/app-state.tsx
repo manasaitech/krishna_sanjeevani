@@ -4,7 +4,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -23,12 +22,19 @@ type AppState = {
   position: number;
   speed: number;
   setSpeed: (s: number) => void;
+  volume: number;
+  setVolume: (v: number) => void;
+  muted: boolean;
+  toggleMuted: () => void;
+  queue: Track[];
   sleepTimer: number | null;
   setSleepTimer: (m: number | null) => void;
   play: (t: Track) => void;
   toggle: () => void;
   seek: (s: number) => void;
   skip: (delta: number) => void;
+  next: () => void;
+  previous: () => void;
   stop: () => void;
 };
 
@@ -42,8 +48,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(312);
   const [speed, setSpeed] = useState(1);
+  const [volume, setVolume] = useState(72);
+  const [muted, setMuted] = useState(false);
   const [sleepTimer, setSleepTimer] = useState<number | null>(null);
-  const raf = useRef<number | null>(null);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -67,6 +74,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPlaying(true);
   }, []);
 
+  const queue = useMemo(() => {
+    if (!current) return tracks.slice(0, 5);
+    const i = tracks.findIndex((t) => t.id === current.id);
+    return [...tracks.slice(i + 1), ...tracks.slice(0, i)].slice(0, 6);
+  }, [current]);
+
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      if (!current) return;
+      const i = tracks.findIndex((t) => t.id === current.id);
+      const nextTrack = tracks[(i + dir + tracks.length) % tracks.length];
+      if (nextTrack) play(nextTrack);
+    },
+    [current, play],
+  );
+
   const value = useMemo<AppState>(
     () => ({
       category,
@@ -83,6 +106,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       position,
       speed,
       setSpeed,
+      volume,
+      setVolume,
+      muted,
+      toggleMuted: () => setMuted((m) => !m),
+      queue,
       sleepTimer,
       setSleepTimer,
       play,
@@ -92,12 +120,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setPosition((p) =>
           Math.max(0, Math.min(current ? current.duration : 0, p + delta)),
         ),
+      next: () => step(1),
+      previous: () => step(-1),
       stop: () => setPlaying(false),
     }),
-    [category, favorites, savedPrograms, current, playing, position, speed, sleepTimer, play],
+    [
+      category,
+      favorites,
+      savedPrograms,
+      current,
+      playing,
+      position,
+      speed,
+      volume,
+      muted,
+      queue,
+      sleepTimer,
+      play,
+      step,
+    ],
   );
-
-  useEffect(() => () => { if (raf.current) cancelAnimationFrame(raf.current); }, []);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
