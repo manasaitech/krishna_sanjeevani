@@ -18,7 +18,7 @@ Rather than adopting a traditional monolithic server model, Krishna Sanjeevani i
 
 ## 2. High-Level Architecture
 
-The following diagram illustrates how user devices interact with the backend services and Cloudflare's edge capabilities:
+![High-Level Architecture Diagram](./architecture_diagram.png)
 
 ```mermaid
 graph TD
@@ -149,7 +149,7 @@ Our security model follows a **Zero Trust Media Access** philosophy. Since any p
 
 ## 8. Streaming Pipeline Flow
 
-The following lifecycle diagram shows how media is ingested, processed, and securely delivered:
+![Secure Streaming Ingestion & Playback Pipeline](./streaming_pipeline.png)
 
 ```mermaid
 sequenceDiagram
