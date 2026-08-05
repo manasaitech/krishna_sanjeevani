@@ -1,4 +1,8 @@
-const BASE_URL = "http://localhost:8787/api/v1";
+const BASE_URL = typeof window !== "undefined" && 
+  window.location.hostname !== "localhost" && 
+  window.location.hostname !== "127.0.0.1"
+    ? "https://backend.astrosutraai.workers.dev/api/v1"
+    : "http://localhost:8787/api/v1";
 
 const TOKEN_KEYS = {
   ACCESS: "ks_access_token",
