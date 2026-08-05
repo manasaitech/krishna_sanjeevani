@@ -16,12 +16,12 @@
 	],
 	"d1_databases": [
 		{
-			"binding": "krishna_sanjeevani_db",
+			"binding": "DB",
 			"database_name": "krishna-sanjeevani-db",
 			"database_id": "5b23c9bd-4418-4b96-9b67-394ce37c8155",
-			"remote": true
+			"migrations_dir": "./drizzle"
 		}
-	]
+	],
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
