@@ -1,6 +1,9 @@
 import { Hono } from "hono";
-import { corsMiddleware } from "./config/cors";
+import { corsMiddleware } from "./shared/config/cors";
 import routes from "./routes";
+import { AppError } from "./shared/errors";
+import { logger } from "./shared/logger";
+import { ApiResponse } from "./shared/responses";
 
 const app = new Hono();
 
@@ -12,12 +15,16 @@ app.route("/api/v1", routes);
 
 // Global Error Handler
 app.onError((err, c) => {
-  console.error("Global Error Caught:", err);
-  return c.json(
-    {
-      success: false,
-      message: err.message || "Internal Server Error",
-    },
+  // Use structured logger
+  logger.error("Unhandled Exception caught by Global Handler", err);
+
+  if (err instanceof AppError) {
+    return ApiResponse.error(c, err.message, err.status, err.errors);
+  }
+
+  return ApiResponse.error(
+    c,
+    err.message || "Internal Server Error",
     500
   );
 });
