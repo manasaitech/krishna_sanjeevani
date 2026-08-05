@@ -78,7 +78,7 @@ function NavList({
   );
 }
 
-export function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
+export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   return (
     <div className="flex h-full flex-col">
       <Link
