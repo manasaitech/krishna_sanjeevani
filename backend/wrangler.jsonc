@@ -13,6 +13,14 @@
 	"upload_source_maps": true,
 	"compatibility_flags": [
 		"nodejs_compat"
+	],
+	"d1_databases": [
+		{
+			"binding": "krishna_sanjeevani_db",
+			"database_name": "krishna-sanjeevani-db",
+			"database_id": "5b23c9bd-4418-4b96-9b67-394ce37c8155",
+			"remote": true
+		}
 	]
 	/**
 	 * Smart Placement
