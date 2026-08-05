@@ -12,6 +12,7 @@ export const tracks = sqliteTable("tracks", {
   instructions: text("instructions"), // listening guidance
   frequency: text("frequency"), // specific healing frequency (e.g. 432Hz)
   premium: integer("premium").default(0), // 0: free, 1: premium
+  processingStatus: text("processing_status").notNull().default("uploaded"), // 'uploaded' | 'processing' | 'ready' | 'failed'
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

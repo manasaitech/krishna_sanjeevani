@@ -1,0 +1,1 @@
+ALTER TABLE `tracks` ADD `processing_status` text DEFAULT 'uploaded' NOT NULL;

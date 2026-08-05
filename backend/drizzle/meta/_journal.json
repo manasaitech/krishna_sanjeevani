@@ -15,6 +15,13 @@
       "when": 1785932467587,
       "tag": "0001_icy_thunderball",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1785932589253,
+      "tag": "0002_clammy_sunset_bain",
+      "breakpoints": true
     }
   ]
 }
