@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Krishna Sanjeevani",
+    "slug": "krishna-sanjeevani",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "krishna-sanjeevani",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.krishnasanjeevani.app"
+    },
+    "android": {
+      "package": "com.krishnasanjeevani.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F8F6F2",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-splash-screen"
+    ]
+  }
+}

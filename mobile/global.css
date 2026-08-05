@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #F5F1EB;
+  --color-surface: #FFFFFF;
+  --color-foreground: #1A1A1A;
+  --color-primary: #264653;
+  --color-primary-foreground: #FAF8F4;
+  --color-primary-hover: #1D3640;
+  --color-secondary: #F0ECE4;
+  --color-secondary-foreground: #1A1A1A;
+  --color-muted: #F0ECE4;
+  --color-muted-foreground: #7C7A85;
+  --color-accent: #F0ECE4;
+  --color-accent-foreground: #1A1A1A;
+  --color-destructive: #C0392B;
+  --color-destructive-foreground: #FCFCFC;
+  --color-success: #27AE60;
+  --color-warning: #D4A017;
+  --color-border: #E8E4DC;
+  --color-input: #E8E4DC;
+  --color-ring: #264653;
+
+  /* Default category: devotional */
+  --color-cat: #7A1E2C;
+  --color-cat-light: #F2E0E3;
+  --color-cat-accent: #C9A84C;
+  --color-cat-foreground: #FCFCFC;
+}

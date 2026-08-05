@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Web App build/runtime outputs
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+.output/
+**/.output/
+.vinxi/
+**/.vinxi/
+.tanstack/
+**/.tanstack/
+.nitro/
+**/.nitro/
+.lovable/
+**/.lovable/
+
+# Expo / Mobile outputs
+.expo/
+**/.expo/
+web-build/
+**/web-build/
+expo-env.d.ts
+**/*.tsbuildinfo
+
+# Native android/ios folders inside mobile
+mobile/ios/
+mobile/android/
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# Environment / local configs
+.env
+.env*.local
+*.local
+
+# Editor & System Files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.pem
