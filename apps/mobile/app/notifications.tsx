@@ -5,12 +5,12 @@ import { AppShell } from "@/components/AppShell";
 import { notifications } from "@/lib/content";
 import { useApp } from "@/lib/app-state";
 
-const icons = {
+const icons: Record<string, any> = {
   reminder: BellRing,
   progress: TrendingUp,
   new: Music4,
   update: RefreshCw,
-} as const;
+};
 
 export default function Notifications() {
   const { theme } = useApp();

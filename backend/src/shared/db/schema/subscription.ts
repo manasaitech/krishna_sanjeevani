@@ -22,3 +22,15 @@ export const subscriptions = sqliteTable("subscriptions", {
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
+
+export const payments = sqliteTable("payments", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  planId: text("plan_id").notNull().references(() => plans.id),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").notNull().default("INR"),
+  status: text("status").notNull(), // pending, completed, failed, refunded
+  orderId: text("order_id"), // Mock order ID / Razorpay order ID
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});

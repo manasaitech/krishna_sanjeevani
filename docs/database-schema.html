@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Krishna Sanjeevani — Relational Database Schema Specification</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #F8FAFC;
+      --bg-secondary: #FFFFFF;
+      --border-color: #E2E8F0;
+      
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      
+      --brand-primary: #8B5CF6; /* Violet for databases */
+      --brand-hover: #7C3AED;
+      --brand-light: #F5F3FF;
+      
+      --success: #16A34A;
+      --success-light: #DCFCE7;
+      --warning: #D97706;
+      --warning-light: #FEF3C7;
+      --danger: #DC2626;
+      --danger-light: #FEE2E2;
+      
+      --font-sans: 'Inter', sans-serif;
+      --font-title: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --sidebar-width: 300px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+    }
+
+    /* Layout structure */
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      z-index: 50;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-title {
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-search {
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .sidebar-search input {
+      width: 100%;
+      padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.375rem;
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .sidebar-search svg {
+      position: absolute;
+      left: 0.65rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0.9rem;
+      height: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 0.45rem 0.75rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background-color: var(--brand-light);
+      color: var(--brand-primary);
+    }
+
+    .nav-item.active {
+      background-color: var(--brand-primary);
+      color: #FFFFFF;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-height: 100vh;
+      padding: 2.5rem;
+      max-width: 1200px;
+    }
+
+    /* Typography styles */
+    h1, h2, h3, h4 {
+      font-family: var(--font-title);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-top: 2.5rem;
+      scroll-margin-top: 1.5rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      margin-top: 1.5rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+      line-height: 1.65;
+    }
+
+    /* Cards */
+    .section-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Metadata details */
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-success { background-color: var(--success-light); color: var(--success); }
+    .badge-warning { background-color: var(--warning-light); color: var(--warning); }
+    .badge-danger { background-color: var(--danger-light); color: var(--danger); }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      font-size: 0.82rem;
+    }
+
+    th, td {
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--bg-primary);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(248, 250, 252, 0.5);
+    }
+
+    /* Code blocks */
+    pre {
+      background-color: #0F172A;
+      color: #F8FAFC;
+      padding: 1rem;
+      border-radius: 0.375rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    /* Diagram Styling */
+    .diagram-container {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    .diagram-container svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Actions toolbar */
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: var(--brand-light);
+      border-color: var(--brand-primary);
+      color: var(--brand-primary);
+    }
+
+    .btn-primary {
+      background-color: var(--brand-primary);
+      border-color: var(--brand-primary);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--brand-hover);
+      color: #FFFFFF;
+    }
+
+    /* Back to top */
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background-color: var(--brand-primary);
+      color: white;
+      border: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      z-index: 100;
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 22V4c0-.5.2-1 .6-1.4C5 2.2 5.5 2 6 2h8l6 6v14M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        <span>KS DATABASE SCHEMA</span>
+      </div>
+      <div class="sidebar-search">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="search-input" placeholder="Search tables..." oninput="handleSearch()">
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- Generated dynamically -->
+    </nav>
+  </aside>
+
+  <!-- Main Content View -->
+  <main class="main-content">
+    
+    <!-- Top toolbar actions -->
+    <div class="toolbar">
+      <button class="btn" onclick="window.print()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Print PDF</button>
+      <a href="./architecture.html" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Architecture Portal</a>
+    </div>
+
+    <!-- Title Header -->
+    <header style="margin-bottom: 2.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">
+        <span>Platform Docs</span> &rarr; <span>Database Specification</span>
+      </div>
+      <h1>Database Architecture</h1>
+      <p style="font-size: 1.15rem; color: var(--text-secondary); margin-bottom: 0.5rem;">D1 Relational Tables Schematics, Nullability rules &amp; Foreign Keys catalog</p>
+      <span class="meta-badge badge-success">Schema Specification</span>
+    </header>
+
+    <!-- Overview Section -->
+    <section id="db-overview" class="section-card">
+      <h2>Database Overview</h2>
+      <p>
+        Krishna Sanjeevani uses <strong>Cloudflare D1</strong> as its SQL transactional database. Tables are designed and migrated using <strong>Drizzle ORM</strong> models. D1 enforces ACID properties for users sessions, subscription tiers, track metadata lookups, and sequence structures.
+      </p>
+      
+      <h3>Entity-Relationship (ER) Architecture Summary</h3>
+      <div class="diagram-container">
+        <!-- SVG 1: ER Relationship Linkages -->
+        <svg viewBox="0 0 700 350" width="100%" height="350">
+          <rect x="0" y="0" width="700" height="350" fill="#FFFFFF" rx="8"/>
+          
+          <!-- users table -->
+          <rect x="40" y="40" width="120" height="60" rx="4" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
+          <text x="100" y="65" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">users</text>
+          <text x="100" y="85" fill="#E9D5FF" font-family="sans-serif" font-size="10" text-anchor="middle">PK: id</text>
+          
+          <!-- user_profiles -->
+          <rect x="240" y="10" width="140" height="65" rx="4" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
+          <text x="310" y="35" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">user_profiles</text>
+          <text x="310" y="52" fill="#E9D5FF" font-family="sans-serif" font-size="9" text-anchor="middle">PK: id</text>
+          <text x="310" y="65" fill="#E9D5FF" font-family="sans-serif" font-size="9" text-anchor="middle">FK: user_id (one-to-one)</text>
+
+          <path d="M 160 70 L 240 42.5" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+          
+          <!-- sessions -->
+          <rect x="240" y="90" width="140" height="50" rx="4" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
+          <text x="310" y="112" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">sessions</text>
+          <text x="310" y="128" fill="#E9D5FF" font-family="sans-serif" font-size="9" text-anchor="middle">FK: user_id (one-to-many)</text>
+
+          <path d="M 160 70 L 240 115" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- tracks -->
+          <rect x="40" y="240" width="120" height="60" rx="4" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
+          <text x="100" y="265" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">tracks</text>
+          <text x="100" y="285" fill="#E9D5FF" font-family="sans-serif" font-size="10" text-anchor="middle">PK: id</text>
+
+          <!-- program_tracks -->
+          <rect x="240" y="170" width="140" height="55" rx="4" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
+          <text x="310" y="192" fill="#FFFFFF" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">program_tracks</text>
+          <text x="310" y="210" fill="#E9D5FF" font-family="sans-serif" font-size="8" text-anchor="middle">Composite PK: pg_id, trk_id</text>
+
+          <!-- programs -->
+          <rect x="440" y="240" width="120" height="60" rx="4" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
+          <text x="500" y="265" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">programs</text>
+          <text x="500" y="285" fill="#E9D5FF" font-family="sans-serif" font-size="10" text-anchor="middle">PK: id</text>
+
+          <path d="M 160 270 L 240 197.5" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <path d="M 440 270 L 380 197.5" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- play_history -->
+          <rect x="440" y="90" width="130" height="55" rx="4" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
+          <text x="505" y="112" fill="#FFFFFF" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">play_history</text>
+          <text x="505" y="130" fill="#E9D5FF" font-family="sans-serif" font-size="9" text-anchor="middle">FK: user_id, track_id</text>
+
+          <path d="M 160 70 L 440 117.5" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <path d="M 100 240 L 100 170 L 470 170 L 470 145" stroke="#475569" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+          <!-- arrow marker def -->
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Relational D1 Tables catalog definitions -->
+    <section id="tbl-users" class="section-card table-section">
+      <h2>Table: users</h2>
+      <p>Stores identity and password authentication details for system log verification.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>email</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Unique Index</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>password_hash</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>role</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'user'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>status</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'active'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>email_verified</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td><code>0</code> (False)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-user_profiles" class="section-card table-section">
+      <h2>Table: user_profiles</h2>
+      <p>Manages user metadata, chosen wellness categories, and gestational details.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Unique Index</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>full_name</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>profile_image</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>category</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>language</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td><code>'en'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>preferences</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>JSON preferences string</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>pregnancy_edd</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>ISO date "YYYY-MM-DD"</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>pregnancy_week_start</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>pregnancy_week_start_week</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td>Gestation week counter</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-sessions" class="section-card table-section">
+      <h2>Table: sessions</h2>
+      <p>Stores refresh token hashes to support stateful access validation at the edge.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>refresh_token_hash</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>SHA-256 string</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>expires_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-tracks" class="section-card table-section">
+      <h2>Table: tracks</h2>
+      <p>Stores therapeutic audio track metadata and Cloudflare R2 file pointers.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>title</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>subtitle</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>description</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>artist</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>duration</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td>Calculated during encoding</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>category</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'devotional'</code> | <code>'secular'</code> | <code>'pregnancy'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>language</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'hi'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>version</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td><code>1</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>tier</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'free'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>playlist_key</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>Processed HLS R2 folder key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>thumbnail_key</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>Cover art R2 key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>processing_status</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'uploaded'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>publish_status</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'draft'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_by</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Admin user ID</td>
+            <td><code>users.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>updated_by</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td><code>users.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>deleted_at</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td>Timestamp (Soft Delete)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>deleted_by</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td><code>users.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-program_types" class="section-card table-section">
+      <h2>Table: program_types</h2>
+      <p>Differentiates therapeutic programs from pregnancy-specific schedules.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>name</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>slug</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Unique Index</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>description</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-programs" class="section-card table-section">
+      <h2>Table: programs</h2>
+      <p>Manages structured playlists and therapeutic audio packages.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>title</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>subtitle</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>description</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>thumbnail_key</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>R2 cover artwork key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>category</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>e.g. <code>'pregnancy'</code>, <code>'devotional'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>difficulty</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'beginner'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>estimated_duration</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td>Sum of tracks duration</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>language</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'hi'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>tier</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'free'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>status</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'draft'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>program_type_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'1'</code></td>
+            <td><code>program_types.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>created_by</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Admin ID</td>
+            <td><code>users.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>updated_by</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td><code>users.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>deleted_at</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>deleted_by</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td><code>users.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-program_tracks" class="section-card table-section">
+      <h2>Table: program_tracks</h2>
+      <p>Maps the tracks assigned to each program, preserving their order.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>program_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Composite Primary Key</td>
+            <td><code>programs.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>track_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Composite Primary Key</td>
+            <td><code>tracks.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>sequence</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>1-based ordering index</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>is_required</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td><code>1</code> (True)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-pregnancy_schedule" class="section-card table-section">
+      <h2>Table: pregnancy_schedule</h2>
+      <p>Maps program recommendations to specific days/weeks of pregnancy.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>program_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>programs.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>pregnancy_month</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Month sequence (1 to 9)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>week</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Week sequence (1 to 40)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>day</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Day sequence (1 to 7)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>unlock_after_days</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td><code>0</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>is_required</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td><code>1</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-favorites" class="section-card table-section">
+      <h2>Table: favorites</h2>
+      <p>Stores tracks or programs bookmarked by the user.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>item_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Track or Program ID</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>item_type</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'track'</code> | <code>'program'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-play_history" class="section-card table-section">
+      <h2>Table: play_history</h2>
+      <p>Logs listening progress, history, and completions.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>track_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>tracks.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>program_id</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>Optional program context</td>
+            <td><code>programs.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>duration_listened</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Seconds played</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>last_position</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Playback offset (seconds)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>completed</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td><code>0</code> (False) | <code>1</code> (True)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-program_progress" class="section-card table-section">
+      <h2>Table: program_progress</h2>
+      <p>Tracks user progress and completions for specific programs.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>program_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>programs.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>completed_tracks</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>JSON array string</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>progress_percentage</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td><code>0</code> (0 to 100)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>started_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>completed_at</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td>Completions timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-plans" class="section-card table-section">
+      <h2>Table: plans</h2>
+      <p>Stores subscription tiers and pricing configurations.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>name</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>e.g. <code>'Standard Premium'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>price</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Price in Cents (e.g. 19900 = ₹199)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>currency</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td><code>'INR'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>interval</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'month'</code> | <code>'year'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>is_active</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td><code>1</code> (Active)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-subscriptions" class="section-card table-section">
+      <h2>Table: subscriptions</h2>
+      <p>Manages active plans and expiration windows for premium access.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>plan_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>plans.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>status</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'active'</code> | <code>'canceled'</code> | <code>'expired'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>current_period_start</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>current_period_end</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-payments" class="section-card table-section">
+      <h2>Table: payments</h2>
+      <p>Logs payment history, amounts, and statuses.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>plan_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>plans.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>amount</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Price in Cents</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>currency</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'INR'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>status</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td><code>'pending'</code> | <code>'completed'</code> | <code>'failed'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>order_id</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>Order ID pointer</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>updated_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-notifications" class="section-card table-section">
+      <h2>Table: notifications</h2>
+      <p>Stores system notifications and alerts for users.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>title</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>message</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>read</strong></td>
+            <td>INTEGER</td>
+            <td>Yes</td>
+            <td><code>0</code> (Unread) | <code>1</code> (Read)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>type</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td><code>'system'</code> | <code>'pregnancy'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tbl-audit_logs" class="section-card table-section">
+      <h2>Table: audit_logs</h2>
+      <p>Logs admin actions and changes for security compliance auditing.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>actor_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Admin ID</td>
+            <td><code>users.id</code></td>
+          </tr>
+          <tr>
+            <td><strong>action</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>e.g. <code>'track_upload'</code>, <code>'settings_change'</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>details</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>JSON details string</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>ip_address</strong></td>
+            <td>TEXT</td>
+            <td>Yes</td>
+            <td>IP address</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Timestamp</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Database Migration logs -->
+    <section id="db-migrations" class="section-card">
+      <h2>Drizzle Database Migration History</h2>
+      <p>Migrations are generated and executed sequentially via the Drizzle CLI compiler:</p>
+      <pre><code>npx drizzle-kit generate
+npx wrangler d1 migrations apply db-namespace --remote</code></pre>
+      <h3>Execution Migration Logs Sequence</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Sequence</th>
+            <th>Migration SQL file</th>
+            <th>Database Schema updates applied</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0000</td>
+            <td><code>0000_lumpy_arclight.sql</code></td>
+            <td>Creates primary identity <code>users</code> &amp; <code>user_profiles</code> structures</td>
+          </tr>
+          <tr>
+            <td>0001</td>
+            <td><code>0001_icy_thunderball.sql</code></td>
+            <td>Maps refresh token indexes and cascades to <code>sessions</code></td>
+          </tr>
+          <tr>
+            <td>0002</td>
+            <td><code>0002_clammy_sunset_bain.sql</code></td>
+            <td>Enforces unique flags on email lookup properties</td>
+          </tr>
+          <tr>
+            <td>0003</td>
+            <td><code>0003_phase4_track_management.sql</code></td>
+            <td>Adds <code>tracks</code> binary references and statuses</td>
+          </tr>
+          <tr>
+            <td>0004</td>
+            <td><code>0004_phase5_program_management.sql</code></td>
+            <td>Creates <code>programs</code> and <code>program_tracks</code> mapping keys</td>
+          </tr>
+          <tr>
+            <td>0005</td>
+            <td><code>0005_phase6_pregnancy_engine.sql</code></td>
+            <td>Injects <code>pregnancy_schedule</code> weeks and days markers</td>
+          </tr>
+          <tr>
+            <td>0006</td>
+            <td><code>0006_user_listening_progress.sql</code></td>
+            <td>Injects <code>play_history</code> tracking offsets</td>
+          </tr>
+          <tr>
+            <td>0007</td>
+            <td><code>0007_user_billing_and_payments.sql</code></td>
+            <td>Deploys <code>plans</code>, <code>subscriptions</code>, and <code>payments</code> tables</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Footer -->
+    <footer style="margin-top: 5rem; border-top: 1px solid var(--border-color); padding-top: 2rem; color: var(--text-muted); font-size: 0.8rem; display: flex; justify-content: space-between;">
+      <div>
+        <p>&copy; 2026 Krishna Sanjeevani</p>
+        <p>Relational Database Schema Design Specification</p>
+      </div>
+      <div style="text-align: right;">
+        <p>D1 Version: SQLite v3</p>
+        <p>Status: Active Seeds Specification</p>
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    // Build sidebar nav links dynamically based on table IDs
+    const navItems = [
+      { id: "db-overview", label: "Relational Overview" },
+      { id: "tbl-users", label: "Table: users" },
+      { id: "tbl-user_profiles", label: "Table: user_profiles" },
+      { id: "tbl-sessions", label: "Table: sessions" },
+      { id: "tbl-tracks", label: "Table: tracks" },
+      { id: "tbl-program_types", label: "Table: program_types" },
+      { id: "tbl-programs", label: "Table: programs" },
+      { id: "tbl-program_tracks", label: "Table: program_tracks" },
+      { id: "tbl-pregnancy_schedule", label: "Table: pregnancy_schedule" },
+      { id: "tbl-favorites", label: "Table: favorites" },
+      { id: "tbl-play_history", label: "Table: play_history" },
+      { id: "tbl-program_progress", label: "Table: program_progress" },
+      { id: "tbl-plans", label: "Table: plans" },
+      { id: "tbl-subscriptions", label: "Table: subscriptions" },
+      { id: "tbl-payments", label: "Table: payments" },
+      { id: "tbl-notifications", label: "Table: notifications" },
+      { id: "tbl-audit_logs", label: "Table: audit_logs" },
+      { id: "db-migrations", label: "Migrations History" }
+    ];
+
+    const navContainer = document.getElementById("sidebar-nav");
+    navItems.forEach(item => {
+      const a = document.createElement("a");
+      a.href = `#${item.id}`;
+      a.className = "nav-item";
+      a.innerText = item.label;
+      navContainer.appendChild(a);
+    });
+
+    // Search query table filters
+    function handleSearch() {
+      const val = document.getElementById("search-input").value.toLowerCase();
+      document.querySelectorAll(".table-section").forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        if (text.includes(val)) {
+          sec.style.display = "block";
+        } else {
+          sec.style.display = "none";
+        }
+      });
+    }
+
+    // Scroll trigger highlights
+    window.onscroll = function() {
+      const fromTop = window.scrollY + 100;
+      navItems.forEach(item => {
+        const sec = document.getElementById(item.id);
+        if (sec &&
+            sec.offsetTop <= fromTop &&
+            sec.offsetTop + sec.offsetHeight > fromTop
+        ) {
+          document.querySelectorAll('.nav-item').forEach(link => {
+            if (link.getAttribute('href') === `#${item.id}`) {
+              link.classList.add('active');
+            } else {
+              link.classList.remove('active');
+            }
+          });
+        }
+      });
+    };
+  </script>
+</body>
+</html>

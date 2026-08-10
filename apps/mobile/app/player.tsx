@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Pressable, Image, ScrollView, StyleSheet, Modal, Animated } from "react-native";
+import { View, Text, Pressable, Image, ScrollView, StyleSheet, Modal, Animated, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -20,6 +20,7 @@ import {
 import { useApp } from "@/lib/app-state";
 import { formatTime } from "@/lib/content";
 import { EmptyState } from "@/components/States";
+import { resolveImageSource } from "@/lib/utils";
 
 const speeds = [0.75, 0.9, 1, 1.1, 1.25];
 const timers = [10, 20, 30, 45, 60];
@@ -119,10 +120,12 @@ export default function Player() {
     isFavorite,
     toggleFavorite,
     theme,
+    buffering,
   } = useApp();
   const router = useRouter();
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sliderWidth, setSliderWidth] = useState(300);
 
   if (!current) {
     return (
@@ -168,7 +171,7 @@ export default function Player() {
         {/* Artwork */}
         <View style={styles.artWrap}>
           <View style={[styles.artGlow, { backgroundColor: theme.catLight }]} />
-          <Image source={current.art} style={styles.art} resizeMode="cover" />
+          <Image source={resolveImageSource(current.art, current.category)} style={styles.art} resizeMode="cover" />
         </View>
 
         {/* Title */}
@@ -188,8 +191,11 @@ export default function Player() {
         {/* Seek slider */}
         <View style={styles.sliderWrap}>
           <Pressable
+            onLayout={(e) => {
+              setSliderWidth(e.nativeEvent.layout.width);
+            }}
             onPress={(e) => {
-              const ratio = Math.max(0, Math.min(1, (e.nativeEvent as any).locationX / 300));
+              const ratio = Math.max(0, Math.min(1, (e.nativeEvent as any).locationX / sliderWidth));
               seek(Math.floor(ratio * current.duration));
             }}
             style={{ height: 40, justifyContent: "center" }}
@@ -224,9 +230,12 @@ export default function Player() {
           </Pressable>
           <Pressable
             onPress={toggle}
-            style={[styles.playBtn, { backgroundColor: theme.cat }]}
+            disabled={buffering}
+            style={[styles.playBtn, { backgroundColor: theme.cat }, buffering && { opacity: 0.85 }]}
           >
-            {playing ? (
+            {buffering ? (
+              <ActivityIndicator size="small" color={theme.catForeground} />
+            ) : playing ? (
               <Pause size={28} color={theme.catForeground} fill={theme.catForeground} />
             ) : (
               <Play size={28} color={theme.catForeground} fill={theme.catForeground} />

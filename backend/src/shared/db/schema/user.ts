@@ -21,6 +21,12 @@ export const userProfiles = sqliteTable("user_profiles", {
   category: text("category").notNull(), // chosen raga category
   language: text("language").default("en"),
   preferences: text("preferences"), // JSON string of user preferences
+  
+  // Pregnancy configuration columns
+  pregnancyEdd: text("pregnancy_edd"), // Optional ISO date "YYYY-MM-DD"
+  pregnancyWeekStart: integer("pregnancy_week_start"), // Timestamp when user set current pregnancy week
+  pregnancyWeekStartWeek: integer("pregnancy_week_start_week"), // Starting week number when user set it
+  
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

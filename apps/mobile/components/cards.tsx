@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Heart, Lock, Pause, Play } from "lucide-react-native";
 import { useApp } from "@/lib/app-state";
 import { categories, formatDuration, type Track, type Program } from "@/lib/content";
+import { resolveImageSource } from "@/lib/utils";
 
 /* ── Favorite button ── */
 export function FavoriteButton({ id }: { id: string }) {
@@ -24,7 +25,7 @@ export function FavoriteButton({ id }: { id: string }) {
 }
 
 /* ── Play button ── */
-export function PlayButton({ track, small = false }: { track: Track; small?: boolean }) {
+export function PlayButton({ track, small = false, programId }: { track: Track; small?: boolean; programId?: string }) {
   const { current, playing, play, toggle, theme } = useApp();
   const isCurrent = current?.id === track.id;
   const isPlaying = isCurrent && playing;
@@ -32,7 +33,7 @@ export function PlayButton({ track, small = false }: { track: Track; small?: boo
 
   return (
     <Pressable
-      onPress={() => (isCurrent ? toggle() : play(track))}
+      onPress={() => (isCurrent ? toggle() : play(track, programId))}
       style={[
         styles.playBtn,
         {
@@ -53,18 +54,24 @@ export function PlayButton({ track, small = false }: { track: Track; small?: boo
 }
 
 /* ── Track card (vertical, for rails) ── */
-export function TrackCard({ track }: { track: Track }) {
-  const { theme } = useApp();
+export function TrackCard({ track, programId }: { track: Track; programId?: string }) {
+  const { theme, play } = useApp();
+  const router = useRouter();
+
+  const handlePress = () => {
+    play(track, programId);
+    router.push("/player");
+  };
 
   return (
-    <View style={styles.trackCard}>
+    <Pressable onPress={handlePress} style={styles.trackCard}>
       <View style={styles.trackCardImageWrap}>
-        <Image source={track.art} style={styles.trackCardImage} resizeMode="cover" />
+        <Image source={resolveImageSource(track.art, track.category)} style={styles.trackCardImage} resizeMode="cover" />
         <View style={styles.trackCardOverlay}>
           <View style={styles.durationBadge}>
             <Text style={styles.durationText}>{formatDuration(track.duration)}</Text>
           </View>
-          <PlayButton track={track} small />
+          <PlayButton track={track} programId={programId} small />
         </View>
         {track.premium && (
           <View style={styles.lockBadge}>
@@ -87,23 +94,29 @@ export function TrackCard({ track }: { track: Track }) {
         </View>
         <FavoriteButton id={track.id} />
       </View>
-    </View>
+    </Pressable>
   );
 }
 
 /* ── Track row (horizontal, for lists) ── */
-export function TrackRow({ track, index }: { track: Track; index?: number }) {
+export function TrackRow({ track, index, programId }: { track: Track; index?: number; programId?: string }) {
   const router = useRouter();
+  const { play } = useApp();
+
+  const handlePress = () => {
+    play(track, programId);
+    router.push("/player");
+  };
 
   return (
     <Pressable
-      onPress={() => router.push("/player")}
+      onPress={handlePress}
       style={styles.trackRow}
     >
       {typeof index === "number" && (
         <Text style={styles.indexText}>{index + 1}</Text>
       )}
-      <Image source={track.art} style={styles.rowArt} resizeMode="cover" />
+      <Image source={resolveImageSource(track.art, track.category)} style={styles.rowArt} resizeMode="cover" />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text numberOfLines={1} style={styles.trackTitle}>{track.title}</Text>
         <Text numberOfLines={1} style={styles.trackSubtitle}>
@@ -111,18 +124,24 @@ export function TrackRow({ track, index }: { track: Track; index?: number }) {
         </Text>
       </View>
       <FavoriteButton id={track.id} />
-      <PlayButton track={track} small />
+      <PlayButton track={track} programId={programId} small />
     </Pressable>
   );
 }
 
 /* ── Continue card (horizontal, for rails) ── */
-export function ContinueCard({ track, progress }: { track: Track; progress: number }) {
-  const { theme } = useApp();
+export function ContinueCard({ track, progress, programId }: { track: Track; progress: number; programId?: string }) {
+  const { theme, play } = useApp();
+  const router = useRouter();
+
+  const handlePress = () => {
+    play(track, programId);
+    router.push("/player");
+  };
 
   return (
-    <View style={styles.continueCard}>
-      <Image source={track.art} style={styles.continueArt} resizeMode="cover" />
+    <Pressable onPress={handlePress} style={styles.continueCard}>
+      <Image source={resolveImageSource(track.art, track.category)} style={styles.continueArt} resizeMode="cover" />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text numberOfLines={1} style={styles.trackTitle}>{track.title}</Text>
         <Text numberOfLines={1} style={styles.trackSubtitle}>{track.purpose}</Text>
@@ -136,7 +155,7 @@ export function ContinueCard({ track, progress }: { track: Track; progress: numb
         </View>
       </View>
       <PlayButton track={track} small />
-    </View>
+    </Pressable>
   );
 }
 
@@ -151,7 +170,7 @@ export function ProgramCard({ program }: { program: Program }) {
       style={styles.programCard}
     >
       <View style={{ overflow: "hidden", borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
-        <Image source={program.art} style={styles.programArt} resizeMode="cover" />
+        <Image source={resolveImageSource(program.art, program.category)} style={styles.programArt} resizeMode="cover" />
         {program.premium && (
           <View style={styles.premiumBadge}>
             <Text style={styles.premiumText}>Premium</Text>

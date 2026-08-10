@@ -19,7 +19,7 @@ export const Route = createFileRoute("/notifications")({
   component: Notifications,
 });
 
-const icons = {
+const icons: Record<string, any> = {
   reminder: BellRing,
   progress: TrendingUp,
   new: Music4,

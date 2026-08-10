@@ -1,17 +1,49 @@
-import React from "react";
-import { View, Text, Image, Pressable, StyleSheet } from "react-native";
+import React, { useState, useEffect, useMemo } from "react";
+import { View, Text, Image, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { BookmarkCheck, Bookmark, CalendarDays, Check, ListMusic, Play } from "lucide-react-native";
 import { AppShell } from "@/components/AppShell";
 import { TrackRow } from "@/components/cards";
 import { useApp } from "@/lib/app-state";
-import { programById, trackById } from "@/lib/content";
+import { api, BASE_URL } from "@/lib/api";
+import { resolveImageSource } from "@/lib/utils";
+import { type Track } from "@/lib/content";
 
 export default function ProgramDetail() {
   const { programId } = useLocalSearchParams<{ programId: string }>();
-  const { savedPrograms, toggleSavedProgram, play, theme } = useApp();
+  const { savedPrograms, toggleSavedProgram, play, theme, programs } = useApp();
   const router = useRouter();
-  const program = programById(programId ?? "");
+
+  const program = useMemo(
+    () => programs.find((p) => p.id === programId),
+    [programs, programId]
+  );
+
+  const [programTracks, setProgramTracks] = useState<Track[]>([]);
+  const [loadingTracks, setLoadingTracks] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    if (!programId) return;
+    setLoadingTracks(true);
+    api.programs.getTracks(programId)
+      .then((res) => {
+        if (active && res.success && res.data) {
+          const mapped = res.data.map((t: any) => ({
+            ...t,
+            art: t.thumbnailKey ? `${BASE_URL}/storage/file/${t.thumbnailKey}` : undefined,
+            raga: t.subtitle || "",
+            purpose: t.description || "Healing",
+          }));
+          setProgramTracks(mapped);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoadingTracks(false);
+      });
+    return () => { active = false; };
+  }, [programId, BASE_URL]);
 
   if (!program) {
     return (
@@ -24,13 +56,13 @@ export default function ProgramDetail() {
   }
 
   const saved = savedPrograms.includes(program.id);
-  const list = program.trackIds.map((id) => trackById(id)!).filter(Boolean);
+  const list = programTracks;
 
   return (
     <AppShell bare>
       {/* Hero image */}
       <View style={styles.heroWrap}>
-        <Image source={program.art} style={styles.heroImage} resizeMode="cover" />
+        <Image source={resolveImageSource(program.art, program.category)} style={styles.heroImage} resizeMode="cover" />
         <View style={styles.heroOverlay} />
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Text style={{ fontSize: 18, color: "#1A1A1A" }}>‹</Text>
@@ -68,44 +100,56 @@ export default function ProgramDetail() {
       </View>
 
       {/* Benefits */}
-      <View style={{ marginTop: 32 }}>
-        <Text style={styles.sectionTitle}>Benefits</Text>
-        <View style={{ gap: 12, marginTop: 16 }}>
-          {program.benefits.map((b) => (
-            <View key={b} style={styles.benefitRow}>
-              <View style={[styles.checkCircle, { backgroundColor: theme.catLight }]}>
-                <Check size={14} color={theme.cat} strokeWidth={2.5} />
+      {program.benefits && program.benefits.length > 0 && (
+        <View style={{ marginTop: 32 }}>
+          <Text style={styles.sectionTitle}>Benefits</Text>
+          <View style={{ gap: 12, marginTop: 16 }}>
+            {program.benefits.map((b: string) => (
+              <View key={b} style={styles.benefitRow}>
+                <View style={[styles.checkCircle, { backgroundColor: theme.catLight }]}>
+                  <Check size={14} color={theme.cat} strokeWidth={2.5} />
+                </View>
+                <Text style={styles.benefitText}>{b}</Text>
               </View>
-              <Text style={styles.benefitText}>{b}</Text>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Usage */}
       <View style={[styles.usageCard, { backgroundColor: theme.catLight }]}>
         <Text style={[styles.usageLabel, { color: theme.cat }]}>RECOMMENDED USAGE</Text>
-        <Text style={styles.usageText}>{program.usage}</Text>
+        <Text style={styles.usageText}>{program.usage || "Listen daily in a quiet room."}</Text>
       </View>
 
       {/* Track list */}
       <View style={{ marginTop: 32 }}>
         <Text style={styles.sectionTitle}>Track list</Text>
-        <View style={{ gap: 12, marginTop: 16 }}>
-          {list.map((t, i) => (
-            <TrackRow key={`${t.id}-${i}`} track={t} index={i} />
-          ))}
-        </View>
+        {loadingTracks ? (
+          <ActivityIndicator size="small" color={theme.cat} style={{ marginTop: 24 }} />
+        ) : (
+          <View style={{ gap: 12, marginTop: 16 }}>
+            {list.map((t, i) => (
+              <TrackRow key={`${t.id}-${i}`} track={t} index={i} programId={program.id} />
+            ))}
+            {list.length === 0 && (
+              <Text style={{ fontSize: 13, color: "#7C7A85", textAlign: "center", paddingVertical: 16 }}>
+                No tracks assigned to this program yet.
+              </Text>
+            )}
+          </View>
+        )}
       </View>
 
       {/* Actions */}
       <View style={styles.actions}>
         <Pressable
           onPress={() => {
-            if (list[0]) play(list[0]);
+            if (list[0]) play(list[0], program.id);
             router.push("/player");
           }}
-          style={[styles.primaryBtn, { backgroundColor: "#264653", flex: 1 }]}
+          disabled={list.length === 0}
+          style={[styles.primaryBtn, { backgroundColor: "#264653", flex: 1 }, list.length === 0 && { opacity: 0.6 }]}
         >
           <Play size={16} color="#FAF8F4" fill="#FAF8F4" />
           <Text style={styles.primaryBtnText}>Play program</Text>
@@ -127,6 +171,7 @@ export default function ProgramDetail() {
           </Text>
         </Pressable>
       </View>
+
     </AppShell>
   );
 }

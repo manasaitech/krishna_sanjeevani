@@ -82,6 +82,7 @@ function Player() {
     toggleFavorite,
   } = useApp();
   const navigate = useNavigate();
+  const [localProgress, setLocalProgress] = useState<number | null>(null);
 
   if (!current) {
     return (
@@ -144,15 +145,19 @@ function Player() {
               </div>
 
               <Slider
-                value={[position]}
+                value={[localProgress !== null ? localProgress : position]}
                 max={current.duration}
                 step={1}
-                onValueChange={(v) => seek(v[0] ?? 0)}
+                onValueChange={(v) => setLocalProgress(v[0] ?? 0)}
+                onValueCommit={(v) => {
+                  seek(v[0] ?? 0);
+                  setLocalProgress(null);
+                }}
                 aria-label="Seek within session"
               />
               <div className="mt-2.5 flex justify-between text-[12px] tabular-nums text-muted-foreground">
-                <span>{formatTime(position)}</span>
-                <span>-{formatTime(Math.max(0, current.duration - position))}</span>
+                <span>{formatTime(localProgress !== null ? localProgress : position)}</span>
+                <span>-{formatTime(Math.max(0, current.duration - (localProgress !== null ? localProgress : position)))}</span>
               </div>
 
               <div className="mt-7 flex items-center justify-between gap-3">

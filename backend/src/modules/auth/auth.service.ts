@@ -1,10 +1,12 @@
 import { hash, compare } from "bcryptjs";
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify, createRemoteJWKSet } from "jose";
 import { AuthRepository } from "./auth.repository";
 import { AUTH_CONSTANTS } from "./auth.constants";
 import { RegisterInput, LoginInput, AuthTokens, TokenPayload } from "./auth.types";
 import { ConflictError, UnauthorizedError, NotFoundError, ValidationError } from "../../shared/errors";
 import { logger } from "../../shared/logger";
+import { and, eq, gt } from "drizzle-orm";
+import { subscriptions } from "../../shared/db/schema";
 
 export class AuthService {
   constructor(
@@ -165,8 +167,11 @@ export class AuthService {
       throw new UnauthorizedError(AUTH_CONSTANTS.GENERIC_LOGIN_ERROR);
     }
 
+    // Resolve role dynamically
+    const resolvedRole = await this.resolveUserRole(user.id, user.role);
+
     // Generate tokens
-    const tokenPayload: TokenPayload = { sub: user.id, role: user.role, email: user.email };
+    const tokenPayload: TokenPayload = { sub: user.id, role: resolvedRole, email: user.email };
     const tokens = await this.generateTokens(tokenPayload);
 
     // Delete old session and create new one (single session per user)
@@ -184,7 +189,7 @@ export class AuthService {
     logger.info("Login successful", { userId: user.id });
 
     return {
-      user: { id: user.id, email: user.email, role: user.role },
+      user: { id: user.id, email: user.email, role: resolvedRole },
       tokens,
     };
   }
@@ -223,8 +228,16 @@ export class AuthService {
       throw new UnauthorizedError("Session expired. Please login again");
     }
 
+    // Resolve role dynamically
+    const user = await this.repo.findUserById(payload.sub);
+    if (!user) {
+      throw new UnauthorizedError("User not found");
+    }
+    const resolvedRole = await this.resolveUserRole(user.id, user.role);
+
     // Rotate refresh token
-    const newTokens = await this.generateTokens(payload);
+    const updatedPayload: TokenPayload = { sub: user.id, role: resolvedRole, email: user.email };
+    const newTokens = await this.generateTokens(updatedPayload);
     const newRefreshHash = await this.hashToken(newTokens.refreshToken);
 
     await this.repo.updateSessionToken(
@@ -236,9 +249,33 @@ export class AuthService {
     logger.info("Token refresh successful", { userId: payload.sub });
 
     return {
-      user: { id: payload.sub, email: payload.email, role: payload.role },
+      user: { id: payload.sub, email: payload.email, role: resolvedRole },
       tokens: newTokens,
     };
+  }
+
+  private async resolveUserRole(userId: string, dbRole: string): Promise<string> {
+    if (!["premium", "standard"].includes(dbRole)) {
+      return dbRole;
+    }
+
+    const activeSub = await this.repo.db
+      .select()
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.userId, userId),
+          eq(subscriptions.status, "active"),
+          gt(subscriptions.currentPeriodEnd, Date.now())
+        )
+      )
+      .limit(1);
+
+    if (activeSub.length === 0) {
+      return "user"; // Expired subscription, downgrade role
+    }
+
+    return dbRole;
   }
 
   // ── Sprint 5: Logout ──────────────────────────────────
@@ -259,10 +296,12 @@ export class AuthService {
 
     const profile = await this.repo.findProfileByUserId(userId);
 
+    const resolvedRole = await this.resolveUserRole(userId, user.role);
+
     return {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: resolvedRole,
       status: user.status,
       emailVerified: user.emailVerified,
       profile: profile
@@ -296,5 +335,126 @@ export class AuthService {
     await this.repo.deleteSessionByUserId(userId);
 
     logger.info("Password changed successfully", { userId });
+  }
+
+  async loginWithGoogle(idToken: string, defaultCategory: string, clientId?: string) {
+    logger.info("Google login attempt");
+
+    // 1. Verify Google ID token
+    const targetClientId = clientId || "29791277131-bsaqqk5jighca3c93fud61jidb6f3l6f.apps.googleusercontent.com";
+    
+    let payload: any;
+    try {
+      const JWKS = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
+      const verification = await jwtVerify(idToken, JWKS, {
+        audience: targetClientId,
+        issuer: ["https://accounts.google.com", "accounts.google.com"],
+      });
+      payload = verification.payload;
+    } catch (err: any) {
+      logger.error("Google ID token verification failed", { error: err.message });
+      throw new UnauthorizedError("Invalid Google ID token");
+    }
+
+    const email = payload.email?.toLowerCase().trim();
+    if (!email) {
+      throw new ValidationError("Google account must have an email address");
+    }
+
+    const fullName = payload.name || payload.given_name || "Google User";
+    const profileImage = payload.picture || null;
+
+    // 2. Check if user already exists
+    let user = await this.repo.findUserByEmail(email);
+    const now = Date.now();
+
+    if (!user) {
+      // Create user if not exists
+      const userId = this.generateId();
+      const profileId = this.generateId();
+
+      // Create user (identity) with random password hash placeholder
+      const randomPassword = crypto.randomUUID();
+      const passwordHash = await this.hashPassword(randomPassword);
+
+      await this.repo.createUser({
+        id: userId,
+        email,
+        passwordHash,
+        role: "user",
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      // Create profile
+      await this.repo.createProfile({
+        id: profileId,
+        userId,
+        fullName,
+        profileImage,
+        category: defaultCategory,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      user = await this.repo.findUserByEmail(email);
+    }
+
+    if (!user) {
+      throw new NotFoundError("User could not be created or retrieved");
+    }
+
+    if (user.status === "suspended") {
+      throw new UnauthorizedError("Your account has been suspended");
+    }
+
+    // 3. Generate tokens
+    const tokenPayload: TokenPayload = { sub: user.id, role: user.role, email: user.email };
+    const tokens = await this.generateTokens(tokenPayload);
+
+    // Save or update session
+    const sessionId = this.generateId();
+    const refreshTokenHash = await this.hashToken(tokens.refreshToken);
+    const existingSession = await this.repo.findSessionByUserId(user.id);
+
+    if (existingSession) {
+      await this.repo.updateSessionToken(
+        user.id,
+        refreshTokenHash,
+        now + AUTH_CONSTANTS.REFRESH_TOKEN_EXPIRY_MS
+      );
+    } else {
+      await this.repo.createSession({
+        id: sessionId,
+        userId: user.id,
+        refreshTokenHash,
+        expiresAt: now + AUTH_CONSTANTS.REFRESH_TOKEN_EXPIRY_MS,
+        createdAt: now,
+      });
+    }
+
+    logger.info("Google login successful", { userId: user.id });
+
+    // Retrieve full profile
+    const profile = await this.repo.findProfileByUserId(user.id);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        emailVerified: user.emailVerified,
+        profile: profile
+          ? {
+              fullName: profile.fullName,
+              profileImage: profile.profileImage,
+              category: profile.category,
+              language: profile.language,
+            }
+          : null,
+      },
+      tokens,
+    };
   }
 }

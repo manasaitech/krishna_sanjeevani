@@ -98,30 +98,29 @@ export function PlayerBar() {
           <Link
             to="/player"
             aria-label={`Open full player for ${current.title}`}
-            className="press group relative shrink-0 overflow-hidden rounded-xl"
+            className="press flex min-w-0 items-center gap-3 group text-left cursor-pointer hover:no-underline"
           >
-            <img
-              src={current.art}
-              alt=""
-              width={112}
-              height={112}
-              className="h-12 w-12 object-cover md:h-14 md:w-14"
-            />
-            <span className="absolute inset-0 hidden place-items-center bg-foreground/40 text-background opacity-0 transition-opacity duration-[250ms] group-hover:opacity-100 md:grid">
-              <Maximize2 className="h-4 w-4" />
-            </span>
+            <div className="relative shrink-0 overflow-hidden rounded-xl">
+              <img
+                src={current.art}
+                alt=""
+                width={112}
+                height={112}
+                className="h-12 w-12 object-cover md:h-14 md:w-14"
+              />
+              <span className="absolute inset-0 hidden place-items-center bg-foreground/40 text-background opacity-0 transition-opacity duration-[250ms] group-hover:opacity-100 md:grid">
+                <Maximize2 className="h-4 w-4" />
+              </span>
+            </div>
+            <div className="min-w-0">
+              <span className="block truncate text-[13px] font-semibold hover:underline md:text-sm">
+                {current.title}
+              </span>
+              <p className="truncate text-[11px] text-muted-foreground md:text-xs">
+                {current.raga} · {current.purpose}
+              </p>
+            </div>
           </Link>
-          <div className="min-w-0">
-            <Link
-              to="/player"
-              className="block truncate text-[13px] font-semibold hover:underline md:text-sm"
-            >
-              {current.title}
-            </Link>
-            <p className="truncate text-[11px] text-muted-foreground md:text-xs">
-              {current.raga} · {current.purpose}
-            </p>
-          </div>
           <IconBtn
             label={fav ? "Remove from favourites" : "Add to favourites"}
             onClick={() => toggleFavorite(current.id)}

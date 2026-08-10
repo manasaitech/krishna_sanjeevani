@@ -24,9 +24,9 @@ export const Route = createFileRoute("/program/$programId")({
     return {
       meta: [
         { title: `${program.title} — Krishna Sanjeevani` },
-        { name: "description", content: program.description.slice(0, 155) },
+        { name: "description", content: (program.description || "").slice(0, 155) },
         { property: "og:title", content: `${program.title} — Krishna Sanjeevani` },
-        { property: "og:description", content: program.description.slice(0, 155) },
+        { property: "og:description", content: (program.description || "").slice(0, 155) },
       ],
     };
   },

@@ -4,7 +4,7 @@ import { users, userProfiles, sessions } from "../../shared/db/schema/user";
 import * as schema from "../../shared/db/schema";
 
 export class AuthRepository {
-  constructor(private db: DrizzleD1Database<typeof schema>) {}
+  constructor(public db: DrizzleD1Database<typeof schema>) {}
 
   // ── Users ─────────────────────────────────────────────
 
@@ -50,7 +50,9 @@ export class AuthRepository {
     id: string;
     userId: string;
     fullName: string;
+    profileImage?: string | null;
     category: string;
+    language?: string | null;
     createdAt: number;
     updatedAt: number;
   }) {

@@ -47,7 +47,10 @@ function Row({
 }
 
 export default function Profile() {
-  const { category, theme } = useApp();
+  const { category, theme, user, logout } = useApp();
+  const userName = user?.profile?.fullName || user?.email?.split("@")[0] || "Guest";
+  const userEmail = user?.email || "guest@example.com";
+  const avatarLetter = userName.charAt(0).toUpperCase();
   const router = useRouter();
   const cat = categories.find((c) => c.id === category)!;
 
@@ -56,14 +59,14 @@ export default function Profile() {
       {/* Profile card */}
       <View style={styles.profileCard}>
         <View style={[styles.avatar, { backgroundColor: theme.cat }]}>
-          <Text style={[styles.avatarText, { color: theme.catForeground }]}>A</Text>
+          <Text style={[styles.avatarText, { color: theme.catForeground }]}>{avatarLetter}</Text>
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.name} numberOfLines={1}>
-            Ananya Rao
+            {userName}
           </Text>
           <Text style={styles.email} numberOfLines={1}>
-            ananya@example.com
+            {userEmail}
           </Text>
           <View style={[styles.premiumBadge, { backgroundColor: theme.catLight }]}>
             <Crown size={12} color={theme.cat} />
@@ -131,7 +134,10 @@ export default function Profile() {
 
       {/* Log out */}
       <Pressable
-        onPress={() => router.replace("/welcome")}
+        onPress={async () => {
+          await logout();
+          router.replace("/welcome");
+        }}
         style={styles.logoutBtn}
       >
         <LogOut size={16} color="#C0392B" />

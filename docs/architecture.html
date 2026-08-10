@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Krishna Sanjeevani — System Architecture & Technical Design</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #F8FAFC;
+      --bg-secondary: #FFFFFF;
+      --border-color: #E2E8F0;
+      
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      
+      --brand-primary: #4F46E5;
+      --brand-hover: #4338CA;
+      --brand-light: #EEF2F6;
+      
+      --success: #16A34A;
+      --success-light: #DCFCE7;
+      --warning: #D97706;
+      --warning-light: #FEF3C7;
+      --danger: #DC2626;
+      --danger-light: #FEE2E2;
+      
+      --font-sans: 'Inter', sans-serif;
+      --font-title: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --sidebar-width: 300px;
+    }
+
+    @media print {
+      body { background: white; color: black; }
+      .sidebar, .toolbar { display: none !important; }
+      .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+      .section-card { border: none !important; box-shadow: none !important; }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      z-index: 50;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-title {
+      font-family: var(--font-title);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-search {
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .sidebar-search input {
+      width: 100%;
+      padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.375rem;
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .sidebar-search svg {
+      position: absolute;
+      left: 0.65rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0.9rem;
+      height: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 0.45rem 0.75rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background-color: var(--brand-light);
+      color: var(--brand-primary);
+    }
+
+    .nav-item.active {
+      background-color: var(--brand-primary);
+      color: #FFFFFF;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-height: 100vh;
+      padding: 2.5rem;
+      max-width: 1200px;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-title);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-top: 2.5rem;
+      scroll-margin-top: 1.5rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      margin-top: 1.5rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+      line-height: 1.65;
+    }
+
+    .section-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-success { background-color: var(--success-light); color: var(--success); }
+    .badge-warning { background-color: var(--warning-light); color: var(--warning); }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--bg-primary);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(248, 250, 252, 0.5);
+    }
+
+    pre {
+      background-color: #0F172A;
+      color: #F8FAFC;
+      padding: 1.25rem;
+      border-radius: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      position: relative;
+    }
+
+    .diagram-container {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    .diagram-container svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .collapse-header {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .collapse-content {
+      display: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .collapse-content.show {
+      display: block;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: var(--brand-light);
+      border-color: var(--brand-primary);
+      color: var(--brand-primary);
+    }
+
+    .btn-primary {
+      background-color: var(--brand-primary);
+      border-color: var(--brand-primary);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--brand-hover);
+      color: #FFFFFF;
+    }
+
+    .legend-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.375rem;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-primary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .bullet {
+      width: 0.65rem;
+      height: 0.65rem;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background-color: var(--brand-primary);
+      color: white;
+      border: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      z-index: 100;
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+    }
+
+    .scalability-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .scalability-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .scalability-card {
+      border: 1px solid var(--border-color);
+      border-radius: 0.375rem;
+      padding: 1.25rem;
+      background-color: var(--bg-primary);
+    }
+    .scalability-title {
+      font-family: var(--font-title);
+      font-weight: 700;
+      color: var(--brand-primary);
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span>KS ARCHITECTURE</span>
+      </div>
+      <div class="sidebar-search">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="search-input" placeholder="Search sections..." oninput="handleSearch()">
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <!-- Main Content View -->
+  <main class="main-content">
+    
+    <div class="toolbar">
+      <button class="btn" onclick="window.print()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>Print PDF</button>
+      <a href="./database-schema.html" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22V4c0-.5.2-1 .6-1.4C5 2.2 5.5 2 6 2h8l6 6v14M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>Database Schema</a>
+    </div>
+
+    <header style="margin-bottom: 2.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">
+        <span>Platform Docs</span> &rarr; <span>Systems Architecture</span>
+      </div>
+      <h1>Krishna Sanjeevani</h1>
+      <p style="font-size: 1.15rem; color: var(--text-secondary); margin-bottom: 0.5rem;">System Architecture, Scale Blueprint &amp; Technical Design</p>
+      <span class="meta-badge badge-success">Scalability Specification</span>
+    </header>
+
+    <div class="legend-box">
+      <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Legend:</span>
+      <div class="legend-item"><span class="bullet" style="background-color: #22C55E;"></span><span>Compute</span></div>
+      <div class="legend-item"><span class="bullet" style="background-color: #3B82F6;"></span><span>Cloudflare</span></div>
+      <div class="legend-item"><span class="bullet" style="background-color: #A855F7;"></span><span>D1 SQL Database</span></div>
+      <div class="legend-item"><span class="bullet" style="background-color: #F97316;"></span><span>R2 Storage</span></div>
+    </div>
+
+    <!-- Section 01: Executive Overview -->
+    <section id="sec-01" class="section-card">
+      <h2>01. Executive Overview</h2>
+      <p>
+        <strong>Krishna Sanjeevani</strong> is a therapeutic music streaming platform built on a <strong>Cloudflare-First Serverless architecture</strong>. This design handles millions of concurrent streams globally with sub-100ms response times, zero cold starts, zero egress fees (via R2), and auto-scaling logic.
+      </p>
+      <div class="diagram-container">
+        <svg viewBox="0 0 700 220" width="100%" height="220">
+          <rect x="0" y="0" width="700" height="220" fill="#FFFFFF" rx="8"/>
+          <rect x="300" y="10" width="100" height="30" rx="4" fill="#22C55E" stroke="#16A34A" stroke-width="1.5"/>
+          <text x="350" y="29" fill="#FFFFFF" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">Clients (Web/Mobile)</text>
+          <path d="M 350 40 L 350 75" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+          
+          <rect x="275" y="75" width="150" height="35" rx="4" fill="#3B82F6" stroke="#2563EB" stroke-width="1.5"/>
+          <text x="350" y="97" fill="#FFFFFF" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">Workers (V8 Edge Autoscaling)</text>
+          
+          <path d="M 350 110 L 350 150" stroke="#475569" stroke-width="1.5" fill="none"/>
+          <path d="M 285 110 L 160 110 L 160 150" stroke="#475569" stroke-width="1.5" fill="none"/>
+          <path d="M 415 110 L 540 110 L 540 150" stroke="#475569" stroke-width="1.5" fill="none"/>
+          
+          <rect x="100" y="150" width="120" height="35" rx="4" fill="#A855F7" stroke="#7E22CE" stroke-width="1.5"/>
+          <text x="160" y="172" fill="#FFFFFF" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="middle">D1 DB (Replica cached)</text>
+          
+          <rect x="290" y="150" width="120" height="35" rx="4" fill="#F97316" stroke="#EA580C" stroke-width="1.5"/>
+          <text x="350" y="172" fill="#FFFFFF" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="middle">R2 Private Object Store</text>
+          
+          <rect x="480" y="150" width="120" height="35" rx="4" fill="#3B82F6" stroke="#2563EB" stroke-width="1.5"/>
+          <text x="540" y="172" fill="#FFFFFF" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="middle">Queues Ingestion Pipeline</text>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Section 02: System Context -->
+    <section id="sec-02" class="section-card">
+      <h2>02. System Context</h2>
+      <p>
+        The platform consists of three core components: React Web, React Native, and Hono Edge Workers. All components interface directly with Cloudflare's serverless primitives (D1, R2, Queues) at the nearest network boundary to optimize latency and scale linearly.
+      </p>
+    </section>
+
+    <!-- Section 03: Architecture Overview -->
+    <section id="sec-03" class="section-card">
+      <h2>03. Architecture Overview</h2>
+      <p>
+        The backend utilizes a clean, layered boundary model: <strong>Route &rarr; Controller &rarr; Service &rarr; Repository &rarr; DB</strong>. This enforces separation of concerns, ensuring business logic changes do not affect database connection layers.
+      </p>
+    </section>
+
+    <!-- Section 04: Application Architecture -->
+    <section id="sec-04" class="section-card">
+      <h2>04. Application Architecture</h2>
+      <p>
+        The monorepo contains the following directories:
+      </p>
+      <pre><code>apps/web      <-- Vite React Admin Console
+apps/mobile   <-- Expo React Native mobile app
+backend/      <-- Edge Workers REST endpoints
+packages/     <-- Shared database structures and types</code></pre>
+    </section>
+
+    <!-- Section 05: Web Architecture -->
+    <section id="sec-05" class="section-card">
+      <h2>05. Web Architecture</h2>
+      <p>
+        Built on React, Vite, and React Router. Uses a shared TypeScript API SDK to communicate with backend APIs. Client state is managed locally via React Context providers.
+      </p>
+    </section>
+
+    <!-- Section 06: Mobile Architecture -->
+    <section id="sec-06" class="section-card">
+      <h2>06. Mobile Architecture</h2>
+      <p>
+        Built on React Native and Expo Router. Implements custom native HLS streaming playback with offline caching capabilities to support network changes.
+      </p>
+    </section>
+
+    <!-- Section 07: Admin Architecture -->
+    <section id="sec-07" class="section-card">
+      <h2>07. Admin Architecture</h2>
+      <p>
+        The Admin Console handles catalog CMS controls, pricing models configuration, subscriber details logs lookup, and infrastructure connectivity telemetry pings.
+      </p>
+    </section>
+
+    <!-- Section 08: Backend Architecture -->
+    <section id="sec-08" class="section-card">
+      <h2>08. Backend Architecture</h2>
+      <p>
+        Hono-powered backend located in <code>backend/src/</code>. Structured by functional features: <code>auth</code>, <code>tracks</code>, <code>programs</code>, <code>favorites</code>, <code>progress</code>, <code>subscriptions</code>, <code>storage</code>, and <code>stream</code>.
+      </p>
+    </section>
+
+    <!-- Section 09: API Architecture -->
+    <section id="sec-09" class="section-card">
+      <h2>09. API Architecture</h2>
+      <p>
+        RESTful API versioned under <code>/api/v1/</code>. The endpoints are protected based on roles, redirecting media session ticket requests dynamically.
+      </p>
+    </section>
+
+    <!-- Section 10: Authentication & Authorization -->
+    <section id="sec-10" class="section-card">
+      <h2>10. Auth &amp; Authorization</h2>
+      <p>
+        Stateless authentication using URL-safe signed <strong>JWT Access Tokens</strong> (15-min expiry) verified at the edge using Web Crypto APIs. <strong>Refresh Tokens</strong> (30-day expiry) are stored in D1 to manage session rotation.
+      </p>
+    </section>
+
+    <!-- Section 11: Database Architecture -->
+    <section id="sec-11" class="section-card">
+      <h2>11. Database Architecture</h2>
+      <p>
+        Cloudflare D1 SQLite database manages relational entities. Relational data is structured into normalized tables, while large binary objects are stored in R2 to avoid D1 capacity limits.
+      </p>
+    </section>
+
+    <!-- Section 12: Database Schema Overview -->
+    <section id="sec-12" class="section-card">
+      <h2>12. Database Schema</h2>
+      <p>
+        The database contains tables for users, profiles, tracks, programs, subscriptions, history, and analytics. Refer to the <a href="./database-schema.html"><strong>Database Schema Page</strong></a> for table fields and index definitions.
+      </p>
+    </section>
+
+    <!-- Section 13: Content & Media Ingestion -->
+    <section id="sec-13" class="section-card">
+      <h2>13. Content &amp; Media</h2>
+      <p>
+        The ingestion pipeline decouples file uploads from transcoding. The upload API stores the raw MP3 to R2 and publishes a task to Cloudflare Queues immediately, allowing the media segmenter to process HLS segments asynchronously.
+      </p>
+    </section>
+
+    <!-- Section 14: R2 Storage Structure -->
+    <section id="sec-14" class="section-card">
+      <h2>14. R2 Storage</h2>
+      <p>
+        Files are stored inside a private bucket. Processed tracks are saved as HLS playlists (<code>.m3u8</code>) and segment files (<code>.ts</code>) to enable adaptive bitrate streaming.
+      </p>
+    </section>
+
+    <!-- Section 15: HLS Streaming Architecture -->
+    <section id="sec-15" class="section-card">
+      <h2>15. HLS Streaming</h2>
+      <p>
+        Tracks are streamed securely via a Worker proxy. Playback requires a temporary 5-minute streaming session ticket. The Worker validates the ticket and fetches segment files from R2, preventing direct asset URL hotlinking.
+      </p>
+    </section>
+
+    <!-- Section 16: Queue & Processing -->
+    <section id="sec-16" class="section-card">
+      <h2>16. Queue &amp; Processing</h2>
+      <p>
+        Cloudflare Queues handles asynchronous audio processing. Ingested tracks publish tasks containing the raw R2 key. The consumer worker segments the audio files, generates the playlists, uploads them back to R2, and deletes the original MP3.
+      </p>
+    </section>
+
+    <!-- Section 17: Subscription & Payments -->
+    <section id="sec-17" class="section-card">
+      <h2>17. Subscription &amp; Payments</h2>
+      <p>
+        Subscription access tiers are verified inside the database. The payment provider integration operates in mock mode for testing, but is ready to connect to Razorpay APIs in production.
+      </p>
+    </section>
+
+    <!-- Section 18: Pregnancy Engine -->
+    <section id="sec-18" class="section-card">
+      <h2>18. Pregnancy Engine</h2>
+      <p>
+        Calculates the gestational week of the pregnancy based on the Expected Due Date (EDD) to serve tailored daily raga playback schedules.
+      </p>
+    </section>
+
+    <!-- Section 19: Progress & Sync -->
+    <section id="sec-19" class="section-card">
+      <h2>19. Progress &amp; Sync</h2>
+      <p>
+        Playback offsets and program completion percentages are saved in D1, allowing users to resume listening seamlessly across web and mobile.
+      </p>
+    </section>
+
+    <!-- Section 20: Security Architecture -->
+    <section id="sec-20" class="section-card">
+      <h2>20. Security Architecture</h2>
+      <p>
+        Zero-trust security model: Private R2 bucket, HLS segment encryption (AES-128), sliding window stream ticket session validations, and Hono role-based endpoint authorization guards.
+      </p>
+    </section>
+
+    <!-- Section 21: Low-Level Design (LLD) -->
+    <section id="sec-21" class="section-card">
+      <h2>21. Low-Level Design</h2>
+      <div class="collapse-header" onclick="toggleCollapse('lld-collapse')">
+        <h4 style="margin-bottom: 0;">Inspect core service execution maps</h4>
+        <span style="font-weight: bold; font-size: 1.25rem;">+</span>
+      </div>
+      <div id="lld-collapse" class="collapse-content">
+        <pre><code>// AuthService.login Flow
+1. Verify request email & get password hash from D1.
+2. Compare input password with hash via bcrypt.
+3. Generate 15-minute access token (signed with HS256 JWT).
+4. Generate 30-day refresh token & save SHA-256 hash in D1.
+5. Return tokens to client.
+
+// StreamService.getTicket Flow
+1. Verify user JWT token & check subscription status.
+2. Generate secure ticket UUID.
+3. Save ticket session in D1 stream_sessions table (expires in 5 mins).
+4. Return ticket token to client.</code></pre>
+      </div>
+    </section>
+
+    <!-- Section 22: Request Sequence Diagrams -->
+    <section id="sec-22" class="section-card">
+      <h2>22. Request Sequence</h2>
+      <div class="diagram-container">
+        <svg viewBox="0 0 600 160" width="100%" height="160">
+          <rect x="0" y="0" width="600" height="160" fill="#FFFFFF" rx="8"/>
+          <line x1="80" y1="30" x2="80" y2="130" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4"/>
+          <line x1="280" y1="30" x2="280" y2="130" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4"/>
+          <line x1="480" y1="30" x2="480" y2="130" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4"/>
+          <text x="80" y="20" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">Player App</text>
+          <text x="280" y="20" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">Hono Worker</text>
+          <text x="480" y="20" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">R2 Store</text>
+          <path d="M 80 60 L 270 60" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="175" y="55" font-family="sans-serif" font-size="9" text-anchor="middle">POST /stream/:id/ticket</text>
+          <path d="M 280 85 L 90 85" stroke="#475569" stroke-width="1.5" stroke-dasharray="3" marker-end="url(#arrow)"/>
+          <text x="185" y="80" font-family="sans-serif" font-size="9" text-anchor="middle">Return ticket token</text>
+          <path d="M 80 110 L 270 110" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="175" y="105" font-family="sans-serif" font-size="9" text-anchor="middle">GET /stream/:id/master.m3u8?ticket=xyz</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Section 23: Deployment Architecture -->
+    <section id="sec-23" class="section-card">
+      <h2>23. Edge Deployment</h2>
+      <p>
+        Compute endpoints: <code>backend.astrosutraai.workers.dev</code>. Static UIs are hosted on Cloudflare Pages.
+      </p>
+    </section>
+
+    <!-- Section 24: Infrastructure -->
+    <section id="sec-24" class="section-card">
+      <h2>24. Infrastructure</h2>
+      <p>
+        Wrangler configures environments and matches local development structures to production serverless behaviors.
+      </p>
+    </section>
+
+    <!-- Section 25: Active Status -->
+    <section id="sec-25" class="section-card">
+      <h2>25. Active Status</h2>
+      <p>
+        Database schemas, catalog systems, diagnostics checkpoints, and analytics charts are fully operational.
+      </p>
+    </section>
+
+    <!-- Section 26: Remaining Work -->
+    <section id="sec-26" class="section-card">
+      <h2>26. Remaining Work</h2>
+      <p>
+        Integrate production Razorpay keys inside the Cloudflare Worker secrets configuration bindings.
+      </p>
+    </section>
+
+    <!-- Section 27: Decisions log (ADR) -->
+    <section id="sec-27" class="section-card">
+      <h2>27. Decisions log (ADR)</h2>
+      <p>
+        Key decisions: Serverless compute (ADR-001), Serverless SQLite (ADR-002), Zero-Egress Storage (ADR-003), Separation of binaries from metadata (ADR-004), and Encrypted segment streaming (ADR-005).
+      </p>
+    </section>
+
+    <!-- Section 28: Technology Stack -->
+    <section id="sec-28" class="section-card">
+      <h2>28. Technology Stack</h2>
+      <p>
+        Frontend: React, React Native, Expo, TypeScript. Backend: Hono, Drizzle ORM, D1, R2, Queues.
+      </p>
+    </section>
+
+    <!-- Section 29: System Scalability & Autoscaling Blueprint -->
+    <section id="sec-29" class="section-card">
+      <h2>29. System Scalability &amp; Autoscaling Blueprint</h2>
+      <p>
+        Krishna Sanjeevani is built on a highly scalable architecture, using Cloudflare's serverless primitives to process and stream audio with high performance and low latency.
+      </p>
+      
+      <div class="scalability-grid">
+        <div class="scalability-card">
+          <div class="scalability-title">V8 Edge Autoscaling (Workers)</div>
+          <p style="font-size:0.85rem; margin-bottom:0;">
+            The Hono backend runs on V8 Isolates instead of standard containers (Docker/VMs). Computation scales globally from zero to hundreds of thousands of concurrent requests instantly with zero cold starts, routing all requests to the nearest edge location.
+          </p>
+        </div>
+        
+        <div class="scalability-card">
+          <div class="scalability-title">Read-Replicated Database Scaling (D1)</div>
+          <p style="font-size:0.85rem; margin-bottom:0;">
+            Cloudflare D1 scales SQL read queries globally by utilizing local SQLite read replicas at the edge. This design isolates heavy database writes to the primary database coordinator, maintaining low-latency lookup operations.
+          </p>
+        </div>
+        
+        <div class="scalability-card">
+          <div class="scalability-title">Cost-Efficient Object Streaming (R2)</div>
+          <p style="font-size:0.85rem; margin-bottom:0;">
+            Cloudflare R2 provides zero egress bandwidth costs. Splitting tracks into HLS segment chunks allows the player to fetch only what is needed, caching hot segments on Cloudflare's CDN to scale delivery.
+          </p>
+        </div>
+        
+        <div class="scalability-card">
+          <div class="scalability-title">Queue Load Buffering (Queues)</div>
+          <p style="font-size:0.85rem; margin-bottom:0;">
+            Asynchronous media ingestion protects workers from gateway timeouts during high-traffic upload surges. Tasks are buffered in Cloudflare Queues and processed asynchronously.
+          </p>
+        </div>
+        
+        <div class="scalability-card">
+          <div class="scalability-title">Stateless Authentication (JWT)</div>
+          <p style="font-size:0.85rem; margin-bottom:0;">
+            Web Crypto APIs validate user JWT tokens locally at the edge worker, eliminating database roundtrips for standard request authorization checks and scaling auth checks linearly.
+          </p>
+        </div>
+        
+        <div class="scalability-card">
+          <div class="scalability-title">High-Concurrence Caching</div>
+          <p style="font-size:0.85rem; margin-bottom:0;">
+            Dividing audio into 6-second segments matches CDN caching parameters, serving repeat segment requests directly from the edge cache to minimize bucket operations costs.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 30: Appendix -->
+    <section id="sec-30" class="section-card">
+      <h2>30. Appendix</h2>
+      <p>
+        For detailed information on the database tables, relations, and indexes, refer to the <a href="./database-schema.html"><strong>Database Schema Page</strong></a>.
+      </p>
+    </section>
+
+    <button class="back-to-top" id="back-to-top-btn" onclick="scrollToTop()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg>
+    </button>
+
+    <footer style="margin-top: 5rem; border-top: 1px solid var(--border-color); padding-top: 2rem; color: var(--text-muted); font-size: 0.8rem; display: flex; justify-content: space-between;">
+      <div>
+        <p>&copy; 2026 Krishna Sanjeevani</p>
+        <p>System Architecture &amp; Technical Design</p>
+      </div>
+      <div style="text-align: right;">
+        <p>Architecture Version: 1.0</p>
+        <p>Status: Production Ready Documentation</p>
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    const navItems = [
+      { id: "sec-01", label: "01. Executive Overview" },
+      { id: "sec-02", label: "02. System Context" },
+      { id: "sec-03", label: "03. Architecture Overview" },
+      { id: "sec-04", label: "04. Application Architecture" },
+      { id: "sec-05", label: "05. Web Architecture" },
+      { id: "sec-06", label: "06. Mobile Architecture" },
+      { id: "sec-07", label: "07. Admin Architecture" },
+      { id: "sec-08", label: "08. Backend Architecture" },
+      { id: "sec-09", label: "09. API Architecture" },
+      { id: "sec-10", label: "10. Auth & Authorization" },
+      { id: "sec-11", label: "11. Database Architecture" },
+      { id: "sec-12", label: "12. Database Schema" },
+      { id: "sec-13", label: "13. Content & Media" },
+      { id: "sec-14", label: "14. R2 Storage" },
+      { id: "sec-15", label: "15. HLS Streaming" },
+      { id: "sec-16", label: "16. Queue & Processing" },
+      { id: "sec-17", label: "17. Subscription & Payments" },
+      { id: "sec-18", label: "18. Pregnancy Engine" },
+      { id: "sec-19", label: "19. Progress & Sync" },
+      { id: "sec-20", label: "20. Security Architecture" },
+      { id: "sec-21", label: "21. Low-Level Design" },
+      { id: "sec-22", label: "22. Request Sequence" },
+      { id: "sec-23", label: "23. Edge Deployment" },
+      { id: "sec-24", label: "24. Infrastructure" },
+      { id: "sec-25", label: "25. Active Status" },
+      { id: "sec-26", label: "26. Remaining Work" },
+      { id: "sec-27", label: "27. Decisions log (ADR)" },
+      { id: "sec-28", label: "28. Technology Stack" },
+      { id: "sec-29", label: "29. System Scalability Blueprint" },
+      { id: "sec-30", label: "30. Appendix" }
+    ];
+
+    const navContainer = document.getElementById("sidebar-nav");
+    navItems.forEach(item => {
+      const a = document.createElement("a");
+      a.href = `#${item.id}`;
+      a.className = "nav-item";
+      a.innerText = item.label;
+      navContainer.appendChild(a);
+    });
+
+    function toggleCollapse(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle("show");
+    }
+
+    function handleSearch() {
+      const val = document.getElementById("search-input").value.toLowerCase();
+      document.querySelectorAll(".section-card").forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        if (text.includes(val)) {
+          sec.style.display = "block";
+        } else {
+          sec.style.display = "none";
+        }
+      });
+    }
+
+    const bttBtn = document.getElementById("back-to-top-btn");
+    window.onscroll = function() {
+      if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        bttBtn.classList.add("show");
+      } else {
+        bttBtn.classList.remove("show");
+      }
+      
+      const fromTop = window.scrollY + 100;
+      navItems.forEach(item => {
+        const sec = document.getElementById(item.id);
+        if (sec.offsetTop <= fromTop && sec.offsetTop + sec.offsetHeight > fromTop) {
+          document.querySelectorAll('.nav-item').forEach(link => {
+            if (link.getAttribute('href') === `#${item.id}`) {
+              link.classList.add('active');
+            } else {
+              link.classList.remove('active');
+            }
+          });
+        }
+      });
+    };
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  </script>
+</body>
+</html>

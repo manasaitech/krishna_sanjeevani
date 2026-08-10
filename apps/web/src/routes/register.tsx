@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Loader2, Lock, Mail, User } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBar } from "@/components/StatusBar";
@@ -20,13 +20,60 @@ export const Route = createFileRoute("/register")({
 });
 
 function RegisterScreen() {
-  const { register } = useApp();
+  const { register, loginWithGoogle } = useApp();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [category, setCategory] = useState("devotional");
   const [loading, setLoading] = useState(false);
+
+  const categoryRef = useRef(category);
+  useEffect(() => {
+    categoryRef.current = category;
+  }, [category]);
+
+  const handleGoogleCredentialResponse = async (response: any) => {
+    setLoading(true);
+    try {
+      const res = await loginWithGoogle(response.credential, categoryRef.current);
+      if (res.success) {
+        toast.success("Welcome to Krishna Sanjeevani!");
+        navigate({ to: "/home" });
+      } else {
+        toast.error(res.message);
+      }
+    } catch {
+      toast.error("Google authentication failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if ((window as any).google) {
+        (window as any).google.accounts.id.initialize({
+          client_id: "29791277131-bsaqqk5jighca3c93fud61jidb6f3l6f.apps.googleusercontent.com",
+          callback: handleGoogleCredentialResponse,
+        });
+        (window as any).google.accounts.id.renderButton(
+          document.getElementById("google-signup-btn"),
+          { theme: "outline", size: "large", width: 352, logo_alignment: "center" }
+        );
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   // Password rules validation
   const hasMinLength = password.length >= 8;
@@ -196,6 +243,16 @@ function RegisterScreen() {
             )}
           </button>
         </form>
+
+        <div className="relative flex py-4 items-center animate-rise" style={{ animationDelay: "140ms" }}>
+          <div className="flex-grow border-t border-border"></div>
+          <span className="flex-shrink mx-4 text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">Or continue with</span>
+          <div className="flex-grow border-t border-border"></div>
+        </div>
+
+        <div className="flex justify-center animate-rise" style={{ animationDelay: "160ms" }}>
+          <div id="google-signup-btn" />
+        </div>
 
         <p className="mt-6 text-center text-sm text-muted-foreground animate-rise" style={{ animationDelay: "180ms" }}>
           Already have an account?{" "}

@@ -7,16 +7,14 @@ import { ProgramCard, TrackRow } from "@/components/cards";
 import { EmptyState, ListLoading } from "@/components/States";
 import {
   categories,
-  programs,
   purposes,
   recentSearches,
-  tracks,
   trendingSearches,
 } from "@/lib/content";
 import { useApp } from "@/lib/app-state";
 
 export default function SearchScreen() {
-  const { setCategory, theme } = useApp();
+  const { setCategory, theme, tracks, programs } = useApp();
   const [q, setQ] = useState("");
 
   const results = useMemo(() => {
@@ -30,7 +28,7 @@ export default function SearchScreen() {
         [p.title, p.subtitle].join(" ").toLowerCase().includes(s)
       ),
     };
-  }, [q]);
+  }, [q, tracks, programs]);
 
   return (
     <AppShell bare>

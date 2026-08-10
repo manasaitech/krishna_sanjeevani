@@ -7,10 +7,9 @@ import { ContinueCard, ProgramCard, TrackRow } from "@/components/cards";
 import { Rail, Section } from "@/components/layout-bits";
 import { EmptyState } from "@/components/States";
 import { useApp } from "@/lib/app-state";
-import { programs, tracks } from "@/lib/content";
 
 export default function Favorites() {
-  const { favorites, savedPrograms, current, theme } = useApp();
+  const { favorites, savedPrograms, current, theme, tracks, programs, continueListeningList } = useApp();
   const router = useRouter();
   const [tab, setTab] = useState<"tracks" | "programs">("tracks");
 
@@ -89,11 +88,22 @@ export default function Favorites() {
       )}
 
       <Section title="Continue listening">
-        <Rail>
-          {[current ?? tracks[0]!, tracks[4]!].map((t, i) => (
-            <ContinueCard key={`${t.id}-${i}`} track={t} progress={[62, 35][i]!} />
-          ))}
-        </Rail>
+        {continueListeningList.length ? (
+          <Rail>
+            {continueListeningList.map((item, i) => (
+              <ContinueCard
+                key={`${item.track.id}-${i}`}
+                track={item.track}
+                progress={item.progressPercentage}
+                programId={item.programId || undefined}
+              />
+            ))}
+          </Rail>
+        ) : (
+          <Text style={{ fontSize: 13, color: "#7C7A85", paddingHorizontal: 24, paddingVertical: 12 }}>
+            No sessions in progress. Explore home to start listening!
+          </Text>
+        )}
       </Section>
     </AppShell>
   );

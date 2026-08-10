@@ -10,4 +10,7 @@ storage.post("/upload/audio", requireRole("admin", "super_admin"), StorageContro
 storage.post("/upload/image", requireRole("admin", "super_admin"), StorageController.uploadImage);
 storage.delete("/file", requireRole("admin", "super_admin"), StorageController.deleteFile);
 
+// ── Public Storage Routes ───────────────────────────────
+storage.get("/file/*", StorageController.getFile);
+
 export default storage;

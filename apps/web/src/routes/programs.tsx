@@ -24,29 +24,38 @@ export const Route = createFileRoute("/programs")({
 });
 
 function Programs() {
-  const featured = programs[0]!;
+  const featured = programs[0];
 
   return (
     <AppShell title="Programs" subtitle="Guided multi-week therapeutic arcs">
-      <section className="animate-rise relative overflow-hidden rounded-card shadow-lift">
-        <img
-          src={featured.art}
-          alt={`Artwork for ${featured.title}`}
-          className="h-[240px] w-full object-cover md:h-[300px]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/85 via-foreground/50 to-transparent" />
-        <div className="absolute inset-0 flex max-w-2xl flex-col justify-end p-6 md:p-10">
-          <span className="w-fit rounded-full bg-background/95 px-3 py-1 text-[10px] font-semibold tracking-wider text-cat uppercase">
-            Featured program
-          </span>
-          <h2 className="mt-3 font-display text-[26px] leading-tight font-semibold text-background md:text-[36px]">
-            {featured.title}
-          </h2>
-          <p className="mt-2 text-[13px] leading-relaxed text-background/85 md:text-[15px]">
-            {featured.description}
+      {featured ? (
+        <section className="animate-rise relative overflow-hidden rounded-card shadow-lift">
+          <img
+            src={featured.art}
+            alt={`Artwork for ${featured.title}`}
+            className="h-[240px] w-full object-cover md:h-[300px]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground/85 via-foreground/50 to-transparent" />
+          <div className="absolute inset-0 flex max-w-2xl flex-col justify-end p-6 md:p-10">
+            <span className="w-fit rounded-full bg-background/95 px-3 py-1 text-[10px] font-semibold tracking-wider text-cat uppercase">
+              Featured program
+            </span>
+            <h2 className="mt-3 font-display text-[26px] leading-tight font-semibold text-background md:text-[36px]">
+              {featured.title}
+            </h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-background/85 md:text-[15px]">
+              {featured.description}
+            </p>
+          </div>
+        </section>
+      ) : (
+        <section className="animate-rise bg-surface border border-border rounded-card p-8 text-center shadow-soft">
+          <h2 className="text-xl font-semibold">No Programs Available</h2>
+          <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+            Get started by adding wellness programs via the Admin Panel.
           </p>
-        </div>
-      </section>
+        </section>
+      )}
 
       <Section title="All programs" hint={`${programs.length} programs`}>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

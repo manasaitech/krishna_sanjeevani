@@ -1,5 +1,6 @@
 export * from "./user";
 export * from "./track";
+export * from "./tag";
 export * from "./program";
 export * from "./pregnancy";
 export * from "./favorite";
@@ -9,3 +10,4 @@ export * from "./notification";
 export * from "./admin";
 export * from "./analytics";
 export * from "./stream";
+export * from "./progress";

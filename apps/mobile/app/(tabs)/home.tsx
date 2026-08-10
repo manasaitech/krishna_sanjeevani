@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, Pressable, Image, ScrollView, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { Bell, Crown, Search as SearchIcon, Sparkles } from "lucide-react-native";
@@ -7,7 +7,8 @@ import { Chip, Rail, Section } from "@/components/layout-bits";
 import { ContinueCard, ProgramCard, TrackCard, TrackRow } from "@/components/cards";
 import { CardsLoading, EmptyState } from "@/components/States";
 import { useApp } from "@/lib/app-state";
-import { programs, purposes, tracks } from "@/lib/content";
+import { purposes } from "@/lib/content";
+import { resolveImageSource } from "@/lib/utils";
 
 function greeting() {
   const h = new Date().getHours();
@@ -17,20 +18,98 @@ function greeting() {
 }
 
 export default function Home() {
-  const { category, current, theme } = useApp();
+  const {
+    category,
+    current,
+    theme,
+    user,
+    trackProgress,
+    tracks,
+    programs,
+    loading,
+    fetchTracksAndPrograms,
+    historyList,
+    continueListeningList,
+    fetchHistoryAndContinueListening,
+  } = useApp();
+  const userName = user?.profile?.fullName || user?.email?.split("@")[0] || "Guest";
   const router = useRouter();
   const [purpose, setPurpose] = useState<string | null>(null);
 
   const catTracks = useMemo(
     () => tracks.filter((t) => t.category === category),
-    [category]
+    [category, tracks]
   );
   const filtered = useMemo(
     () => (purpose ? tracks.filter((t) => t.purpose === purpose) : catTracks),
-    [purpose, catTracks]
+    [purpose, catTracks, tracks]
   );
-  const catPrograms = programs.filter((p) => p.category === category);
-  const featured = catTracks[0] ?? tracks[0]!;
+  const catPrograms = useMemo(
+    () => programs.filter((p) => p.category === category),
+    [category, programs]
+  );
+
+  useEffect(() => {
+    fetchHistoryAndContinueListening();
+  }, [fetchHistoryAndContinueListening]);
+  const featured = catTracks[0] ?? tracks[0];
+
+  // Loading State
+  if (loading && tracks.length === 0) {
+    return (
+      <AppShell bare>
+        <View style={styles.header}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={styles.greeting}>{greeting()},</Text>
+            <Text style={styles.name} numberOfLines={1}>
+              {userName}
+            </Text>
+          </View>
+        </View>
+        <Section title="Loading your sessions...">
+          <CardsLoading count={4} />
+        </Section>
+      </AppShell>
+    );
+  }
+
+  // Empty / Error State
+  if (tracks.length === 0) {
+    return (
+      <AppShell bare>
+        <View style={styles.header}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={styles.greeting}>{greeting()},</Text>
+            <Text style={styles.name} numberOfLines={1}>
+              {userName}
+            </Text>
+          </View>
+        </View>
+        <View style={{ marginTop: 40, paddingHorizontal: 20 }}>
+          <EmptyState
+            title="Unable to load catalog"
+            body="We couldn't retrieve the therapeutic sessions from the backend. Please check your network."
+            action={
+              <Pressable
+                onPress={() => fetchTracksAndPrograms(category)}
+                style={{
+                  minHeight: 44,
+                  borderRadius: 16,
+                  backgroundColor: "#264653",
+                  paddingHorizontal: 24,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginTop: 16,
+                }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: "600", color: "#FAF8F4" }}>Retry</Text>
+              </Pressable>
+            }
+          />
+        </View>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell bare>
@@ -39,7 +118,7 @@ export default function Home() {
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.greeting}>{greeting()},</Text>
           <Text style={styles.name} numberOfLines={1}>
-            Ananya
+            {userName}
           </Text>
           <View style={[styles.premiumBadge, { backgroundColor: theme.catLight }]}>
             <Crown size={14} color={theme.cat} />
@@ -78,30 +157,34 @@ export default function Home() {
       </ScrollView>
 
       {/* Featured */}
-      <Pressable
-        onPress={() => router.push("/player")}
-        style={styles.featuredCard}
-      >
-        <Image source={featured.art} style={styles.featuredImage} resizeMode="cover" />
-        <View style={styles.featuredOverlay} />
-        <View style={styles.featuredContent}>
-          <View style={styles.todayBadge}>
-            <Sparkles size={12} color={theme.cat} />
-            <Text style={[styles.todayText, { color: theme.cat }]}>TODAY'S SESSION</Text>
+      {featured && (
+        <Pressable
+          onPress={() => router.push("/player")}
+          style={styles.featuredCard}
+        >
+          <Image source={resolveImageSource(featured.art, featured.category)} style={styles.featuredImage} resizeMode="cover" />
+          <View style={styles.featuredOverlay} />
+          <View style={styles.featuredContent}>
+            <View style={styles.todayBadge}>
+              <Sparkles size={12} color={theme.cat} />
+              <Text style={[styles.todayText, { color: theme.cat }]}>TODAY'S SESSION</Text>
+            </View>
+            <Text style={styles.featuredTitle}>{featured.title}</Text>
+            <Text style={styles.featuredSubtitle}>
+              {featured.raga} · {featured.purpose}
+            </Text>
           </View>
-          <Text style={styles.featuredTitle}>{featured.title}</Text>
-          <Text style={styles.featuredSubtitle}>
-            {featured.raga} · {featured.purpose}
-          </Text>
-        </View>
-      </Pressable>
+        </Pressable>
+      )}
 
       {/* Continue listening */}
       <Section title="Continue listening" hint="Picks up where you paused">
         <Rail>
-          {[current ?? tracks[0]!, tracks[2]!, tracks[8]!].map((t, i) => (
-            <ContinueCard key={`${t.id}-${i}`} track={t} progress={[62, 28, 45][i]!} />
-          ))}
+          {[current ?? tracks[0], tracks[2], tracks[8]]
+            .filter((t) => t !== undefined)
+            .map((t, i) => (
+              <ContinueCard key={`${t.id}-${i}`} track={t} progress={trackProgress[t.id] ?? 0} />
+            ))}
         </Rail>
       </Section>
 
@@ -126,11 +209,17 @@ export default function Home() {
 
       {/* Recently played */}
       <Section title="Recently played">
-        <View style={{ gap: 12 }}>
-          {tracks.slice(0, 3).map((t) => (
-            <TrackRow key={t.id} track={t} />
-          ))}
-        </View>
+        {historyList.length ? (
+          <View style={{ gap: 12 }}>
+            {historyList.slice(0, 3).map((item) => (
+              <TrackRow key={item.track.id} track={item.track} programId={item.programId || undefined} />
+            ))}
+          </View>
+        ) : (
+          <Text style={{ fontSize: 13, color: "#7C7A85", paddingHorizontal: 24, paddingVertical: 4 }}>
+            Your listening history will appear here
+          </Text>
+        )}
       </Section>
 
       {/* Popular today */}

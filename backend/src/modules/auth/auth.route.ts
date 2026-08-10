@@ -9,6 +9,7 @@ const auth = new Hono<{ Bindings: Env }>();
 auth.post("/register", AuthController.register);
 auth.post("/login", AuthController.login);
 auth.post("/refresh", AuthController.refresh);
+auth.post("/google", AuthController.loginWithGoogle);
 
 // ── Protected Routes ────────────────────────────────────
 auth.post("/logout", requireAuth(), AuthController.logout);

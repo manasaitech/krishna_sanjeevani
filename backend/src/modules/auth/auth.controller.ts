@@ -42,6 +42,21 @@ export class AuthController {
     return ApiResponse.success(c, result, "Login successful");
   }
 
+  static async loginWithGoogle(c: Context<{ Bindings: Env }>) {
+    const body = await c.req.json();
+    const idToken = body.idToken;
+    const defaultCategory = body.category || "devotional";
+
+    if (!idToken) {
+      throw new ValidationError("Google ID token (idToken) is required");
+    }
+
+    const service = getAuthService(c.env);
+    const result = await service.loginWithGoogle(idToken, defaultCategory, c.env.GOOGLE_CLIENT_ID);
+
+    return ApiResponse.success(c, result, "Google login successful");
+  }
+
   static async refresh(c: Context<{ Bindings: Env }>) {
     const body = await c.req.json();
     const parsed = refreshSchema.safeParse(body);

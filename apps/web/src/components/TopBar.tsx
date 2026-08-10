@@ -29,7 +29,8 @@ export function TopBar({
   title?: string | undefined;
   subtitle?: string | undefined;
 }) {
-  const { category, setCategory } = useApp();
+  const { category, setCategory, user } = useApp();
+  const userName = user?.profile?.fullName || user?.email?.split("@")[0] || "Guest";
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const active = categories.find((c) => c.id === category);
@@ -65,7 +66,7 @@ export function TopBar({
             <>
               <p className="text-[12px] text-muted-foreground">{greeting()},</p>
               <h1 className="truncate font-display text-[19px] leading-tight font-semibold md:text-[22px]">
-                Ananya
+                {userName}
               </h1>
             </>
           )}

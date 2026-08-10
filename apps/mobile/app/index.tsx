@@ -8,7 +8,7 @@ const logoWithoutText = require("../assets/logo-without-text.png");
 
 export default function Splash() {
   const router = useRouter();
-  const { theme } = useApp();
+  const { theme, user, authLoading } = useApp();
   const [leaving, setLeaving] = useState(false);
   const fadeAnim = useState(new Animated.Value(1))[0];
   const scaleAnim = useState(new Animated.Value(0.3))[0];
@@ -37,22 +37,28 @@ export default function Splash() {
         }),
       ])
     ).start();
+  }, []);
 
-    // Navigate after delay
+  // Navigate after auth check completes
+  useEffect(() => {
+    if (authLoading) return;
+
+    const destination = user ? "/(tabs)/home" : "/welcome";
+
     const a = setTimeout(() => {
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 500,
         useNativeDriver: true,
       }).start();
-    }, 1900);
-    const b = setTimeout(() => router.replace("/welcome"), 2400);
+    }, 1400);
+    const b = setTimeout(() => router.replace(destination as any), 1900);
 
     return () => {
       clearTimeout(a);
       clearTimeout(b);
     };
-  }, []);
+  }, [authLoading, user]);
 
   return (
     <SafeAreaView style={styles.container}>

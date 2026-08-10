@@ -1,12 +1,13 @@
 import React from "react";
-import { View, Text, Image, Pressable, StyleSheet } from "react-native";
+import { View, Text, Image, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { Pause, Play, SkipForward } from "lucide-react-native";
 import { useApp } from "@/lib/app-state";
 import { formatTime } from "@/lib/content";
+import { resolveImageSource } from "@/lib/utils";
 
 export function MiniPlayer({ lifted = true }: { lifted?: boolean }) {
-  const { current, playing, toggle, position, skip, theme } = useApp();
+  const { current, playing, toggle, position, skip, theme, buffering } = useApp();
   const router = useRouter();
   if (!current) return null;
 
@@ -25,7 +26,7 @@ export function MiniPlayer({ lifted = true }: { lifted?: boolean }) {
           style={styles.info}
         >
           <Image
-            source={current.art}
+            source={resolveImageSource(current.art, current.category)}
             style={styles.art}
             resizeMode="cover"
           />
@@ -41,9 +42,12 @@ export function MiniPlayer({ lifted = true }: { lifted?: boolean }) {
 
         <Pressable
           onPress={toggle}
-          style={[styles.playBtn, { backgroundColor: theme.cat }]}
+          disabled={buffering}
+          style={[styles.playBtn, { backgroundColor: theme.cat }, buffering && { opacity: 0.85 }]}
         >
-          {playing ? (
+          {buffering ? (
+            <ActivityIndicator size="small" color={theme.catForeground} />
+          ) : playing ? (
             <Pause size={16} color={theme.catForeground} fill={theme.catForeground} />
           ) : (
             <Play size={16} color={theme.catForeground} fill={theme.catForeground} />

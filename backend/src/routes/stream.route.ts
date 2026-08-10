@@ -1,8 +1,9 @@
 import { Hono } from "hono";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 import { getDB } from "../shared/db/client";
 import { tracks } from "../shared/db/schema/track";
 import { streamSessions } from "../shared/db/schema/stream";
+import { subscriptions } from "../shared/db/schema/subscription";
 import { StorageService } from "../modules/storage/storage.service";
 import { requireAuth } from "../modules/auth/auth.middleware";
 import { UnauthorizedError, ForbiddenError, NotFoundError, ValidationError } from "../shared/errors";
@@ -18,7 +19,7 @@ const SESSION_LIFETIME_MS = 5 * 60 * 1000; // 5 minutes
  * Verifies a streaming session ticket and extends its expiration (sliding window).
  */
 async function verifyAndExtendSession(
-  db: any,
+  c: any,
   ticket: string | undefined,
   trackId: string
 ) {
@@ -26,6 +27,28 @@ async function verifyAndExtendSession(
     throw new UnauthorizedError("Streaming ticket is required");
   }
 
+  // Validate Referer and Sec-Fetch-Site to prevent direct link pasting/downloading in browser
+  const referer = c.req.header("Referer");
+  const secFetchSite = c.req.header("Sec-Fetch-Site");
+  const userAgent = c.req.header("User-Agent") || "";
+
+  // Check if browser request
+  const isBrowser = userAgent.includes("Mozilla") || userAgent.includes("Chrome") || userAgent.includes("Safari");
+  if (isBrowser) {
+    const isValidReferer = referer && (
+      referer.includes("localhost") || 
+      referer.includes("127.0.0.1") || 
+      referer.includes("astrosutraai") || 
+      referer.includes("krishna-sanjeevani")
+    );
+    const isValidFetchSite = secFetchSite && secFetchSite !== "none";
+
+    if (!isValidReferer && !isValidFetchSite) {
+      throw new ForbiddenError("Direct access of streaming resources is not allowed");
+    }
+  }
+
+  const db = getDB(c.env);
   // Find active streaming session
   const result = await db
     .select()
@@ -74,13 +97,36 @@ async function verifyTrackAccess(c: any, trackId: string, userRole: string) {
     throw new NotFoundError("Track not found");
   }
 
-  // Premium validation:
-  // Allowed roles for premium tracks: 'premium', 'admin', 'super_admin'
-  const isPremiumTrack = track.premium === 1;
-  const isAllowedRole = ["premium", "admin", "super_admin"].includes(userRole);
+  // Only published tracks can be streamed (unless requested by an admin/super_admin)
+  if (track.publishStatus !== "published" && !["admin", "super_admin"].includes(userRole)) {
+    throw new ForbiddenError("This track is not available for streaming");
+  }
 
-  if (isPremiumTrack && !isAllowedRole) {
-    throw new ForbiddenError("Premium subscription required to access this track");
+  // Premium validation:
+  const isPremiumTrack = track.tier === "premium";
+
+  if (isPremiumTrack) {
+    if (!["admin", "super_admin"].includes(userRole)) {
+      const userId = c.get("userId");
+      if (!userId) {
+        throw new ForbiddenError("Authentication required to access premium tracks");
+      }
+      const activeSub = await db
+        .select()
+        .from(subscriptions)
+        .where(
+          and(
+            eq(subscriptions.userId, userId),
+            eq(subscriptions.status, "active"),
+            gt(subscriptions.currentPeriodEnd, Date.now())
+          )
+        )
+        .limit(1);
+
+      if (activeSub.length === 0) {
+        throw new ForbiddenError("Premium subscription required to access this track");
+      }
+    }
   }
 
   return track;
@@ -139,11 +185,10 @@ stream.get("/:trackId/master.m3u8", async (c) => {
   logger.info("Stream request: master playlist", { trackId });
 
   // 1. Verify & Extend session
-  const db = getDB(c.env);
-  await verifyAndExtendSession(db, ticket, trackId);
+  await verifyAndExtendSession(c, ticket, trackId);
 
   // 2. Load Playlist from R2
-  const storage = new StorageService(c.env.BUCKET);
+  const storage = new StorageService(c.env.SONG_BUCKET);
   const fileKey = `songs/processed/${trackId}/master.m3u8`;
   const file = await storage.getFile(fileKey);
 
@@ -205,11 +250,10 @@ stream.get("/:trackId/keys/:keyName", async (c) => {
   logger.info("Stream request: decryption key", { trackId, keyName });
 
   // 1. Verify & Extend session
-  const db = getDB(c.env);
-  await verifyAndExtendSession(db, ticket, trackId);
+  await verifyAndExtendSession(c, ticket, trackId);
 
   // 2. Load Key from R2
-  const storage = new StorageService(c.env.BUCKET);
+  const storage = new StorageService(c.env.SONG_BUCKET);
   const fileKey = `songs/processed/${trackId}/keys/${keyName}`;
   const file = await storage.getFile(fileKey);
 
@@ -235,11 +279,10 @@ stream.get("/:trackId/audio/:segmentName", async (c) => {
   const ticket = c.req.query("ticket");
 
   // 1. Verify & Extend session
-  const db = getDB(c.env);
-  await verifyAndExtendSession(db, ticket, trackId);
+  await verifyAndExtendSession(c, ticket, trackId);
 
   // 2. Stream Segment from R2
-  const storage = new StorageService(c.env.BUCKET);
+  const storage = new StorageService(c.env.SONG_BUCKET);
   const fileKey = `songs/processed/${trackId}/audio/${segmentName}`;
   const file = await storage.getFile(fileKey);
 
@@ -247,9 +290,15 @@ stream.get("/:trackId/audio/:segmentName", async (c) => {
     throw new NotFoundError("Audio segment not found");
   }
 
+  const contentType = segmentName.endsWith(".mp3")
+    ? "audio/mpeg"
+    : segmentName.endsWith(".aac")
+    ? "audio/aac"
+    : "video/MP2T";
+
   return new Response(file.body, {
     headers: {
-      "Content-Type": "video/MP2T",
+      "Content-Type": contentType,
       "Cache-Control": "public, max-age=86400", // cache segment files safely
     },
   });

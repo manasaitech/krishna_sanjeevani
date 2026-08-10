@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Loader2, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBar } from "@/components/StatusBar";
@@ -19,11 +19,53 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginScreen() {
-  const { login } = useApp();
+  const { login, loginWithGoogle } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleGoogleCredentialResponse = async (response: any) => {
+    setLoading(true);
+    try {
+      const res = await loginWithGoogle(response.credential);
+      if (res.success) {
+        toast.success("Welcome to Krishna Sanjeevani!");
+        navigate({ to: "/home" });
+      } else {
+        toast.error(res.message);
+      }
+    } catch {
+      toast.error("Google authentication failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if ((window as any).google) {
+        (window as any).google.accounts.id.initialize({
+          client_id: "29791277131-bsaqqk5jighca3c93fud61jidb6f3l6f.apps.googleusercontent.com",
+          callback: handleGoogleCredentialResponse,
+        });
+        (window as any).google.accounts.id.renderButton(
+          document.getElementById("google-signin-btn"),
+          { theme: "outline", size: "large", width: 352, logo_alignment: "center" }
+        );
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,6 +161,16 @@ function LoginScreen() {
             )}
           </button>
         </form>
+
+        <div className="relative flex py-5 items-center animate-rise" style={{ animationDelay: "150ms" }}>
+          <div className="flex-grow border-t border-border"></div>
+          <span className="flex-shrink mx-4 text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">Or continue with</span>
+          <div className="flex-grow border-t border-border"></div>
+        </div>
+
+        <div className="flex justify-center animate-rise" style={{ animationDelay: "180ms" }}>
+          <div id="google-signin-btn" />
+        </div>
 
         <p className="mt-8 text-center text-sm text-muted-foreground animate-rise" style={{ animationDelay: "200ms" }}>
           Don't have an account?{" "}

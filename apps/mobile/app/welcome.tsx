@@ -119,22 +119,22 @@ export default function Welcome() {
         {/* Auth Buttons */}
         <View style={styles.buttons}>
           <Pressable
-            onPress={() => router.push("/category")}
+            onPress={() => router.push("/register")}
             style={[styles.primaryBtn, { backgroundColor: "#264653" }]}
           >
             <Music size={16} color="#FAF8F4" />
-            <Text style={styles.primaryBtnText}>Start Listening</Text>
+            <Text style={styles.primaryBtnText}>Get Started</Text>
           </Pressable>
 
           <View style={styles.row}>
             <Pressable
-              onPress={() => router.push("/category")}
+              onPress={() => router.push("/login")}
               style={styles.secondaryBtn}
             >
               <Text style={styles.secondaryBtnText}>Sign in</Text>
             </Pressable>
             <Pressable
-              onPress={() => router.push("/category")}
+              onPress={() => router.push("/register")}
               style={styles.secondaryBtn}
             >
               <Text style={styles.secondaryBtnText}>Create account</Text>
@@ -149,14 +149,14 @@ export default function Welcome() {
           </View>
 
           <Pressable
-            onPress={() => router.push("/category")}
+            onPress={() => router.push("/login")}
             style={styles.socialBtn}
           >
             <Globe size={16} color="#1A1A1A" />
             <Text style={styles.socialBtnText}>Continue with Google</Text>
           </Pressable>
           <Pressable
-            onPress={() => router.push("/category")}
+            onPress={() => router.push("/login")}
             style={styles.socialBtn}
           >
             <Apple size={16} color="#1A1A1A" />

@@ -44,8 +44,8 @@ function Search() {
       if (!needle) return matchesPurpose && (purpose !== null || false);
       return (
         matchesPurpose &&
-        [t.title, t.raga, t.purpose, t.subtitle].some((f) =>
-          f.toLowerCase().includes(needle),
+        [t.title, t.raga, t.purpose, t.subtitle].filter(Boolean).some((f) =>
+          f!.toLowerCase().includes(needle),
         )
       );
     });
@@ -55,7 +55,7 @@ function Search() {
     const needle = q.trim().toLowerCase();
     if (!needle) return [];
     return programs.filter((p) =>
-      [p.title, p.subtitle, p.description].some((f) => f.toLowerCase().includes(needle)),
+      [p.title, p.subtitle, p.description].filter(Boolean).some((f) => f!.toLowerCase().includes(needle)),
     );
   }, [q]);
 

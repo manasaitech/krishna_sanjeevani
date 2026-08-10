@@ -3,12 +3,12 @@ import { StorageService } from "./storage.service";
 import { STORAGE_CONSTANTS } from "./storage.constants";
 import { deleteFileSchema } from "./storage.validator";
 import { ApiResponse } from "../../shared/responses";
-import { ValidationError } from "../../shared/errors";
+import { ValidationError, NotFoundError } from "../../shared/errors";
 import { Env } from "../../shared/config/env";
 import { logger } from "../../shared/logger";
 
 function getStorageService(env: Env): StorageService {
-  return new StorageService(env.BUCKET);
+  return new StorageService(env.SONG_BUCKET);
 }
 
 export class StorageController {
@@ -49,7 +49,7 @@ export class StorageController {
     const result = await service.uploadFile(key, buffer, file.type);
 
     // Publish event to Cloudflare Queue for async media processing (HLS/FFmpeg conversion)
-    const trackId = crypto.randomUUID();
+    const trackId = typeof body.trackId === "string" ? body.trackId : crypto.randomUUID();
     await c.env.MEDIA_QUEUE.send({
       trackId,
       key: result.key,
@@ -63,6 +63,7 @@ export class StorageController {
     return ApiResponse.success(
       c,
       {
+        trackId,
         key: result.key,
         size: result.size,
         contentType: result.contentType,
@@ -135,5 +136,40 @@ export class StorageController {
     await service.deleteFile(parsed.data.key);
 
     return ApiResponse.success(c, null, "File deleted successfully from storage");
+  }
+
+  /**
+   * Serves public files (like thumbnails/art) from R2.
+   */
+  static async getFile(c: Context<{ Bindings: Env }>) {
+    const path = c.req.path;
+    const marker = "/storage/file/";
+    const markerIndex = path.indexOf(marker);
+    if (markerIndex === -1) {
+      throw new ValidationError("File key is required");
+    }
+    const key = decodeURIComponent(path.substring(markerIndex + marker.length));
+    if (!key) {
+      throw new ValidationError("File key is required");
+    }
+
+    logger.info("StorageController: Serving public file", { key });
+
+    const service = getStorageService(c.env);
+    const file = await service.getFile(key);
+
+    if (!file) {
+      throw new NotFoundError("File not found");
+    }
+
+    // Set appropriate content type headers
+    const contentType = file.contentType || "application/octet-stream";
+
+    return new Response(file.body, {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=31536000", // cache statically for 1 year
+      },
+    });
   }
 }
