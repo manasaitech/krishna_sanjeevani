@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Play, Sparkles } from "lucide-react";
+import { Play, Sparkles, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CardGrid, Chip, Panel, Rail, Section } from "@/components/layout-bits";
 import { ContinueCard, ProgramCard, TrackCard, TrackRow, TrackTile } from "@/components/cards";
@@ -31,7 +31,7 @@ function byPurpose(purpose: string) {
 }
 
 function Home() {
-  const { category, current, play, continueListeningList } = useApp();
+  const { category, current, play, continueListeningList, user, loading } = useApp();
   const [purpose, setPurpose] = useState<string | null>(null);
 
   const catTracks = useMemo(
@@ -44,6 +44,16 @@ function Home() {
   );
   const featured = catTracks[0] ?? tracks[0];
   const catPrograms = programs.filter((p) => p.category === category);
+
+  if (loading) {
+    return (
+      <AppShell>
+        <div className="flex min-h-[400px] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-cat" />
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
@@ -117,14 +127,22 @@ function Home() {
         <section className="animate-rise bg-surface border border-border rounded-card p-8 text-center shadow-soft">
           <Sparkles className="mx-auto h-12 w-12 text-cat mb-4" />
           <h2 className="text-xl font-semibold">Welcome to Krishna Sanjeevani</h2>
-          <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            Get started by adding therapeutic tracks and wellness programs via the Admin Panel, or switch your category/theme.
-          </p>
-          <div className="mt-6 flex justify-center gap-4">
-            <Link to="/admin" className="press inline-flex min-h-11 items-center rounded-btn bg-cat text-cat-foreground px-6 text-[14px] font-semibold">
-              Go to Admin Panel
-            </Link>
-          </div>
+          {user?.role === "admin" || user?.role === "super_admin" ? (
+            <>
+              <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+                Get started by adding therapeutic tracks and wellness programs via the Admin Panel, or switch your category/theme.
+              </p>
+              <div className="mt-6 flex justify-center gap-4">
+                <Link to="/admin" className="press inline-flex min-h-11 items-center rounded-btn bg-cat text-cat-foreground px-6 text-[14px] font-semibold">
+                  Go to Admin Panel
+                </Link>
+              </div>
+            </>
+          ) : (
+            <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+              Your personalized therapeutic listening space is ready. Choose a theme above or browse categories to begin your wellness journey.
+            </p>
+          )}
         </section>
       )}
 
