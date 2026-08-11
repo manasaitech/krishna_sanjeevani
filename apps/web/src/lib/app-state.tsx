@@ -206,7 +206,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ...t,
           art: t.thumbnailKey ? `${BASE_URL}/storage/file/${t.thumbnailKey}` : undefined,
           raga: t.subtitle || "",
-          purpose: t.description || "Healing",
+          purpose: (t.purposeTags && t.purposeTags[0]?.name) || t.description || "Healing",
         }));
         setTracksList(mappedTracks);
 

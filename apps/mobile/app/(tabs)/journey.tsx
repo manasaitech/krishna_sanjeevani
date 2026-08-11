@@ -44,7 +44,7 @@ function ProgressRing({ value }: { value: number }) {
 
 function PregnancyOnboarding({ onComplete }: { onComplete: () => void }) {
   const { theme } = useApp();
-  const [option, setOption] = useState<"edd" | "week">("edd");
+  const [option, setOption] = useState<"lmp" | "edd" | "week">("lmp");
   const [edd, setEdd] = useState("");
   const [week, setWeek] = useState("");
   const [saving, setSaving] = useState(false);
@@ -52,7 +52,7 @@ function PregnancyOnboarding({ onComplete }: { onComplete: () => void }) {
 
   const handleSave = async () => {
     setErrorMsg(null);
-    if (option === "edd") {
+    if (option === "edd" || option === "lmp") {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(edd)) {
         setErrorMsg("Please enter date in YYYY-MM-DD format");
         return;
@@ -72,8 +72,17 @@ function PregnancyOnboarding({ onComplete }: { onComplete: () => void }) {
 
     setSaving(true);
     try {
+      let submitEdd = undefined;
+      if (option === "edd") {
+        submitEdd = edd;
+      } else if (option === "lmp") {
+        const lmpDate = new Date(edd);
+        const calculatedEddDate = new Date(lmpDate.getTime() + 280 * 24 * 60 * 60 * 1000);
+        submitEdd = calculatedEddDate.toISOString().split("T")[0];
+      }
+
       const res = await api.pregnancy.saveUserInfo({
-        edd: option === "edd" ? edd : undefined,
+        edd: submitEdd,
         currentWeek: option === "week" ? parseInt(week, 10) : undefined,
       });
       if (res.success) {
@@ -97,11 +106,19 @@ function PregnancyOnboarding({ onComplete }: { onComplete: () => void }) {
 
       <View style={styles.toggleRow}>
         <Pressable
+          onPress={() => { setOption("lmp"); setErrorMsg(null); }}
+          style={[styles.toggleBtn, option === "lmp" && { backgroundColor: theme.cat }]}
+        >
+          <Text style={[styles.toggleText, option === "lmp" && { color: theme.catForeground }]}>
+            LMP Date
+          </Text>
+        </Pressable>
+        <Pressable
           onPress={() => { setOption("edd"); setErrorMsg(null); }}
           style={[styles.toggleBtn, option === "edd" && { backgroundColor: theme.cat }]}
         >
           <Text style={[styles.toggleText, option === "edd" && { color: theme.catForeground }]}>
-            Due Date (EDD)
+            Due Date
           </Text>
         </Pressable>
         <Pressable
@@ -109,12 +126,24 @@ function PregnancyOnboarding({ onComplete }: { onComplete: () => void }) {
           style={[styles.toggleBtn, option === "week" && { backgroundColor: theme.cat }]}
         >
           <Text style={[styles.toggleText, option === "week" && { color: theme.catForeground }]}>
-            Current Week
+            Week
           </Text>
         </Pressable>
       </View>
 
-      {option === "edd" ? (
+      {option === "lmp" ? (
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Last Period Date / Pregnancy Start Date</Text>
+          <TextInput
+            placeholder="YYYY-MM-DD"
+            placeholderTextColor="#7C7A85"
+            value={edd}
+            onChangeText={setEdd}
+            style={styles.textInput}
+          />
+          <Text style={styles.inputHelper}>Enter the date you became pregnant. We will calculate the EDD (LMP + 280 days) dynamically.</Text>
+        </View>
+      ) : option === "edd" ? (
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Estimated Due Date (EDD)</Text>
           <TextInput

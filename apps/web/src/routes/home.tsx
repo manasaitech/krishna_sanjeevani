@@ -39,7 +39,7 @@ function Home() {
     [category],
   );
   const filtered = useMemo(
-    () => (purpose ? tracks.filter((t) => t.purpose === purpose) : catTracks),
+    () => (purpose ? catTracks.filter((t) => t.purpose === purpose) : catTracks),
     [purpose, catTracks],
   );
   const featured = catTracks[0] ?? tracks[0];

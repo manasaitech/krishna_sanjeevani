@@ -61,7 +61,7 @@ function Journey() {
   const { current, play } = useApp();
   const [pregnancyData, setPregnancyData] = useState<any>(null);
   const [fetchingData, setFetchingData] = useState(true);
-  const [option, setOption] = useState<"edd" | "week">("edd");
+  const [option, setOption] = useState<"lmp" | "edd" | "week">("lmp");
   const [edd, setEdd] = useState("");
   const [week, setWeek] = useState("");
   const [saving, setSaving] = useState(false);
@@ -88,7 +88,7 @@ function Journey() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
-    if (option === "edd") {
+    if (option === "edd" || option === "lmp") {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(edd)) {
         setErrorMsg("Please enter date in YYYY-MM-DD format");
         return;
@@ -108,8 +108,17 @@ function Journey() {
 
     setSaving(true);
     try {
+      let submitEdd = undefined;
+      if (option === "edd") {
+        submitEdd = edd;
+      } else if (option === "lmp") {
+        const lmpDate = new Date(edd);
+        const calculatedEddDate = new Date(lmpDate.getTime() + 280 * 24 * 60 * 60 * 1000);
+        submitEdd = calculatedEddDate.toISOString().split("T")[0];
+      }
+
       const res = await api.pregnancy.saveUserInfo({
-        edd: option === "edd" ? edd : undefined,
+        edd: submitEdd,
         currentWeek: option === "week" ? parseInt(week, 10) : undefined,
       });
       if (res.success) {
@@ -146,11 +155,22 @@ function Journey() {
           </p>
 
           <form onSubmit={handleSave} className="mt-6 space-y-4">
-            <div className="flex gap-3">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => { setOption("lmp"); setErrorMsg(null); }}
+                className={`flex-1 min-h-[40px] rounded-xl border text-[11px] font-semibold transition-colors ${
+                  option === "lmp"
+                    ? "border-cat bg-cat text-cat-foreground"
+                    : "border-border bg-surface text-foreground"
+                }`}
+              >
+                Last Period (LMP)
+              </button>
               <button
                 type="button"
                 onClick={() => { setOption("edd"); setErrorMsg(null); }}
-                className={`flex-1 min-h-[40px] rounded-xl border text-xs font-semibold transition-colors ${
+                className={`flex-1 min-h-[40px] rounded-xl border text-[11px] font-semibold transition-colors ${
                   option === "edd"
                     ? "border-cat bg-cat text-cat-foreground"
                     : "border-border bg-surface text-foreground"
@@ -161,7 +181,7 @@ function Journey() {
               <button
                 type="button"
                 onClick={() => { setOption("week"); setErrorMsg(null); }}
-                className={`flex-1 min-h-[40px] rounded-xl border text-xs font-semibold transition-colors ${
+                className={`flex-1 min-h-[40px] rounded-xl border text-[11px] font-semibold transition-colors ${
                   option === "week"
                     ? "border-cat bg-cat text-cat-foreground"
                     : "border-border bg-surface text-foreground"
@@ -171,7 +191,18 @@ function Journey() {
               </button>
             </div>
 
-            {option === "edd" ? (
+            {option === "lmp" ? (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold block">Last Period Date / Pregnancy Start Date</label>
+                <input
+                  type="date"
+                  value={edd}
+                  onChange={(e) => setEdd(e.target.value)}
+                  className="w-full rounded-field border border-border bg-background px-4 py-3 text-sm focus:ring-2 focus:ring-cat focus:outline-none"
+                />
+                <p className="text-[10px] text-muted-foreground">Enter the date you became pregnant. We will calculate the EDD (LMP + 280 days) dynamically.</p>
+              </div>
+            ) : option === "edd" ? (
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold block">Estimated Due Date (EDD)</label>
                 <input
