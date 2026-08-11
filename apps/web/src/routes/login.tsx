@@ -24,6 +24,16 @@ function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showDedication, setShowDedication] = useState(false);
+
+  useEffect(() => {
+    if (showDedication) {
+      const timer = setTimeout(() => {
+        navigate({ to: "/home" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showDedication, navigate]);
 
   const handleGoogleCredentialResponse = async (response: any) => {
     setLoading(true);
@@ -31,7 +41,7 @@ function LoginScreen() {
       const res = await loginWithGoogle(response.credential);
       if (res.success) {
         toast.success("Welcome to Krishna Sanjeevani!");
-        navigate({ to: "/home" });
+        setShowDedication(true);
       } else {
         toast.error(res.message);
       }
@@ -79,7 +89,7 @@ function LoginScreen() {
       const res = await login(email, password);
       if (res.success) {
         toast.success("Welcome back!");
-        navigate({ to: "/home" });
+        setShowDedication(true);
       } else {
         toast.error(res.message);
       }
@@ -90,61 +100,108 @@ function LoginScreen() {
     }
   };
 
+  if (showDedication) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#160d0c] flex flex-col items-center justify-center text-[#FAF8F4] px-6 select-none animate-fade-in">
+        <div className="text-center max-w-sm flex flex-col items-center gap-6">
+          <div className="relative">
+            {/* Outer soft glowing ring */}
+            <div className="absolute -inset-4 rounded-full bg-[#D4AF37]/5 blur-xl animate-pulse" />
+            {/* Gold border frame */}
+            <div className="relative h-44 w-44 rounded-full p-1 bg-gradient-to-tr from-[#D4AF37] via-[#F3E5AB] to-[#AA7C11] shadow-2xl">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/4/4c/A._C._Bhaktivedanta_Swami_Prabhupada.jpg"
+                alt="Srila Prabhupada"
+                className="h-full w-full rounded-full object-cover"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold tracking-[0.25em] text-[#D4AF37] uppercase">
+              Dedicated to
+            </span>
+            <h2 className="text-2xl font-serif font-semibold tracking-wide mt-1">
+              His Divine Grace
+            </h2>
+            <h1 className="text-xl font-bold font-sans tracking-wide text-[#FAF8F4]">
+              A.C. Bhaktivedanta Swami Prabhupada
+            </h1>
+            <p className="text-xs text-[#FAF8F4]/60 italic font-serif leading-relaxed mt-2">
+              Founder-Acharya of the International Society for Krishna Consciousness
+            </p>
+            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-[#D4AF37]/40 to-transparent mx-auto my-4" />
+            <p className="text-[10px] uppercase font-semibold tracking-widest text-[#FAF8F4]/40">
+              Krishna Sanjeevani Music Healing Research
+            </p>
+          </div>
+
+          {/* Simple fading circular progress indicator */}
+          <div className="mt-4 flex gap-1 items-center justify-center">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37] animate-bounce" style={{ animationDelay: "0ms" }} />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37] animate-bounce" style={{ animationDelay: "150ms" }} />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37] animate-bounce" style={{ animationDelay: "300ms" }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-dvh bg-background flex flex-col">
+    <div className="min-h-dvh bg-[#F5F1EB] flex flex-col">
       <StatusBar />
       <main className="mx-auto w-full max-w-md px-6 pb-12 flex-1 flex flex-col justify-center">
         <div className="mb-8">
           <Link
             to="/welcome"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface border border-border text-muted-foreground hover:text-foreground shadow-soft transition-colors"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white border border-[#E8E4DC] text-[#1A1A1A] hover:bg-gray-50 shadow-sm transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </div>
 
         <div className="animate-rise">
-          <h1 className="text-[30px] leading-[1.15] font-semibold">
+          <h1 className="text-[30px] leading-[1.15] font-semibold text-[#1A1A1A]">
             Welcome back
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-[#7C7A85]">
             Sign in to continue your personalized therapeutic path.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5 animate-rise" style={{ animationDelay: "100ms" }}>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#7C7A85]">
               Email Address
             </label>
-            <div className="relative mt-2">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative mt-2 flex items-center h-12 rounded-[16px] border border-[#E8E4DC] bg-white px-4">
+              <Mail className="h-4 w-4 text-[#7C7A85] mr-3" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full h-12 pl-11 pr-4 rounded-btn border border-border bg-surface text-[15px] outline-none transition-all focus:border-cat focus:ring-1 focus:ring-cat placeholder:text-muted-foreground/50"
+                className="flex-1 h-full text-[15px] text-[#1A1A1A] outline-none placeholder:text-[#7C7A85]/50 bg-transparent"
               />
             </div>
           </div>
 
           <div>
             <div className="flex justify-between items-center">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#7C7A85]">
                 Password
               </label>
             </div>
-            <div className="relative mt-2">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative mt-2 flex items-center h-12 rounded-[16px] border border-[#E8E4DC] bg-white px-4">
+              <Lock className="h-4 w-4 text-[#7C7A85] mr-3" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full h-12 pl-11 pr-4 rounded-btn border border-border bg-surface text-[15px] outline-none transition-all focus:border-cat focus:ring-1 focus:ring-cat placeholder:text-muted-foreground/50"
+                className="flex-1 h-full text-[15px] text-[#1A1A1A] outline-none placeholder:text-[#7C7A85]/50 bg-transparent"
               />
             </div>
           </div>
@@ -152,7 +209,7 @@ function LoginScreen() {
           <button
             type="submit"
             disabled={loading}
-            className="press w-full h-13 mt-4 flex items-center justify-center gap-2 rounded-btn bg-primary text-[15px] font-semibold text-primary-foreground shadow-soft hover:bg-primary-hover disabled:opacity-70 disabled:cursor-not-allowed"
+            className="press w-full h-13 mt-6 flex items-center justify-center gap-2 rounded-[16px] bg-[#264653] hover:bg-[#1d353f] text-[15px] font-semibold text-[#FAF8F4] shadow-soft disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -162,17 +219,17 @@ function LoginScreen() {
           </button>
         </form>
 
-        <div className="relative flex py-5 items-center animate-rise" style={{ animationDelay: "150ms" }}>
-          <div className="flex-grow border-t border-border"></div>
-          <span className="flex-shrink mx-4 text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">Or continue with</span>
-          <div className="flex-grow border-t border-border"></div>
+        <div className="relative flex py-6 items-center animate-rise" style={{ animationDelay: "150ms" }}>
+          <div className="flex-grow border-t border-[#E8E4DC]"></div>
+          <span className="flex-shrink mx-4 text-[10px] uppercase text-[#7C7A85] font-semibold tracking-wider">Or continue with</span>
+          <div className="flex-grow border-t border-[#E8E4DC]"></div>
         </div>
 
         <div className="flex justify-center animate-rise" style={{ animationDelay: "180ms" }}>
           <div id="google-signin-btn" />
         </div>
 
-        <p className="mt-8 text-center text-sm text-muted-foreground animate-rise" style={{ animationDelay: "200ms" }}>
+        <p className="mt-8 text-center text-sm text-[#7C7A85] animate-rise" style={{ animationDelay: "200ms" }}>
           Don't have an account?{" "}
           <Link to="/register" className="font-semibold text-cat hover:underline">
             Sign up
