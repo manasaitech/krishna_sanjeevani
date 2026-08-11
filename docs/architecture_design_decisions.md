@@ -163,9 +163,13 @@ sequenceDiagram
     participant Player as HLS Player
 
     %% Ingestion
-    Admin->>Worker: POST /storage/upload/audio (Multipart MP3)
-    Note over Worker: Validates Admin JWT & File Size
-    Worker->>R2: Put raw MP3 (songs/uploads/:uuid.mp3)
+    Admin->>Worker: POST /storage/upload/audio/multipart/start
+    Worker-->>Admin: Return uploadId & key
+    Loop For each 5MB chunk
+        Admin->>Worker: POST /storage/upload/audio/multipart/part (Chunk bytes)
+        Worker-->>Admin: Return etag
+    End
+    Admin->>Worker: POST /storage/upload/audio/multipart/complete
     Worker->>Queue: Publish processing task
     Worker-->>Admin: 201 Uploaded Successfully
     

@@ -118,7 +118,7 @@ function Home() {
                 Now in your queue
               </p>
               <p className="mt-1.5 text-[13px] leading-relaxed">
-                {(current ?? featured).title} — {(current ?? featured).instructions}
+                {(current ?? featured)?.title || "No track playing"} — {(current ?? featured)?.instructions || "Choose a track to begin"}
               </p>
             </div>
           </Panel>

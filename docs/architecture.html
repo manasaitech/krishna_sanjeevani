@@ -567,7 +567,7 @@ packages/     <-- Shared database structures and types</code></pre>
     <section id="sec-13" class="section-card">
       <h2>13. Content &amp; Media</h2>
       <p>
-        The ingestion pipeline decouples file uploads from transcoding. The upload API stores the raw MP3 to R2 and publishes a task to Cloudflare Queues immediately, allowing the media segmenter to process HLS segments asynchronously.
+        The ingestion pipeline decouples file uploads from transcoding using chunked R2 multipart upload. The uploader slices large files into 5MB chunks and uploads them sequentially with retries. Upon completion, a task is published to Cloudflare Queues for asynchronous transcoding.
       </p>
     </section>
 
@@ -575,7 +575,7 @@ packages/     <-- Shared database structures and types</code></pre>
     <section id="sec-14" class="section-card">
       <h2>14. R2 Storage</h2>
       <p>
-        Files are stored inside a private bucket. Processed tracks are saved as HLS playlists (<code>.m3u8</code>) and segment files (<code>.ts</code>) to enable adaptive bitrate streaming.
+        Files are stored inside a private bucket. Processed tracks are saved as HLS playlists (<code>.m3u8</code>) and AES-128 encrypted segment files (<code>.mp3</code>) to enable adaptive bitrate streaming without raw file access.
       </p>
     </section>
 
@@ -583,7 +583,7 @@ packages/     <-- Shared database structures and types</code></pre>
     <section id="sec-15" class="section-card">
       <h2>15. HLS Streaming</h2>
       <p>
-        Tracks are streamed securely via a Worker proxy. Playback requires a temporary 5-minute streaming session ticket. The Worker validates the ticket and fetches segment files from R2, preventing direct asset URL hotlinking.
+        Tracks are streamed securely via a Worker proxy. Playback requires a temporary 5-minute streaming session ticket. The Worker validates the ticket, dynamically updates the manifest with ticket query params, and fetches keys/segments from R2.
       </p>
     </section>
 
@@ -591,7 +591,7 @@ packages/     <-- Shared database structures and types</code></pre>
     <section id="sec-16" class="section-card">
       <h2>16. Queue &amp; Processing</h2>
       <p>
-        Cloudflare Queues handles asynchronous audio processing. Ingested tracks publish tasks containing the raw R2 key. The consumer worker segments the audio files, generates the playlists, uploads them back to R2, and deletes the original MP3.
+        Cloudflare Queues handles asynchronous audio processing. The consumer worker segments the audio, generates a 16-byte random key/IV, encrypts HLS segments in AES-CBC mode, saves the key privately under <code>keys/aes.key</code>, uploads the manifest, and deletes the original raw MP3.
       </p>
     </section>
 

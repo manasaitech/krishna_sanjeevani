@@ -1,4 +1,10 @@
-export const BASE_URL = "https://backend.astrosutraai.workers.dev/api/v1";
+const isDev =
+  (typeof process !== "undefined" && process.env?.["NODE_ENV"] === "development") ||
+  (typeof import.meta !== "undefined" && import.meta.env?.DEV);
+
+export const BASE_URL = isDev
+  ? "http://localhost:8787/api/v1"
+  : "https://backend.astrosutraai.workers.dev/api/v1";
 
 const TOKEN_KEYS = {
   ACCESS: "ks_access_token",
@@ -270,6 +276,34 @@ export const api = {
         body: formData,
       });
     },
+    multipartStart: (filename: string, contentType: string) =>
+      http.post<{ uploadId: string; key: string }>("/storage/upload/audio/multipart/start", {
+        filename,
+        contentType,
+      }),
+    multipartUploadPart: (key: string, uploadId: string, partNumber: number, data: ArrayBuffer) =>
+      request<{ partNumber: number; etag: string }>(
+        `/storage/upload/audio/multipart/part?uploadId=${uploadId}&key=${encodeURIComponent(key)}&partNumber=${partNumber}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/octet-stream",
+          },
+          body: data,
+        }
+      ),
+    multipartComplete: (key: string, uploadId: string, parts: { partNumber: number; etag: string }[], trackId?: string) =>
+      http.post<{ trackId: string; key: string; size: number }>("/storage/upload/audio/multipart/complete", {
+        key,
+        uploadId,
+        parts,
+        trackId,
+      }),
+    multipartAbort: (key: string, uploadId: string) =>
+      http.post<void>("/storage/upload/audio/multipart/abort", {
+        key,
+        uploadId,
+      }),
     uploadImage: (file: File) => {
       const formData = new FormData();
       formData.append("file", file);

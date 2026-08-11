@@ -46,15 +46,48 @@ export default {
         // 4. Update status to 'uploading' and begin uploading HLS chunks
         await db.update(tracks).set({ processingStatus: "uploading" }).where(eq(tracks.id, trackId));
 
-        // Upload HLS segment files (.mp3)
+        // Generate random AES key and IV
+        const aesKey = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(16));
+
+        // Import key into Web Crypto format
+        const cryptoKey = await crypto.subtle.importKey(
+          "raw",
+          aesKey,
+          { name: "AES-CBC", length: 128 },
+          false,
+          ["encrypt"]
+        );
+
+        // Upload HLS segment files encrypted with AES-CBC
         for (let i = 0; i < segments.length; i++) {
+          const encryptedBuffer = await crypto.subtle.encrypt(
+            {
+              name: "AES-CBC",
+              iv: iv,
+            },
+            cryptoKey,
+            segments[i].data
+          );
+
           const segmentKey = `songs/processed/${trackId}/audio/segment${String(i).padStart(3, "0")}.mp3`;
-          await storage.uploadFile(segmentKey, segments[i].data, "audio/mpeg");
+          await storage.uploadFile(segmentKey, encryptedBuffer, "audio/mpeg");
         }
 
-        // Generate master.m3u8 index file
+        // Upload decryption key privately to R2
+        const keyKey = `songs/processed/${trackId}/keys/aes.key`;
+        const keyBuffer = aesKey.buffer.slice(aesKey.byteOffset, aesKey.byteOffset + aesKey.byteLength);
+        await storage.uploadFile(keyKey, keyBuffer, "application/octet-stream");
+
+        // Generate IV hex representation
+        const ivHex = Array.from(iv)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+
+        // Generate master.m3u8 index file with #EXT-X-KEY definition
         const maxSegmentDuration = Math.ceil(Math.max(...segments.map((s) => s.duration)));
         let m3u8 = `#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:${maxSegmentDuration}\n#EXT-X-MEDIA-SEQUENCE:0\n`;
+        m3u8 += `#EXT-X-KEY:METHOD=AES-128,URI="keys/aes.key",IV=0x${ivHex}\n`;
         for (let i = 0; i < segments.length; i++) {
           m3u8 += `#EXTINF:${segments[i].duration.toFixed(3)},\naudio/segment${String(i).padStart(3, "0")}.mp3\n`;
         }

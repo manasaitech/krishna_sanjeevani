@@ -15,6 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider, useApp } from "../lib/app-state";
 import { Toaster } from "../components/ui/sonner";
+import { queryClient } from "../router";
 
 function NotFoundComponent() {
   return (
@@ -155,8 +156,6 @@ function RouteGuard({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>

@@ -1089,11 +1089,79 @@ function Admin() {
       }
 
       // 3. Audio Upload & Transcoding (Queue triggers)
+      // 3. Audio Upload & Transcoding (Queue triggers)
       if (formAudioFile) {
         setFormStatus("uploading_audio");
-        setFormStatusMessage("Uploading audio file to R2 ingestion bucket...");
-        const audioRes = await api.storage.uploadAudio(formAudioFile, trackId);
-        if (!audioRes.success) throw new Error(audioRes.message || "Failed to upload audio.");
+        setFormStatusMessage("Starting multipart upload...");
+
+        // 1. Start multipart upload
+        const startRes = await api.storage.multipartStart(formAudioFile.name, formAudioFile.type);
+        if (!startRes.success || !startRes.data) {
+          throw new Error(startRes.message || "Failed to start multipart upload.");
+        }
+        const { uploadId, key } = startRes.data;
+
+        // 2. Chunk and upload parts
+        const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+        const totalParts = Math.ceil(formAudioFile.size / chunkSize);
+        const uploadedParts: { partNumber: number; etag: string }[] = [];
+
+        try {
+          for (let i = 0; i < totalParts; i++) {
+            const partNumber = i + 1;
+            const start = i * chunkSize;
+            const end = Math.min(start + chunkSize, formAudioFile.size);
+            const chunkBlob = formAudioFile.slice(start, end);
+
+            // Read the blob as ArrayBuffer to send raw binary
+            const chunkData = await chunkBlob.arrayBuffer();
+
+            // Upload part with retries
+            let success = false;
+            let partEtag = "";
+            let retryCount = 0;
+            const maxRetries = 3;
+
+            while (!success && retryCount <= maxRetries) {
+              try {
+                setFormStatusMessage(
+                  `Uploading part ${partNumber}/${totalParts}... (${Math.round((i / totalParts) * 100)}%)`
+                );
+                const partRes = await api.storage.multipartUploadPart(key, uploadId, partNumber, chunkData);
+                if (partRes.success && partRes.data) {
+                  partEtag = partRes.data.etag;
+                  success = true;
+                } else {
+                  throw new Error(partRes.message || "Part upload failed on server.");
+                }
+              } catch (partErr) {
+                retryCount++;
+                if (retryCount > maxRetries) {
+                  throw partErr;
+                }
+                // Wait 1 second before retrying
+                await new Promise((res) => setTimeout(res, 1000));
+              }
+            }
+
+            uploadedParts.push({ partNumber, etag: partEtag });
+          }
+
+          // 3. Complete multipart upload
+          setFormStatusMessage("Finalizing upload...");
+          const completeRes = await api.storage.multipartComplete(key, uploadId, uploadedParts, trackId);
+          if (!completeRes.success) {
+            throw new Error(completeRes.message || "Failed to complete multipart upload.");
+          }
+        } catch (uploadErr) {
+          // Attempt to abort on failure
+          try {
+            await api.storage.multipartAbort(key, uploadId);
+          } catch (abortErr) {
+            console.error("Failed to abort multipart upload:", abortErr);
+          }
+          throw uploadErr;
+        }
 
         setFormStatus("transcoding");
         setFormStatusMessage("Encoding stream. Segmenting master files...");

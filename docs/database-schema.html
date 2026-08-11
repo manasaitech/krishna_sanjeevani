@@ -1500,6 +1500,59 @@
       </table>
     </section>
 
+    <section id="tbl-stream_sessions" class="section-card table-section">
+      <h2>Table: stream_sessions</h2>
+      <p>Stores active temporary stream playback session tickets for verification.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>Default Value / Attributes</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>Primary Key (Ticket UUID)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>user_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>users.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>track_id</strong></td>
+            <td>TEXT</td>
+            <td>No</td>
+            <td>—</td>
+            <td><code>tracks.id</code> (On Delete Cascade)</td>
+          </tr>
+          <tr>
+            <td><strong>expires_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Epoch Timestamp (ms)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>created_at</strong></td>
+            <td>INTEGER</td>
+            <td>No</td>
+            <td>Epoch Timestamp (ms)</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
     <section id="tbl-payments" class="section-card table-section">
       <h2>Table: payments</h2>
       <p>Logs payment history, amounts, and statuses.</p>
@@ -1799,6 +1852,7 @@ npx wrangler d1 migrations apply db-namespace --remote</code></pre>
       { id: "tbl-program_progress", label: "Table: program_progress" },
       { id: "tbl-plans", label: "Table: plans" },
       { id: "tbl-subscriptions", label: "Table: subscriptions" },
+      { id: "tbl-stream_sessions", label: "Table: stream_sessions" },
       { id: "tbl-payments", label: "Table: payments" },
       { id: "tbl-notifications", label: "Table: notifications" },
       { id: "tbl-audit_logs", label: "Table: audit_logs" },

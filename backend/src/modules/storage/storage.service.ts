@@ -69,6 +69,23 @@ export class StorageService {
   }
 
   /**
+   * Starts a multipart upload to Cloudflare R2.
+   */
+  async startMultipartUpload(key: string, contentType: string) {
+    logger.info("Starting R2 multipart upload", { key, contentType });
+    return this.bucket.createMultipartUpload(key, {
+      httpMetadata: { contentType },
+    });
+  }
+
+  /**
+   * Resumes a multipart upload by its ID.
+   */
+  resumeMultipartUpload(key: string, uploadId: string) {
+    return this.bucket.resumeMultipartUpload(key, uploadId);
+  }
+
+  /**
    * Generates a unique secure storage key using random UUID.
    */
   generateObjectKey(prefix: string, extension: string): string {

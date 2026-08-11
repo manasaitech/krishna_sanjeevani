@@ -4,6 +4,7 @@ import { getDB } from "../shared/db/client";
 import { tracks } from "../shared/db/schema/track";
 import { streamSessions } from "../shared/db/schema/stream";
 import { subscriptions } from "../shared/db/schema/subscription";
+import { users } from "../shared/db/schema/user";
 import { StorageService } from "../modules/storage/storage.service";
 import { requireAuth } from "../modules/auth/auth.middleware";
 import { UnauthorizedError, ForbiddenError, NotFoundError, ValidationError } from "../shared/errors";
@@ -73,6 +74,41 @@ async function verifyAndExtendSession(
     // Clean up expired session
     await db.delete(streamSessions).where(eq(streamSessions.id, ticket));
     throw new UnauthorizedError("Streaming session has expired");
+  }
+
+  // Find track to verify if it is premium
+  const trackResult = await db.select().from(tracks).where(eq(tracks.id, trackId)).limit(1);
+  const track = trackResult[0];
+  if (!track) {
+    throw new NotFoundError("Track not found");
+  }
+
+  // Premium validation on session validation
+  if (track.tier === "premium") {
+    // Get user details to check role
+    const userResult = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
+    const user = userResult[0];
+    if (!user) {
+      throw new UnauthorizedError("User associated with session not found");
+    }
+
+    if (!["admin", "super_admin"].includes(user.role)) {
+      const activeSub = await db
+        .select()
+        .from(subscriptions)
+        .where(
+          and(
+            eq(subscriptions.userId, session.userId),
+            eq(subscriptions.status, "active"),
+            gt(subscriptions.currentPeriodEnd, now)
+          )
+        )
+        .limit(1);
+
+      if (activeSub.length === 0) {
+        throw new ForbiddenError("Premium subscription required to access this track");
+      }
+    }
   }
 
   // Slide expiration window: extend by another 5 minutes
