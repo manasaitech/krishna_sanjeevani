@@ -524,19 +524,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
             .then(() => setPlaying(true))
             .catch((err) => console.error("Playback failed to start", err));
         });
-        hls.on(Hls.Events.ERROR, (event, data) => {
+        hls.on(Hls.Events.ERROR, async (event, data) => {
           if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                hls.startLoad();
-                break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                hls.recoverMediaError();
-                break;
-              default:
-                hls.destroy();
-                hlsRef.current = null;
-                break;
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              const statusCode = data.response?.code;
+              // If unauthorized or forbidden, the streaming ticket has expired!
+              if (statusCode === 401 || statusCode === 403) {
+                console.log("Stream ticket expired (HTTP " + statusCode + "), renewing ticket...");
+                try {
+                  const currentTrack = currentRef.current;
+                  if (currentTrack) {
+                    const res = await api.stream.getTicket(currentTrack.id);
+                    if (res.success && res.data) {
+                      const { streamUrl } = res.data;
+                      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
+                      const absoluteStreamUrl = `${origin}${streamUrl}`;
+                      
+                      // Save current position before reloading
+                      const currentPos = audio.currentTime;
+                      
+                      hls.loadSource(absoluteStreamUrl);
+                      audio.currentTime = currentPos;
+                      audio.play()
+                        .then(() => setPlaying(true))
+                        .catch(e => console.error(e));
+                      return;
+                    }
+                  }
+                } catch (err) {
+                  console.error("Failed to renew stream ticket", err);
+                }
+              }
+              hls.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            } else {
+              hls.destroy();
+              hlsRef.current = null;
             }
           }
         });
@@ -549,6 +573,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
           audio.play()
             .then(() => setPlaying(true))
             .catch((err) => console.error("Native playback failed to start", err));
+        }, { once: true });
+
+        audio.addEventListener("error", async () => {
+          const error = audio.error;
+          if (error && (error.code === error.MEDIA_ERR_NETWORK || error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED)) {
+            console.log("Native audio element network error, attempting ticket renewal...");
+            try {
+              const currentTrack = currentRef.current;
+              if (currentTrack) {
+                const res = await api.stream.getTicket(currentTrack.id);
+                if (res.success && res.data) {
+                  const { streamUrl } = res.data;
+                  const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
+                  const absoluteStreamUrl = `${origin}${streamUrl}`;
+                  const currentPos = audio.currentTime;
+                  audio.src = absoluteStreamUrl;
+                  audio.currentTime = currentPos;
+                  audio.play()
+                    .then(() => setPlaying(true))
+                    .catch(e => console.error(e));
+                }
+              }
+            } catch (err) {
+              console.error("Failed to renew ticket natively", err);
+            }
+          }
         }, { once: true });
       } else {
         console.error("HLS streaming is not supported in this browser");

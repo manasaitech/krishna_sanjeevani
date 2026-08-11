@@ -3,13 +3,54 @@ import { BookmarkCheck, Bookmark, CalendarDays, Check, ListMusic, Play } from "l
 import { AppShell } from "@/components/AppShell";
 import { TrackRow } from "@/components/cards";
 import { useApp } from "@/lib/app-state";
-import { programById, trackById, type Program } from "@/lib/content";
+import { api, BASE_URL } from "@/lib/api";
+import { type Program, type Track } from "@/lib/content";
 
 export const Route = createFileRoute("/program/$programId")({
-  loader: ({ params }) => {
-    const program = programById(params.programId);
-    if (!program) throw notFound();
-    return { program };
+  loader: async ({ params }) => {
+    // 1. Fetch program details
+    const programRes = await api.programs.get(params.programId);
+    if (!programRes.success || !programRes.data) {
+      throw notFound();
+    }
+
+    // 2. Fetch tracks assigned to the program
+    const tracksRes = await api.programs.getTracks(params.programId);
+    const tracksData = tracksRes.success && tracksRes.data ? tracksRes.data : [];
+
+    const p = programRes.data;
+    const mappedProgram = {
+      ...p,
+      id: p.id,
+      title: p.title,
+      subtitle: p.subtitle,
+      description: p.description,
+      category: p.category,
+      art: p.thumbnailKey ? `${BASE_URL}/storage/file/${p.thumbnailKey}` : undefined,
+      sessions: p.trackCount || 0,
+      days: p.trackCount ? Math.ceil(p.trackCount / 2) : 7,
+      benefits: p.benefits || [],
+      usage: p.usage || "Listen once daily with focus.",
+      trackIds: tracksData.map((t: any) => t.id)
+    };
+
+    const mappedTracks = tracksData.map((t: any) => ({
+      ...t,
+      id: t.id,
+      title: t.title,
+      artist: t.artist || "Krishna Sanjeevani",
+      subtitle: t.subtitle || "",
+      description: t.description || "",
+      duration: t.duration || 0,
+      category: t.category,
+      art: t.thumbnailKey ? `${BASE_URL}/storage/file/${t.thumbnailKey}` : undefined,
+      raga: t.subtitle || "Raga",
+      purpose: t.description || "Therapeutic",
+      instructions: t.instructions || "Sit comfortably and breathe naturally.",
+      frequency: t.frequency || "432Hz",
+    }));
+
+    return { program: mappedProgram, tracks: mappedTracks };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -34,10 +75,10 @@ export const Route = createFileRoute("/program/$programId")({
 });
 
 function ProgramDetails() {
-  const { program } = Route.useLoaderData() as { program: Program };
+  const { program, tracks: programTracks } = Route.useLoaderData() as { program: Program; tracks: Track[] };
   const { savedPrograms, toggleSavedProgram, play } = useApp();
   const saved = savedPrograms.includes(program.id);
-  const list = program.trackIds.map((id) => trackById(id)!).filter(Boolean);
+  const list = programTracks;
 
   return (
     <AppShell>
