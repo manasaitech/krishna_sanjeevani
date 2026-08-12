@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBar } from "@/components/StatusBar";
 import { useApp } from "@/lib/app-state";
+import prabhupadaImg from "@/assets/prabhupada.jpg";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -110,7 +111,7 @@ function LoginScreen() {
             {/* Gold border frame */}
             <div className="relative h-44 w-44 rounded-full p-1 bg-gradient-to-tr from-[#D4AF37] via-[#F3E5AB] to-[#AA7C11] shadow-2xl">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/4/4c/A._C._Bhaktivedanta_Swami_Prabhupada.jpg"
+                src={prabhupadaImg}
                 alt="Srila Prabhupada"
                 className="h-full w-full rounded-full object-cover"
               />
