@@ -11,13 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as CategoryRouteImport } from './routes/category'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgramsRouteImport } from './routes/programs'
@@ -37,11 +35,6 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BrowseRoute = BrowseRouteImport.update({
-  id: '/browse',
-  path: '/browse',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoryRoute = CategoryRouteImport.update({
@@ -67,11 +60,6 @@ const JourneyRoute = JourneyRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NotificationsRoute = NotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayerRoute = PlayerRouteImport.update({
@@ -128,13 +116,11 @@ const ProgramProgramIdRoute = ProgramProgramIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
-  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
@@ -149,13 +135,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
-  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
@@ -171,13 +155,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
-  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
@@ -194,13 +176,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
-    | '/browse'
     | '/category'
     | '/favorites'
     | '/home'
     | '/journey'
     | '/login'
-    | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
@@ -215,13 +195,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/browse'
     | '/category'
     | '/favorites'
     | '/home'
     | '/journey'
     | '/login'
-    | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
@@ -236,13 +214,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
-    | '/browse'
     | '/category'
     | '/favorites'
     | '/home'
     | '/journey'
     | '/login'
-    | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
@@ -258,13 +234,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  BrowseRoute: typeof BrowseRoute
   CategoryRoute: typeof CategoryRoute
   FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
   JourneyRoute: typeof JourneyRoute
   LoginRoute: typeof LoginRoute
-  NotificationsRoute: typeof NotificationsRoute
   PlayerRoute: typeof PlayerRoute
   ProfileRoute: typeof ProfileRoute
   ProgramsRoute: typeof ProgramsRoute
@@ -291,13 +265,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/browse': {
-      id: '/browse'
-      path: '/browse'
-      fullPath: '/browse'
-      preLoaderRoute: typeof BrowseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/category': {
@@ -333,13 +300,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notifications': {
-      id: '/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player': {
@@ -418,13 +378,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  BrowseRoute: BrowseRoute,
   CategoryRoute: CategoryRoute,
   FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
   JourneyRoute: JourneyRoute,
   LoginRoute: LoginRoute,
-  NotificationsRoute: NotificationsRoute,
   PlayerRoute: PlayerRoute,
   ProfileRoute: ProfileRoute,
   ProgramsRoute: ProgramsRoute,

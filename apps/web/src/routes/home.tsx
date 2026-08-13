@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Play, Sparkles, Loader2 } from "lucide-react";
+import { Play, Sparkles, Loader2, Heart, Waves, Info } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CardGrid, Chip, Panel, Rail, Section } from "@/components/layout-bits";
 import { ContinueCard, ProgramCard, TrackCard, TrackRow, TrackTile } from "@/components/cards";
 import { useApp } from "@/lib/app-state";
-import { programs, purposes, tracks, type Track } from "@/lib/content";
+import { categories, purposes, type Track, type CategoryId } from "@/lib/content";
 
 export const Route = createFileRoute("/home")({
   head: () => ({
@@ -26,24 +26,71 @@ export const Route = createFileRoute("/home")({
   component: Home,
 });
 
-function byPurpose(purpose: string) {
-  return tracks.filter((t) => t.purpose === purpose);
-}
-
 function Home() {
-  const { category, current, play, continueListeningList, user, loading } = useApp();
+  const {
+    category,
+    setCategory,
+    current,
+    play,
+    continueListeningList,
+    user,
+    loading,
+    tracks,
+    programs,
+  } = useApp();
+
   const [purpose, setPurpose] = useState<string | null>(null);
 
   const catTracks = useMemo(
     () => tracks.filter((t) => t.category === category),
-    [category],
+    [category, tracks],
   );
-  const filtered = useMemo(
-    () => (purpose ? catTracks.filter((t) => t.purpose === purpose) : catTracks),
-    [purpose, catTracks],
-  );
+
+  const filtered = useMemo(() => {
+    if (!purpose) return catTracks;
+    return catTracks.filter((t) => {
+      const matchesTag = t.purposeTags?.some(
+        (tag: any) => tag.name && tag.name.toLowerCase().trim() === purpose.toLowerCase().trim()
+      );
+      const matchesFallback = t.purpose && t.purpose.toLowerCase().trim() === purpose.toLowerCase().trim();
+      return matchesTag || matchesFallback;
+    });
+  }, [purpose, catTracks]);
+
   const featured = catTracks[0] ?? tracks[0];
-  const catPrograms = programs.filter((p) => p.category === category);
+
+  const catPrograms = useMemo(
+    () => programs.filter((p) => p.category === category),
+    [category, programs],
+  );
+
+  const byPurpose = (p: string) => {
+    return tracks.filter((t) => {
+      const matchesTag = t.purposeTags?.some(
+        (tag: any) => tag.name && tag.name.toLowerCase().trim() === p.toLowerCase().trim()
+      );
+      const matchesFallback = t.purpose && t.purpose.toLowerCase().trim() === p.toLowerCase().trim();
+      return matchesTag || matchesFallback;
+    });
+  };
+
+  const premiumTracks = useMemo(
+    () => tracks.filter((t) => t.premium),
+    [tracks],
+  );
+
+  const recentlyAdded = useMemo(
+    () => tracks.slice(-4).reverse(),
+    [tracks],
+  );
+
+  const handlePurposeClick = (p: string | null) => {
+    setPurpose(p);
+    const el = document.getElementById("recommended-sessions");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   if (loading) {
     return (
@@ -57,7 +104,7 @@ function Home() {
 
   return (
     <AppShell>
-      {/* Hero */}
+      {/* Hero Section */}
       {featured ? (
         <section className="animate-rise grid gap-6 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
           <div className="relative overflow-hidden rounded-card shadow-lift">
@@ -84,7 +131,7 @@ function Home() {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => play(featured)}
-                  className="press inline-flex min-h-12 items-center gap-2 rounded-btn bg-background px-6 text-[14px] font-semibold text-foreground hover:bg-background/90"
+                  className="press inline-flex min-h-12 items-center gap-2 rounded-btn bg-background px-6 text-[14px] font-semibold text-foreground hover:bg-background/90 cursor-pointer"
                 >
                   <Play className="h-4 w-4" fill="currentColor" /> Begin session
                 </button>
@@ -140,7 +187,7 @@ function Home() {
             </>
           ) : (
             <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-              Your personalized therapeutic listening space is ready. Choose a theme above or browse categories to begin your wellness journey.
+              Your personalized therapeutic listening space is ready. Choose a theme below or select a purpose to begin your wellness journey.
             </p>
           )}
         </section>
@@ -148,17 +195,7 @@ function Home() {
 
       {tracks.length > 0 && (
         <>
-          <div className="no-scrollbar -mx-5 mt-8 flex gap-2.5 overflow-x-auto px-5 md:-mx-8 md:px-8">
-            <Chip active={purpose === null} onClick={() => setPurpose(null)}>
-              All purposes
-            </Chip>
-            {purposes.map((p) => (
-              <Chip key={p} active={purpose === p} onClick={() => setPurpose(p)}>
-                {p}
-              </Chip>
-            ))}
-          </div>
-
+          {/* Continue Listening */}
           <Section title="Continue listening" hint="Picks up where you paused">
             {continueListeningList.length ? (
               <Rail>
@@ -172,21 +209,82 @@ function Home() {
                 ))}
               </Rail>
             ) : (
-              <p className="text-xs text-muted-foreground py-2 px-4">No sessions in progress</p>
+              <div className="rounded-card border border-border/80 bg-surface/50 p-4 text-center">
+                <p className="text-[12px] text-muted-foreground italic">
+                  Start listening to discover your personalized recommendations.
+                </p>
+              </div>
             )}
           </Section>
 
-          <Section
-            title={purpose ? `Recommended for ${purpose.toLowerCase()}` : "Recommended for you"}
-            hint={`${filtered.length} sessions`}
-          >
-            <CardGrid>
-              {filtered.map((t) => (
-                <TrackTile key={t.id} track={t} />
+          {/* Explore Themes (Category Cards from Browse Page) */}
+          <Section title="Explore by Theme" hint="Category-adaptive therapeutic soundscapes">
+            <div className="grid gap-4 sm:grid-cols-3">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setCategory(c.id as CategoryId)}
+                  aria-pressed={category === c.id}
+                  className={`press group relative overflow-hidden rounded-card text-left shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift cursor-pointer ${
+                    category === c.id ? "ring-2 ring-cat" : ""
+                  }`}
+                >
+                  <img
+                    src={c.art}
+                    alt=""
+                    className="h-36 w-full object-cover transition-transform duration-[250ms] group-hover:scale-[1.04] md:h-44"
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent" />
+                  <span className="absolute inset-x-0 bottom-0 p-5">
+                    <span className="block font-display text-[17px] font-semibold text-background">
+                      {c.name}
+                    </span>
+                    <span className="mt-1 block text-[12px] text-background/80">
+                      {c.description}
+                    </span>
+                  </span>
+                </button>
               ))}
-            </CardGrid>
+            </div>
           </Section>
 
+          {/* Recommended / Sessions Grid (from Browse Page) */}
+          <div id="recommended-sessions" className="scroll-mt-20">
+            <div className="no-scrollbar -mx-5 mt-12 flex gap-2.5 overflow-x-auto px-5 md:-mx-8 md:px-8">
+              <Chip active={purpose === null} onClick={() => handlePurposeClick(null)}>
+                All purposes
+              </Chip>
+              {purposes.map((p) => (
+                <Chip key={p} active={purpose === p} onClick={() => handlePurposeClick(p)}>
+                  {p}
+                </Chip>
+              ))}
+            </div>
+
+            <Section
+              title={purpose ? `Sessions for ${purpose.toLowerCase()}` : "Recommended for you"}
+              hint={`${filtered.length} sessions`}
+              className="mt-6"
+            >
+              {filtered.length === 0 ? (
+                <div className="rounded-card border border-border bg-surface/60 p-8 text-center shadow-soft">
+                  <Waves className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2" />
+                  <p className="text-[13px] font-semibold text-foreground">Nothing sequenced yet</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    We haven't sequenced a surāvali for this purpose in this theme. Try another filter.
+                  </p>
+                </div>
+              ) : (
+                <CardGrid>
+                  {filtered.map((t) => (
+                    <TrackTile key={t.id} track={t} />
+                  ))}
+                </CardGrid>
+              )}
+            </Section>
+          </div>
+
+          {/* Popular Tracks */}
           {tracks.length > 3 && (
             <Section title="Popular today" hint="Across all listeners">
               <Rail>
@@ -197,8 +295,14 @@ function Home() {
             </Section>
           )}
 
+          {/* Explore by Purpose Rails */}
           {["Stress Relief", "Focus", "Sleep"].map((p) => (
-            <Section key={p} title={p} hint={`${byPurpose(p).length} sessions`} href="/browse">
+            <Section
+              key={p}
+              title={p}
+              hint={`${byPurpose(p).length} sessions`}
+              onClick={() => handlePurposeClick(p)}
+            >
               <Rail>
                 {(byPurpose(p).length ? byPurpose(p) : tracks.slice(0, 4)).map((t) => (
                   <TrackCard key={t.id} track={t} />
@@ -206,12 +310,53 @@ function Home() {
               </Rail>
             </Section>
           ))}
+
+          {/* Premium Sequences */}
+          {premiumTracks.length > 0 && (
+            <Section title="Premium sequences" hint="Exclusive healing ragas">
+              <Rail>
+                {premiumTracks.map((t) => (
+                  <TrackCard key={t.id} track={t} />
+                ))}
+              </Rail>
+            </Section>
+          )}
+
+          {/* Recently Added */}
+          {recentlyAdded.length > 0 && (
+            <Section title="Recently added" hint="New therapeutic additions">
+              <Rail>
+                {recentlyAdded.map((t) => (
+                  <TrackCard key={t.id} track={t} />
+                ))}
+              </Rail>
+            </Section>
+          )}
         </>
       )}
 
+      {/* Programs Sections */}
       {programs.length > 0 && (
         <>
-          <Section title="Corporate wellness" hint="Secular sequences for teams" href="/programs">
+          {/* Programs in this theme (from Browse page) */}
+          <Section title="Programs in this theme" hint={`${catPrograms.length} programs`}>
+            {catPrograms.length === 0 ? (
+              <div className="rounded-card border border-border/80 bg-surface/50 p-4 text-center">
+                <p className="text-[12px] text-muted-foreground italic">
+                  Programs will appear here when available.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {catPrograms.map((p) => (
+                  <ProgramCard key={p.id} program={p} wide />
+                ))}
+              </div>
+            )}
+          </Section>
+
+          {/* Corporate wellness programs (Secular category) */}
+          <Section title="Corporate wellness" hint="Secular sequences for teams">
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {programs
                 .filter((p) => p.category === "secular")
@@ -221,7 +366,8 @@ function Home() {
             </div>
           </Section>
 
-          <Section title="Pregnancy programs" href="/journey" hint="Open dashboard">
+          {/* Pregnancy programs */}
+          <Section title="Pregnancy programs" hint="Open dashboard" href="/journey">
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {programs
                 .filter((p) => p.category === "pregnancy")
@@ -230,9 +376,19 @@ function Home() {
                 ))}
             </div>
           </Section>
+
+          {/* Trending programs */}
+          <Section title="Trending programs">
+            <Rail>
+              {(catPrograms.length ? catPrograms : programs).map((p) => (
+                <ProgramCard key={p.id} program={p} />
+              ))}
+            </Rail>
+          </Section>
         </>
       )}
 
+      {/* Recently Played */}
       {tracks.length > 0 && (
         <Section title="Recently played" href="/recent">
           <div className="rounded-card border border-border bg-surface/60 p-2 md:p-3">
@@ -240,16 +396,6 @@ function Home() {
               <TrackRow key={t.id} track={t} index={i} />
             ))}
           </div>
-        </Section>
-      )}
-
-      {programs.length > 0 && (
-        <Section title="Trending programs" href="/programs">
-          <Rail>
-            {(catPrograms.length ? catPrograms : programs).map((p) => (
-              <ProgramCard key={p.id} program={p} />
-            ))}
-          </Rail>
         </Section>
       )}
     </AppShell>

@@ -7,12 +7,14 @@ export function Section({
   title,
   hint,
   href,
+  onClick,
   children,
   className,
 }: {
   title: string;
   hint?: string;
   href?: string;
+  onClick?: () => void;
   children: ReactNode;
   className?: string;
 }) {
@@ -22,7 +24,14 @@ export function Section({
         <h2 className="font-display text-[19px] leading-tight font-semibold md:text-[22px]">
           {title}
         </h2>
-        {href ? (
+        {onClick ? (
+          <button
+            onClick={onClick}
+            className="press inline-flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-cat hover:gap-2.5 cursor-pointer bg-transparent border-none"
+          >
+            {hint ?? "See all"} <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+        ) : href ? (
           <Link
             to={href}
             className="press inline-flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-cat hover:gap-2.5"

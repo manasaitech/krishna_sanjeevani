@@ -1,7 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Compass,
   Heart,
   House,
   Library,
@@ -76,12 +75,6 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
               <Link to="/home" onClick={onNavigate} className={getLinkClass("/home")}>
                 <House className="h-[18px] w-[18px] shrink-0" />
                 <span className="truncate">Home</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/browse" onClick={onNavigate} className={getLinkClass("/browse")}>
-                <Compass className="h-[18px] w-[18px] shrink-0" />
-                <span className="truncate">Browse</span>
               </Link>
             </li>
             <li>

@@ -93,7 +93,7 @@ function Player() {
           body="Choose a surāvali from the library and it will appear here with its listening guidance."
           action={
             <Link
-              to="/browse"
+              to="/home"
               className="press inline-flex min-h-11 items-center rounded-btn bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"
             >
               Browse sessions

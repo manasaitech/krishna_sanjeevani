@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krishna Sanjeevani — Performance Engineering Dashboard</title>
+    <meta name="description" content="Performance monitoring dashboard for Krishna Sanjeevani therapeutic raga streaming platform">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════ */
+        /*  DESIGN SYSTEM — KRISHNA SANJEEVANI LIGHT THEME      */
+        /* ═══════════════════════════════════════════════════ */
+        :root {
+            /* Palette mapped from actual styles.css */
+            --bg-primary: #F8F6F2;         /* Soft warm beige/cream background */
+            --bg-secondary: #FAFAF8;       /* Very light card background alternative */
+            --bg-card: #FFFFFF;            /* Pure white cards */
+            --bg-card-hover: #FDFCFB;      /* Soft hover states */
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --border-subtle: #EAE6DF;      /* Warm subtle border */
+            --border-active: #2E4E63;      /* Primary Slate Blue */
+            --text-primary: #232323;       /* Dark charcoal/brown-ish foreground */
+            --text-secondary: #5C5C5C;     /* Neutral secondary grey */
+            --text-muted: #8E8D88;         /* Warm muted grey */
+            
+            /* Accents */
+            --accent-primary: #2E4E63;     /* Primary Slate Blue (oklch(0.362 0.043 213.5)) */
+            --accent-primary-hover: #1E3748;
+            --accent-cat: #8D2B1D;         /* Warm devotional terracotta/rust (oklch(0.372 0.121 15.7)) */
+            --accent-cat-light: #FAEDE9;   /* Very soft pink/peach highlight */
+            --accent-cat-accent: #B88E3E;  /* Cat golden accent */
+            
+            /* Status Indicators */
+            --status-success: #1E6B4B;     /* Calming forest green */
+            --status-warning: #B57314;     /* Muted warning gold */
+            --status-danger: #B83E4B;      /* Gentle rose/crimson red */
+            --status-info: #206E88;        /* Soft ocean teal */
+
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #2E4E63 0%, #3D617A 100%);
+            --gradient-cat: linear-gradient(135deg, #8D2B1D 0%, #A94334 100%);
+            --gradient-success: linear-gradient(135deg, #1E6B4B 0%, #2E825D 100%);
+            
+            /* Shadows & Border Radius */
+            --shadow-soft: 0px 4px 14px rgba(0, 0, 0, 0.03), 0px 1px 3px rgba(0, 0, 0, 0.02);
+            --shadow-lift: 0px 10px 30px rgba(0, 0, 0, 0.05);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  RESET & BASE                                      */
+        /* ═══════════════════════════════════════════════════ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  HEADER                                            */
+        /* ═══════════════════════════════════════════════════ */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(248, 246, 242, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 16px 32px;
+        }
+        .header-inner {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--gradient-cat);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(141, 43, 29, 0.15);
+        }
+        .header-title-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+        .header-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+        .header-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-top: 2px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 107, 75, 0.08);
+            border: 1px solid rgba(30, 107, 75, 0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--status-success);
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--status-success);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(30, 107, 75, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(30, 107, 75, 0); }
+        }
+        .time-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Data Source Mode Toggle */
+        .source-selector {
+            display: flex;
+            background: #EAE6DF;
+            padding: 3px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .source-btn {
+            border: none;
+            background: transparent;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+        }
+        .source-btn.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  TEST TIER SELECTOR                                */
+        /* ═══════════════════════════════════════════════════ */
+        .tier-bar {
+            max-width: 1600px;
+            margin: 24px auto;
+            padding: 0 32px;
+        }
+        .tier-track {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-subtle);
+            padding: 8px;
+            box-shadow: var(--shadow-soft);
+        }
+        .tier-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-lg);
+            transition: var(--transition);
+            text-align: center;
+        }
+        .tier-btn:hover { color: var(--text-primary); background: #FAF9F6; }
+        .tier-btn.active {
+            color: white;
+            background: var(--accent-primary);
+            box-shadow: 0 4px 12px rgba(46, 78, 99, 0.2);
+        }
+        .tier-btn .tier-label {
+            display: block;
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 1px;
+            font-weight: 400;
+        }
+        .tier-btn .tier-users {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .tier-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .status-pass { background: var(--status-success); }
+        .status-running { background: var(--status-warning); animation: pulse-dot 1.5s ease-in-out infinite; }
+        .status-pending { background: var(--text-muted); }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  MAIN LAYOUT                                       */
+        /* ═══════════════════════════════════════════════════ */
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 32px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin: 32px 0 16px;
+            padding-left: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  STAT CARDS (Top KPI Row)                          */
+        /* ═══════════════════════════════════════════════════ */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            transition: var(--transition);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lift);
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+        .kpi-card:nth-child(1)::before { background: var(--accent-primary); }
+        .kpi-card:nth-child(2)::before { background: var(--status-info); }
+        .kpi-card:nth-child(3)::before { background: var(--accent-cat); }
+        .kpi-card:nth-child(4)::before { background: var(--status-danger); }
+        .kpi-card:nth-child(5)::before { background: var(--status-warning); }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+        .kpi-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+        .kpi-value.primary { color: var(--accent-primary); }
+        .kpi-value.info { color: var(--status-info); }
+        .kpi-value.cat { color: var(--accent-cat); }
+        .kpi-value.danger { color: var(--status-danger); }
+        .kpi-value.warning { color: var(--status-warning); }
+        
+        .kpi-unit {
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0.7;
+        }
+        .kpi-trend {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .kpi-trend.positive { color: var(--status-success); }
+        .kpi-trend.negative { color: var(--status-danger); }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  CHART CARDS & CANVASES                             */
+        /* ═══════════════════════════════════════════════════ */
+        .chart-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+        .chart-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+        }
+        .chart-card:hover {
+            box-shadow: var(--shadow-lift);
+        }
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .chart-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .chart-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-live {
+            background: rgba(30, 107, 75, 0.08);
+            color: var(--status-success);
+            border: 1px solid rgba(30, 107, 75, 0.15);
+        }
+        .badge-info {
+            background: rgba(46, 78, 99, 0.08);
+            color: var(--accent-primary);
+            border: 1px solid rgba(46, 78, 99, 0.15);
+        }
+        .chart-canvas-wrap {
+            width: 100%;
+            height: 220px;
+            position: relative;
+        }
+        .chart-canvas-wrap canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  PERCENTILE GRID                                   */
+        /* ═══════════════════════════════════════════════════ */
+        .percentile-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .percentile-item {
+            text-align: center;
+            padding: 12px 8px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+        }
+        .percentile-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .percentile-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .p50 { color: var(--status-success); }
+        .p75 { color: var(--status-info); }
+        .p90 { color: var(--status-warning); }
+        .p95 { color: var(--accent-cat); }
+        .p99 { color: var(--status-danger); }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  RESOURCE METERS                                   */
+        /* ═══════════════════════════════════════════════════ */
+        .meter-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .meter-row:last-child { margin-bottom: 0; }
+        .meter-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 105px;
+        }
+        .meter-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #EAE6DF;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .meter-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+        }
+        .meter-bar-fill.primary { background: var(--accent-primary); }
+        .meter-bar-fill.cat { background: var(--accent-cat); }
+        .meter-bar-fill.success { background: var(--status-success); }
+        .meter-bar-fill.warning { background: var(--status-warning); }
+        .meter-bar-fill.danger { background: var(--status-danger); }
+        
+        .meter-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 75px;
+            text-align: right;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  COST MONITOR                                      */
+        /* ═══════════════════════════════════════════════════ */
+        .cost-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .cost-item {
+            text-align: center;
+            padding: 16px 12px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition);
+        }
+        .cost-item:hover {
+            border-color: var(--text-muted);
+            background: #F3F1EC;
+        }
+        .cost-service {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .cost-amount {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-cat);
+        }
+        .cost-amount .currency { font-size: 14px; opacity: 0.8; }
+        .cost-projected {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .cost-total {
+            grid-column: 1 / -1;
+            background: var(--accent-cat-light);
+            border: 1px solid rgba(141, 43, 29, 0.15);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cost-total-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .cost-total-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--accent-cat);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  TEST PROGRESS PANEL                               */
+        /* ═══════════════════════════════════════════════════ */
+        .progress-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 8px;
+        }
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+        .step-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            border: 2px solid var(--border-subtle);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+        .progress-step.completed .step-circle {
+            background: var(--status-success);
+            border-color: var(--status-success);
+            color: white;
+            box-shadow: 0 4px 10px rgba(30, 107, 75, 0.15);
+        }
+        .progress-step.active .step-circle {
+            background: var(--accent-cat-light);
+            border-color: var(--accent-cat);
+            color: var(--accent-cat);
+            box-shadow: 0 4px 10px rgba(141, 43, 29, 0.1);
+        }
+        .progress-step.pending .step-circle {
+            background: var(--bg-primary);
+            color: var(--text-muted);
+        }
+        .step-info {
+            text-align: center;
+        }
+        .step-name {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .step-detail {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .step-connector {
+            position: absolute;
+            top: 21px;
+            left: 12%;
+            right: 12%;
+            height: 2px;
+            background: var(--border-subtle);
+            z-index: 1;
+        }
+        .step-connector-fill {
+            height: 100%;
+            background: var(--status-success);
+            transition: width 1s ease;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  ALERTS                                            */
+        /* ═══════════════════════════════════════════════════ */
+        .alert-container { margin-bottom: 8px; }
+        .alert-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 8px;
+            border: 1px solid var(--border-subtle);
+            animation: slideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-warning {
+            background: rgba(181, 115, 20, 0.06);
+            border-color: rgba(181, 115, 20, 0.15);
+        }
+        .alert-critical {
+            background: rgba(184, 62, 75, 0.06);
+            border-color: rgba(184, 62, 75, 0.15);
+        }
+        .alert-info-card {
+            background: rgba(46, 78, 99, 0.05);
+            border-color: rgba(46, 78, 99, 0.15);
+        }
+        .alert-icon { font-size: 18px; flex-shrink: 0; }
+        .alert-text {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .alert-text strong { color: var(--text-primary); }
+        .alert-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  SPECS TABLE                                       */
+        /* ═══════════════════════════════════════════════════ */
+        .specs-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+        .specs-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .specs-table th:first-child { border-radius: 8px 0 0 0; }
+        .specs-table th:last-child { border-radius: 0 8px 0 0; }
+        .specs-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+        .specs-table tr:hover td { background: var(--bg-primary); }
+        .specs-table td:first-child {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .specs-table .highlight {
+            background: var(--accent-cat-light);
+        }
+        .specs-table .highlight td {
+            color: var(--accent-cat);
+            font-weight: 600;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /*  RESPONSIVE                                        */
+        /* ═══════════════════════════════════════════════════ */
+        @media (max-width: 1200px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+            .chart-grid-2 { grid-template-columns: 1fr; }
+            .chart-grid-3 { grid-template-columns: 1fr; }
+            .cost-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .header { padding: 12px 16px; }
+            .dashboard { padding: 0 16px 40px; }
+            .tier-bar { padding: 0 16px; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .tier-track { flex-wrap: wrap; }
+            .percentile-grid { grid-template-columns: repeat(3, 1fr); }
+            .progress-steps { flex-wrap: wrap; gap: 16px; }
+            .step-connector { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="header-left">
+                <div class="logo-icon">🌸</div>
+                <div class="header-title-wrap">
+                    <div class="header-title">Krishna Sanjeevani</div>
+                    <div class="header-subtitle">Performance Engineering & Cost Analytics</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="source-selector">
+                    <button class="source-btn active" id="btnSim" onclick="setDataSource('simulated')">Simulated Plan Metrics</button>
+                    <button class="source-btn" id="btnLive" onclick="setDataSource('realtime')">Live Integration API</button>
+                </div>
+                <div class="live-badge">
+                    <span class="live-dot"></span>
+                    ACTIVE TIER
+                </div>
+                <div class="time-display" id="clock">--:--:--</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══ TEST TIER SELECTOR ═══ -->
+    <div class="tier-bar">
+        <div class="tier-track">
+            <button class="tier-btn" data-tier="100" onclick="selectTier(100)">
+                <span class="tier-status status-pass"></span>
+                <span class="tier-users">100</span>
+                <span class="tier-label">Sanity Check</span>
+            </button>
+            <button class="tier-btn active" data-tier="1000" onclick="selectTier(1000)">
+                <span class="tier-status status-running"></span>
+                <span class="tier-users">1,000</span>
+                <span class="tier-label">Stress Test</span>
+            </button>
+            <button class="tier-btn" data-tier="10000" onclick="selectTier(10000)">
+                <span class="tier-status status-pending"></span>
+                <span class="tier-users">10,000</span>
+                <span class="tier-label">Performance</span>
+            </button>
+            <button class="tier-btn" data-tier="100000" onclick="selectTier(100000)">
+                <span class="tier-status status-pending"></span>
+                <span class="tier-users">1,00,000</span>
+                <span class="tier-label">Bottleneck Hunt</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+
+        <!-- ═══ DATA INTEGRATION NOTICE ═══ -->
+        <div class="alert-container" id="integrationNotice" style="display: none;">
+            <div class="alert-card alert-info-card">
+                <span class="alert-icon">🔌</span>
+                <span class="alert-text">
+                    <strong>Live API Connection Mode:</strong> Ready to pull from target performance test client (e.g. k6 influxDB / Cloudflare Analytics endpoint). Modify the script endpoint values inside `docs/performance-dashboard.html` to map directly to your live Grafana or Prometheus source.
+                </span>
+            </div>
+        </div>
+
+        <!-- ═══ TEST PROGRESS ═══ -->
+        <div class="section-title">Test Progression Status</div>
+        <div class="progress-panel">
+            <div class="progress-steps">
+                <div class="step-connector">
+                    <div class="step-connector-fill" id="progressFill" style="width: 35%"></div>
+                </div>
+                <div class="progress-step completed">
+                    <div class="step-circle">✓</div>
+                    <div class="step-info">
+                        <div class="step-name">Tier 1: 100 Users</div>
+                        <div class="step-detail">Sanity Check — PASSED</div>
+                    </div>
+                </div>
+                <div class="progress-step active" id="stepProgress2">
+                    <div class="step-circle">2</div>
+                    <div class="step-info">
+                        <div class="step-name" id="step2Name">Tier 2: 1,000 Users</div>
+                        <div class="step-detail" id="step2Detail">Stress Test — IN PROGRESS</div>
+                    </div>
+                </div>
+                <div class="progress-step pending" id="stepProgress3">
+                    <div class="step-circle">3</div>
+                    <div class="step-info">
+                        <div class="step-name">Tier 3: 10,000 Users</div>
+                        <div class="step-detail">Performance — PENDING</div>
+                    </div>
+                </div>
+                <div class="progress-step pending" id="stepProgress4">
+                    <div class="step-circle">4</div>
+                    <div class="step-info">
+                        <div class="step-name">Tier 4: 1,00,000 Users</div>
+                        <div class="step-detail">Bottleneck Hunt — PENDING</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ ALERTS ═══ -->
+        <div class="alert-container" id="alertContainer">
+            <div class="alert-card alert-info-card">
+                <span class="alert-icon">ℹ️</span>
+                <span class="alert-text"><strong>Tier 2 Active Test:</strong> Emulating 1,000 concurrent user play streams (1 request/3 seconds pattern).</span>
+                <span class="alert-time">17:44:02</span>
+            </div>
+            <div class="alert-card alert-warning">
+                <span class="alert-icon">⚠️</span>
+                <span class="alert-text"><strong>Infrastructure Limit Notice:</strong> D1 database queries are running close to primary replica limit bounds. Enable read-replicas configuration at Tier 3 load.</span>
+                <span class="alert-time">17:43:10</span>
+            </div>
+        </div>
+
+        <!-- ═══ KPI CARDS ═══ -->
+        <div class="section-title">Key Performance Indicators</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">P95 Latency</div>
+                <div class="kpi-value primary" id="kpiP95">124<span class="kpi-unit">ms</span></div>
+                <div class="kpi-trend positive" id="kpiP95Trend">↓ 8ms from target bounds</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Requests / Second</div>
+                <div class="kpi-value info" id="kpiRPS">312<span class="kpi-unit">rps</span></div>
+                <div class="kpi-trend">Target sustained: 333 rps</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Concurrent Users</div>
+                <div class="kpi-value cat" id="kpiUsers">847</div>
+                <div class="kpi-trend">Ramping towards 1,000</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Error Rate</div>
+                <div class="kpi-value danger" id="kpiErrors">0.02<span class="kpi-unit">%</span></div>
+                <div class="kpi-trend positive" id="kpiErrorTrend">✓ Below 0.1% stress limit</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Apdex Score</div>
+                <div class="kpi-value warning" id="kpiApdex">0.94</div>
+                <div class="kpi-trend positive">✓ Mapped to optimal index threshold</div>
+            </div>
+        </div>
+
+        <!-- ═══ LATENCY SECTION ═══ -->
+        <div class="section-title">Latency Distribution Analysis</div>
+        <div class="chart-grid-2">
+            <!-- Latency Histogram -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">📊 Response Time Histogram</div>
+                    <span class="chart-badge badge-live">● Live</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="histogramCanvas"></canvas>
+                </div>
+                <div class="percentile-grid">
+                    <div class="percentile-item">
+                        <div class="percentile-label">P50</div>
+                        <div class="percentile-value p50" id="percP50">42ms</div>
+                    </div>
+                    <div class="percentile-item">
+                        <div class="percentile-label">P75</div>
+                        <div class="percentile-value p75" id="percP75">78ms</div>
+                    </div>
+                    <div class="percentile-item">
+                        <div class="percentile-label">P90</div>
+                        <div class="percentile-value p90" id="percP90">105ms</div>
+                    </div>
+                    <div class="percentile-item">
+                        <div class="percentile-label">P95</div>
+                        <div class="percentile-value p95" id="percP95">124ms</div>
+                    </div>
+                    <div class="percentile-item">
+                        <div class="percentile-label">P99</div>
+                        <div class="percentile-value p99" id="percP99">312ms</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response Time Trend -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">📈 Latency Profile Trends</div>
+                    <span class="chart-badge badge-live">● Live</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="trendCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ THROUGHPUT SECTION ═══ -->
+        <div class="section-title">Volume & Network Activity</div>
+        <div class="chart-grid-2">
+            <!-- RPS Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">⚡ Requests Per Second Trend</div>
+                    <span class="chart-badge badge-live">● Live</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="rpsCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Error Distribution -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">🔴 Error Type Classification</div>
+                    <span class="chart-badge badge-info">Current Tier Stats</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="errorCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ RESOURCE UTILIZATION ═══ -->
+        <div class="section-title">Cloudflare Service Metrics & Limits</div>
+        <div class="chart-grid-3">
+            <!-- Workers -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">⚙️ Workers Edge Compute</div>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">CPU Duration</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill primary" id="meterCPU" style="width: 22%"></div></div>
+                    <span class="meter-value" id="meterCPUVal">6.7M / 30M ms</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Request Count</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill primary" id="meterReqs" style="width: 67%"></div></div>
+                    <span class="meter-value" id="meterReqsVal">6.7M / 10M</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Worker Memory</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill primary" id="meterMem" style="width: 35%"></div></div>
+                    <span class="meter-value" id="meterMemVal">45 / 128 MB</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Subrequests</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill primary" id="meterSub" style="width: 4%"></div></div>
+                    <span class="meter-value" id="meterSubVal">4 / 1000</span>
+                </div>
+            </div>
+
+            <!-- D1 Database -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">🗄️ D1 Relational DB</div>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Rows Read</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill success" id="meterD1Read" style="width: 0.08%"></div></div>
+                    <span class="meter-value" id="meterD1ReadVal">20M / 25B</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Rows Written</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill success" id="meterD1Write" style="width: 0.6%"></div></div>
+                    <span class="meter-value" id="meterD1WriteVal">300K / 50M</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Database Size</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill success" id="meterD1Store" style="width: 10%"></div></div>
+                    <span class="meter-value" id="meterD1StoreVal">1.0 / 10 GB</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Writes / Sec</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill success" id="meterD1Wps" style="width: 40%"></div></div>
+                    <span class="meter-value" id="meterD1WpsVal">40 w/s</span>
+                </div>
+            </div>
+
+            <!-- R2 + Queues -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">📦 R2 Storage & Queue Pipeline</div>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">R2 Storage</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill cat" id="meterR2Store" style="width: 50%"></div></div>
+                    <span class="meter-value" id="meterR2StoreVal">5.0 / 10 GB</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Class B Reads</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill cat" id="meterR2B" style="width: 60%"></div></div>
+                    <span class="meter-value" id="meterR2BVal">6M / 10M</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Egress Bandwidth</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill cat" id="meterBW" style="width: 16%"></div></div>
+                    <span class="meter-value" id="meterBWVal">160 Mbps</span>
+                </div>
+                <div class="meter-row">
+                    <span class="meter-label">Queues Pipeline</span>
+                    <div class="meter-bar-bg"><div class="meter-bar-fill cat" id="meterQueue" style="width: 5%"></div></div>
+                    <span class="meter-value" id="meterQueueVal">500 / 10K ops</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ HLS STREAMING METRICS ═══ -->
+        <div class="section-title">HLS Segment Delivery Rates</div>
+        <div class="chart-grid-2">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">🎵 TS Encrypted Segments / Sec</div>
+                    <span class="chart-badge badge-live">● Live</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="segmentCanvas"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">🎫 Playback Session Ticket Fetch Time</div>
+                    <span class="chart-badge badge-live">● Live</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="ticketCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ COST MONITOR ═══ -->
+        <div class="section-title">Calculated Cost Projection (Current Tier)</div>
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">💰 Cloudflare Cost Estimator Breakdown</div>
+                <span class="chart-badge badge-info" id="costTierBadge">1,000 Users</span>
+            </div>
+            <div class="cost-grid">
+                <div class="cost-item">
+                    <div class="cost-service">Workers Base</div>
+                    <div class="cost-amount"><span class="currency">₹</span><span id="costWorkers">420</span></div>
+                    <div class="cost-projected">$5.00/mo</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-service">CPU Overage</div>
+                    <div class="cost-amount"><span class="currency">₹</span><span id="costCPU">62</span></div>
+                    <div class="cost-projected">$0.74/mo</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-service">R2 Operations</div>
+                    <div class="cost-amount"><span class="currency">₹</span><span id="costR2">0</span></div>
+                    <div class="cost-projected">$0.00/mo</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-service">D1 Relational</div>
+                    <div class="cost-amount"><span class="currency">₹</span><span id="costD1">0</span></div>
+                    <div class="cost-projected">$0.00/mo</div>
+                </div>
+            </div>
+            <div class="cost-grid" style="margin-top: 12px;">
+                <div class="cost-total">
+                    <div>
+                        <div class="cost-total-label">Projected Infrastructure Monthly Cost</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Estimated total for <span id="costUserCount">1,000</span> Users (2 sessions/day, 20 requests/session)</div>
+                    </div>
+                    <div class="cost-total-value" id="costTotal">₹482</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ SERVER SPECS COMPARISON ═══ -->
+        <div class="section-title">Hardware Server Spec Comparison (If Self-Hosted)</div>
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">🖥️ Equivalent On-Premise Spec Matrix</div>
+                <span class="chart-badge badge-info">Architecture Reference</span>
+            </div>
+            <table class="specs-table">
+                <thead>
+                    <tr>
+                        <th>Requirement</th>
+                        <th>100 Users</th>
+                        <th>1,000 Users</th>
+                        <th>10,000 Users</th>
+                        <th>1,00,000 Users</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>NIC Switch</td>
+                        <td>1 GBps</td>
+                        <td>1 GBps</td>
+                        <td>10 GBps</td>
+                        <td>10 GBps (bonded)</td>
+                    </tr>
+                    <tr>
+                        <td>RAM Capacity</td>
+                        <td>4 GB DDR4</td>
+                        <td>16 GB DDR4</td>
+                        <td>64 GB DDR5</td>
+                        <td>256 GB DDR5</td>
+                    </tr>
+                    <tr>
+                        <td>CPU Frequency</td>
+                        <td>2.4 GHz</td>
+                        <td>3.0 GHz</td>
+                        <td>3.5 GHz</td>
+                        <td>3.8 GHz+</td>
+                    </tr>
+                    <tr>
+                        <td>CPU Cores</td>
+                        <td>2 cores</td>
+                        <td>4 cores</td>
+                        <td>16 cores</td>
+                        <td>64 cores</td>
+                    </tr>
+                    <tr>
+                        <td>Microprocessor</td>
+                        <td>Intel i3 / Ryzen 3</td>
+                        <td>Intel i5 / Ryzen 5</td>
+                        <td>Xeon E / EPYC</td>
+                        <td>Dual EPYC 9004</td>
+                    </tr>
+                    <tr>
+                        <td>Local Disk Storage</td>
+                        <td>100 GB SSD</td>
+                        <td>500 GB NVMe</td>
+                        <td>2 TB NVMe RAID</td>
+                        <td>8 TB NVMe RAID10</td>
+                    </tr>
+                    <tr class="highlight">
+                        <td>Est. Self-Hosted Cost/mo</td>
+                        <td>₹2,000-3,000</td>
+                        <td>₹8,000-12,000</td>
+                        <td>₹40,000-60,000</td>
+                        <td>₹2,00,000+</td>
+                    </tr>
+                    <tr class="highlight">
+                        <td>Cloudflare Serverless Cost/mo</td>
+                        <td>₹420</td>
+                        <td>₹482</td>
+                        <td>₹5,502</td>
+                        <td>₹67,673</td>
+                    </tr>
+                    <tr class="highlight">
+                        <td>Est. Savings %</td>
+                        <td>~85%</td>
+                        <td>~95%</td>
+                        <td>~90%</td>
+                        <td>~66%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ═══ SCALING CONFIG COMPARISON ═══ -->
+        <div class="section-title">Vertical vs Horizontal Configurations</div>
+        <div class="chart-grid-2">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">📐 Vertical Scaling (Scale Up Levers)</div>
+                </div>
+                <table class="specs-table" style="font-size: 12px;">
+                    <thead><tr><th>Lever Parameter</th><th>Baseline Config</th><th>Maximum Scale Ceiling</th></tr></thead>
+                    <tbody>
+                        <tr><td>Workers CPU Time Limit</td><td>10ms per fetch</td><td>300,000ms (Workers Unbound)</td></tr>
+                        <tr><td>D1 SQLite Capacity Limit</td><td>5 GB included</td><td>10 GB per database namespace</td></tr>
+                        <tr><td>CF Queue Batching Limit</td><td>10 messages</td><td>100 messages max batch</td></tr>
+                        <tr><td>Workers Memory Space</td><td>128 MB</td><td>128 MB max (Runtime Cap)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">📏 Horizontal Scaling (Scale Out Strategies)</div>
+                </div>
+                <table class="specs-table" style="font-size: 12px;">
+                    <thead><tr><th>Strategy Option</th><th>Architectural Impact</th><th>Trigger Tier Threshold</th></tr></thead>
+                    <tbody>
+                        <tr><td>Cloudflare KV Cache Layer</td><td>Bypasses 80% D1 Reads</td><td>Tier 3 (10,000+ Users)</td></tr>
+                        <tr><td>D1 Database Sharding</td><td>Parallelizes up to 50K DBs</td><td>Tier 4 (1,00,000+ Users)</td></tr>
+                        <tr><td>Durable Objects Sessions</td><td>Stateless websocket/ticket sync</td><td>Tier 4 (1,00,000+ Users)</td></tr>
+                        <tr><td>Workers Smart Placement</td><td>Moves execution close to D1/R2</td><td>Tier 3 (10,000+ Users)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  JAVASCRIPT ENGINE                                 -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <script>
+    (function() {
+        'use strict';
+
+        // ─── TIER SPECS DATA MODEL ─────────────────────────
+        const tierData = {
+            100: {
+                label: 'Sanity Check', users: 100, rps: 33, peakRps: 100,
+                p50: 28, p75: 52, p90: 78, p95: 95, p99: 180,
+                errorRate: 0.00, apdex: 0.97,
+                costWorkers: 420, costCPU: 0, costR2: 0, costD1: 0, costTotal: '₹420',
+                costUSD: '$5.00', costTotalUSD: '$5.00',
+                cpuUsage: 7, reqUsage: 7, bw: '16 Mbps',
+                d1Read: '2.0M / 25B', d1Write: '30K / 50M', d1Store: '0.5 / 10 GB',
+                r2Store: '5.0 / 10 GB', r2B: '600K / 10M', queueOps: '100 / 10K ops',
+                d1Wps: 5, segPerSec: 17
+            },
+            1000: {
+                label: 'Stress Test', users: 1000, rps: 333, peakRps: 1000,
+                p50: 42, p75: 78, p90: 105, p95: 124, p99: 312,
+                errorRate: 0.02, apdex: 0.94,
+                costWorkers: 420, costCPU: 62, costR2: 0, costD1: 0, costTotal: '₹482',
+                costUSD: '$5.74', costTotalUSD: '$5.74',
+                cpuUsage: 22, reqUsage: 67, bw: '160 Mbps',
+                d1Read: '20M / 25B', d1Write: '300K / 50M', d1Store: '1.0 / 10 GB',
+                r2Store: '5.0 / 10 GB', r2B: '6.0M / 10M', queueOps: '500 / 10K ops',
+                d1Wps: 40, segPerSec: 167
+            },
+            10000: {
+                label: 'Performance Test', users: 10000, rps: 3333, peakRps: 10000,
+                p50: 85, p75: 145, p90: 320, p95: 580, p99: 1200,
+                errorRate: 0.35, apdex: 0.87,
+                costWorkers: 420, costCPU: 1079, costR2: 1512, costD1: 0, costTotal: '₹5,502',
+                costUSD: '$65.50', costTotalUSD: '$65.50',
+                cpuUsage: 85, reqUsage: 100, bw: '1.6 Gbps',
+                d1Read: '201M / 25B', d1Write: '3.0M / 50M', d1Store: '3.0 / 10 GB',
+                r2Store: '10 / 10 GB', r2B: '60M / 10M', queueOps: '5.0K / 10K ops',
+                d1Wps: 350, segPerSec: 1667
+            },
+            100000: {
+                label: 'Bottleneck Hunt', users: 100000, rps: 33333, peakRps: 100000,
+                p50: 220, p75: 480, p90: 950, p95: 1800, p99: 4200,
+                errorRate: 0.82, apdex: 0.76,
+                costWorkers: 420, costCPU: 11239, costR2: 17842, costD1: 189, costTotal: '₹67,673',
+                costUSD: '$805.63', costTotalUSD: '$805.63',
+                cpuUsage: 100, reqUsage: 100, bw: '16 Gbps',
+                d1Read: '2.0B / 25B', d1Write: '30M / 50M', d1Store: '8.0 / 10 GB',
+                r2Store: '50 / 10 GB', r2B: '600M / 10M', queueOps: '50K / 10K ops',
+                d1Wps: 3500, segPerSec: 16667
+            }
+        };
+
+        let currentTier = 1000;
+        let dataSourceMode = 'simulated'; // simulated | realtime
+        let trendData = [];
+        let rpsHistory = [];
+        let segHistory = [];
+        let ticketHistory = [];
+
+        // Colors mapped to project theme (Soft terracotta, forest green, warm gold, slate blue)
+        const themeColors = {
+            primary: '#2E4E63',
+            cat: '#8D2B1D',
+            success: '#1E6B4B',
+            warning: '#B57314',
+            danger: '#B83E4B',
+            info: '#206E88',
+            border: '#EAE6DF',
+            bg: '#F8F6F2',
+            grid: 'rgba(92, 92, 92, 0.06)'
+        };
+
+        // ─── CLOCK DISPLAY ─────────────────────────────────
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent =
+                now.toLocaleTimeString('en-IN', { hour12: false });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ─── DATA SOURCE MODE TOGGLE ──────────────────────
+        window.setDataSource = function(mode) {
+            dataSourceMode = mode;
+            document.getElementById('btnSim').classList.toggle('active', mode === 'simulated');
+            document.getElementById('btnLive').classList.toggle('active', mode === 'realtime');
+            
+            const notice = document.getElementById('integrationNotice');
+            notice.style.display = mode === 'realtime' ? 'block' : 'none';
+            
+            // Re-render
+            updateDashboard(tierData[currentTier]);
+        };
+
+        // ─── TIER SELECTION ────────────────────────────────
+        window.selectTier = function(tier) {
+            currentTier = tier;
+            document.querySelectorAll('.tier-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.tier) === tier);
+            });
+            
+            // Adjust step timeline fills
+            const progressFill = document.getElementById('progressFill');
+            const step2Name = document.getElementById('step2Name');
+            const step2Detail = document.getElementById('step2Detail');
+            
+            const step3 = document.getElementById('stepProgress3');
+            const step4 = document.getElementById('stepProgress4');
+
+            // Reset step states
+            step3.className = 'progress-step pending';
+            step4.className = 'progress-step pending';
+            step3.querySelector('.step-circle').textContent = '3';
+            step4.querySelector('.step-circle').textContent = '4';
+
+            if (tier === 100) {
+                progressFill.style.width = '0%';
+                step2Name.textContent = 'Tier 2: 1,000 Users';
+                step2Detail.textContent = 'Stress Test — PENDING';
+                document.getElementById('stepProgress2').className = 'progress-step pending';
+            } else if (tier === 1000) {
+                progressFill.style.width = '35%';
+                step2Name.textContent = 'Tier 2: 1,000 Users';
+                step2Detail.textContent = 'Stress Test — IN PROGRESS';
+                document.getElementById('stepProgress2').className = 'progress-step active';
+            } else if (tier === 10000) {
+                progressFill.style.width = '68%';
+                step2Name.textContent = 'Tier 2: 1,000 Users';
+                step2Detail.textContent = 'Stress Test — PASSED';
+                document.getElementById('stepProgress2').className = 'progress-step completed';
+                document.getElementById('stepProgress2').querySelector('.step-circle').textContent = '✓';
+                
+                step3.className = 'progress-step active';
+                step3.querySelector('.step-circle').textContent = '3';
+            } else if (tier === 100000) {
+                progressFill.style.width = '100%';
+                step2Name.textContent = 'Tier 2: 1,000 Users';
+                step2Detail.textContent = 'Stress Test — PASSED';
+                document.getElementById('stepProgress2').className = 'progress-step completed';
+                document.getElementById('stepProgress2').querySelector('.step-circle').textContent = '✓';
+                
+                step3.className = 'progress-step completed';
+                step3.querySelector('.step-circle').textContent = '✓';
+                
+                step4.className = 'progress-step active';
+                step4.querySelector('.step-circle').textContent = '4';
+            }
+
+            // Update charts values
+            trendData = [];
+            rpsHistory = [];
+            segHistory = [];
+            ticketHistory = [];
+            
+            updateDashboard(tierData[tier]);
+        };
+
+        function updateDashboard(data) {
+            // Update labels and badges
+            document.getElementById('kpiP95').innerHTML = data.p95 + '<span class="kpi-unit">ms</span>';
+            document.getElementById('kpiRPS').innerHTML = data.rps.toLocaleString() + '<span class="kpi-unit">rps</span>';
+            document.getElementById('kpiUsers').textContent = data.users.toLocaleString('en-IN');
+            document.getElementById('kpiErrors').innerHTML = data.errorRate.toFixed(2) + '<span class="kpi-unit">%</span>';
+            document.getElementById('kpiApdex').textContent = data.apdex.toFixed(2);
+
+            // Update percentiles
+            document.getElementById('percP50').textContent = data.p50 + 'ms';
+            document.getElementById('percP75').textContent = data.p75 + 'ms';
+            document.getElementById('percP90').textContent = data.p90 + 'ms';
+            document.getElementById('percP95').textContent = data.p95 + 'ms';
+            document.getElementById('percP99').textContent = data.p99 + 'ms';
+
+            // Resource meters fills
+            document.getElementById('meterCPU').style.width = data.cpuUsage + '%';
+            document.getElementById('meterReqs').style.width = data.reqUsage + '%';
+            document.getElementById('meterBWVal').textContent = data.bw;
+            document.getElementById('meterD1ReadVal').textContent = data.d1Read;
+            document.getElementById('meterD1WriteVal').textContent = data.d1Write;
+            document.getElementById('meterD1StoreVal').textContent = data.d1Store;
+            document.getElementById('meterR2StoreVal').textContent = data.r2Store;
+            document.getElementById('meterR2BVal').textContent = data.r2B;
+            document.getElementById('meterQueueVal').textContent = data.queueOps;
+            document.getElementById('meterD1WpsVal').textContent = data.d1Wps + ' w/s';
+            document.getElementById('meterD1Wps').style.width = Math.min(100, (data.d1Wps / 5000) * 100) + '%';
+
+            // Cost Calculator fields
+            document.getElementById('costWorkers').textContent = data.costWorkers.toLocaleString('en-IN');
+            document.getElementById('costCPU').textContent = data.costCPU.toLocaleString('en-IN');
+            document.getElementById('costR2').textContent = data.costR2.toLocaleString('en-IN');
+            document.getElementById('costD1').textContent = data.costD1.toLocaleString('en-IN');
+            document.getElementById('costTotal').textContent = data.costTotal;
+            document.getElementById('costUserCount').textContent = data.users.toLocaleString('en-IN');
+            document.getElementById('costTierBadge').textContent = data.users.toLocaleString('en-IN') + ' Users';
+
+            // Redraw HTML5 Canvas Charts
+            drawHistogram(data);
+            drawTrend(data);
+            drawRPS(data);
+            drawErrors(data);
+            drawSegments(data);
+            drawTickets(data);
+        }
+
+        // ─── CANVAS UTILS ──────────────────────────────────
+        function getCtx(id) {
+            const canvas = document.getElementById(id);
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            return { ctx, w: rect.width, h: rect.height };
+        }
+
+        function drawGridLines(ctx, w, h, rows) {
+            ctx.strokeStyle = themeColors.grid;
+            ctx.lineWidth = 1;
+            for (let i = 1; i < rows; i++) {
+                const y = (h / rows) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // ─── RESPONSE HISTOGRAM CHART ──────────────────────
+        function drawHistogram(data) {
+            const { ctx, w, h } = getCtx('histogramCanvas');
+            ctx.clearRect(0, 0, w, h);
+
+            const buckets = [
+                { label: '0-50ms', pct: 0, color: themeColors.success },
+                { label: '50-100', pct: 0, color: themeColors.info },
+                { label: '100-200', pct: 0, color: themeColors.primary },
+                { label: '200-500', pct: 0, color: themeColors.warning },
+                { label: '500-1s', pct: 0, color: themeColors.cat },
+                { label: '1s-2s', pct: 0, color: themeColors.danger },
+                { label: '2s+', pct: 0, color: '#900A0A' }
+            ];
+
+            // Map standard latency profile variables
+            if (data.p50 <= 50) buckets[0].pct = 52;
+            else buckets[0].pct = 25;
+            if (data.p75 <= 100) buckets[1].pct = 28;
+            else buckets[1].pct = 22;
+            if (data.p90 <= 200) buckets[2].pct = 12;
+            else buckets[2].pct = 25;
+            if (data.p95 <= 500) buckets[3].pct = 5;
+            else buckets[3].pct = 16;
+            if (data.p99 <= 1000) buckets[4].pct = 2;
+            else buckets[4].pct = 8;
+            buckets[5].pct = data.p99 > 1000 ? 3 : 0.8;
+            buckets[6].pct = data.p99 > 2000 ? 1.5 : 0.2;
+
+            const total = buckets.reduce((s, b) => s + b.pct, 0);
+            buckets.forEach(b => b.pct = (b.pct / total) * 100);
+
+            const maxPct = Math.max(...buckets.map(b => b.pct));
+            const padding = { top: 20, bottom: 40, left: 10, right: 10 };
+            const chartW = w - padding.left - padding.right;
+            const chartH = h - padding.top - padding.bottom;
+            const barW = chartW / buckets.length * 0.65;
+            const gap = chartW / buckets.length * 0.35;
+
+            drawGridLines(ctx, w, h, 5);
+
+            buckets.forEach((b, i) => {
+                const x = padding.left + i * (barW + gap) + gap / 2;
+                const barH = (b.pct / (maxPct * 1.25)) * chartH;
+                const y = padding.top + chartH - barH;
+
+                ctx.beginPath();
+                ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
+                ctx.fillStyle = b.color;
+                ctx.fill();
+
+                // Draw percentage value text
+                ctx.fillStyle = themeColors.primary;
+                ctx.font = '600 11px "JetBrains Mono"';
+                ctx.textAlign = 'center';
+                ctx.fillText(b.pct.toFixed(1) + '%', x + barW / 2, y - 6);
+
+                // Axis label
+                ctx.fillStyle = '#8E8D88';
+                ctx.font = '500 10px "Inter"';
+                ctx.fillText(b.label, x + barW / 2, h - 10);
+            });
+        }
+
+        // ─── LATENCY TREND CHART ───────────────────────────
+        function drawTrend(data) {
+            const { ctx, w, h } = getCtx('trendCanvas');
+            ctx.clearRect(0, 0, w, h);
+            drawGridLines(ctx, w, h, 5);
+
+            if (trendData.length === 0 || trendData.length > 50) {
+                trendData = [];
+                for (let i = 0; i < 50; i++) {
+                    trendData.push({
+                        p50: data.p50 + (Math.random() - 0.5) * data.p50 * 0.3,
+                        p95: data.p95 + (Math.random() - 0.5) * data.p95 * 0.25,
+                        p99: data.p99 + (Math.random() - 0.5) * data.p99 * 0.25
+                    });
+                }
+            }
+
+            const pad = { top: 20, bottom: 30, left: 45, right: 15 };
+            const cw = w - pad.left - pad.right;
+            const ch = h - pad.top - pad.bottom;
+            const maxVal = Math.max(...trendData.map(d => d.p99)) * 1.15;
+
+            // Y-axis labels
+            ctx.fillStyle = '#6A6A6A';
+            ctx.font = '400 10px "JetBrains Mono"';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const val = Math.round((maxVal / 4) * i);
+                const y = pad.top + ch - (ch / 4) * i;
+                ctx.fillText(val + 'ms', pad.left - 8, y + 3);
+            }
+
+            function drawLine(points, color) {
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.5;
+                points.forEach((val, i) => {
+                    const x = pad.left + (i / (points.length - 1)) * cw;
+                    const y = pad.top + ch - (val / maxVal) * ch;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                // Filled area under curves
+                const lastX = pad.left + cw;
+                ctx.lineTo(lastX, pad.top + ch);
+                ctx.lineTo(pad.left, pad.top + ch);
+                ctx.closePath();
+                ctx.fillStyle = color + '08';
+                ctx.fill();
+            }
+
+            drawLine(trendData.map(d => d.p99), themeColors.danger);
+            drawLine(trendData.map(d => d.p95), themeColors.warning);
+            drawLine(trendData.map(d => d.p50), themeColors.success);
+
+            // Legends
+            const legends = [
+                { label: 'P50 (Median)', color: themeColors.success },
+                { label: 'P95', color: themeColors.warning },
+                { label: 'P99', color: themeColors.danger }
+            ];
+            let lx = w - pad.right - 260;
+            legends.forEach(l => {
+                ctx.fillStyle = l.color;
+                ctx.fillRect(lx, 6, 12, 3);
+                ctx.fillStyle = '#6A6A6A';
+                ctx.font = '500 10px "Inter"';
+                ctx.textAlign = 'left';
+                ctx.fillText(l.label, lx + 16, 10);
+                lx += 85;
+            });
+        }
+
+        // ─── THROUGHPUT CHART ──────────────────────────────
+        function drawRPS(data) {
+            const { ctx, w, h } = getCtx('rpsCanvas');
+            ctx.clearRect(0, 0, w, h);
+            drawGridLines(ctx, w, h, 5);
+
+            if (rpsHistory.length === 0 || rpsHistory.length > 50) {
+                rpsHistory = [];
+                for (let i = 0; i < 50; i++) {
+                    rpsHistory.push(data.rps + (Math.random() - 0.5) * data.rps * 0.1);
+                }
+            }
+
+            const pad = { top: 20, bottom: 30, left: 50, right: 15 };
+            const cw = w - pad.left - pad.right;
+            const ch = h - pad.top - pad.bottom;
+            const maxVal = data.peakRps * 1.2;
+
+            // Target dashed guideline
+            const targetY = pad.top + ch - (data.rps / maxVal) * ch;
+            ctx.strokeStyle = '#2E4E6360';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(pad.left, targetY);
+            ctx.lineTo(w - pad.right, targetY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = themeColors.primary;
+            ctx.font = '600 10px "Inter"';
+            ctx.textAlign = 'left';
+            ctx.fillText('Expected Target: ' + data.rps.toLocaleString() + ' rps', pad.left + 8, targetY - 6);
+
+            // Y-axis labels
+            ctx.fillStyle = '#6A6A6A';
+            ctx.font = '400 10px "JetBrains Mono"';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const val = Math.round((maxVal / 4) * i);
+                const y = pad.top + ch - (ch / 4) * i;
+                ctx.fillText(val.toLocaleString(), pad.left - 8, y + 3);
+            }
+
+            // Path curve
+            ctx.beginPath();
+            rpsHistory.forEach((val, i) => {
+                const x = pad.left + (i / (rpsHistory.length - 1)) * cw;
+                const y = pad.top + ch - (val / maxVal) * ch;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.strokeStyle = themeColors.primary;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // Gradient filling under line
+            const lastX = pad.left + cw;
+            ctx.lineTo(lastX, pad.top + ch);
+            ctx.lineTo(pad.left, pad.top + ch);
+            ctx.closePath();
+            const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
+            grad.addColorStop(0, 'rgba(46, 78, 99, 0.12)');
+            grad.addColorStop(1, 'rgba(46, 78, 99, 0.01)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+        }
+
+        // ─── ERROR PROFILE DONUT ───────────────────────────
+        function drawErrors(data) {
+            const { ctx, w, h } = getCtx('errorCanvas');
+            ctx.clearRect(0, 0, w, h);
+
+            const slices = [
+                { label: '2xx Success', pct: 100 - data.errorRate - 0.4, color: themeColors.success },
+                { label: '3xx Redirect', pct: 0.3, color: themeColors.info },
+                { label: '4xx Request Err', pct: data.errorRate * 0.4, color: themeColors.warning },
+                { label: '5xx Server Err', pct: data.errorRate * 0.6, color: themeColors.danger }
+            ];
+
+            const cX = w * 0.35;
+            const cY = h / 2;
+            const radius = Math.min(w * 0.28, h * 0.4);
+            const innerRadius = radius * 0.65;
+
+            let startAngle = -Math.PI / 2;
+            const totalVal = slices.reduce((s, e) => s + e.pct, 0);
+
+            slices.forEach(s => {
+                const sliceAngle = (s.pct / totalVal) * Math.PI * 2;
+                const endAngle = startAngle + sliceAngle;
+
+                ctx.beginPath();
+                ctx.arc(cX, cY, radius, startAngle, endAngle);
+                ctx.arc(cX, cY, innerRadius, endAngle, startAngle, true);
+                ctx.closePath();
+                ctx.fillStyle = s.color;
+                ctx.fill();
+
+                startAngle = endAngle;
+            });
+
+            // Center value readout
+            ctx.fillStyle = themeColors.primary;
+            ctx.font = '700 20px "JetBrains Mono"';
+            ctx.textAlign = 'center';
+            ctx.fillText(data.errorRate.toFixed(2) + '%', cX, cY + 2);
+            ctx.fillStyle = '#8E8D88';
+            ctx.font = '600 9px "Inter"';
+            ctx.fillText('TOTAL ERRORS', cX, cY + 16);
+
+            // Legends side block
+            let ly = 32;
+            slices.forEach(s => {
+                ctx.fillStyle = s.color;
+                ctx.beginPath();
+                ctx.roundRect(w * 0.68, ly, 10, 10, 2);
+                ctx.fill();
+                
+                ctx.fillStyle = themeColors.primary;
+                ctx.font = '700 11px "Inter"';
+                ctx.textAlign = 'left';
+                ctx.fillText(s.label, w * 0.68 + 16, ly + 9);
+                
+                ctx.fillStyle = '#6A6A6A';
+                ctx.font = '500 10px "JetBrains Mono"';
+                ctx.fillText(s.pct.toFixed(2) + '%', w * 0.68 + 16, ly + 22);
+                ly += 42;
+            });
+        }
+
+        // ─── SEGMENTS SERVED GRAPH ─────────────────────────
+        function drawSegments(data) {
+            const { ctx, w, h } = getCtx('segmentCanvas');
+            ctx.clearRect(0, 0, w, h);
+            drawGridLines(ctx, w, h, 5);
+
+            if (segHistory.length === 0 || segHistory.length > 30) {
+                segHistory = [];
+                for (let i = 0; i < 30; i++) {
+                    segHistory.push(data.segPerSec + (Math.random() - 0.5) * data.segPerSec * 0.15);
+                }
+            }
+
+            const pad = { top: 25, bottom: 30, left: 55, right: 15 };
+            const cw = w - pad.left - pad.right;
+            const ch = h - pad.top - pad.bottom;
+            const maxVal = Math.max(...segHistory) * 1.25;
+            const barW = (cw / segHistory.length) * 0.65;
+            const gap = (cw / segHistory.length) * 0.35;
+
+            // Y-axis labels
+            ctx.fillStyle = '#6A6A6A';
+            ctx.font = '400 10px "JetBrains Mono"';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const val = Math.round((maxVal / 4) * i);
+                const y = pad.top + ch - (ch / 4) * i;
+                ctx.fillText(val.toLocaleString(), pad.left - 8, y + 3);
+            }
+
+            segHistory.forEach((val, i) => {
+                const x = pad.left + i * (barW + gap);
+                const barH = (val / maxVal) * ch;
+                const y = pad.top + ch - barH;
+
+                const grad = ctx.createLinearGradient(x, y, x, pad.top + ch);
+                grad.addColorStop(0, themeColors.primary);
+                grad.addColorStop(1, '#FAEDE9');
+                ctx.fillStyle = grad;
+
+                ctx.beginPath();
+                ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
+                ctx.fill();
+            });
+
+            ctx.fillStyle = '#6A6A6A';
+            ctx.font = '500 11px "Inter"';
+            ctx.textAlign = 'center';
+            ctx.fillText('Delivered TS segments per second (rolling 30s average)', w / 2, h - 6);
+        }
+
+        // ─── TICKET LATENCY SCATTER ────────────────────────
+        function drawTickets(data) {
+            const { ctx, w, h } = getCtx('ticketCanvas');
+            ctx.clearRect(0, 0, w, h);
+            drawGridLines(ctx, w, h, 5);
+
+            const baseVal = data.p95 * 0.85;
+            if (ticketHistory.length === 0 || ticketHistory.length > 50) {
+                ticketHistory = [];
+                for (let i = 0; i < 50; i++) {
+                    ticketHistory.push(baseVal + (Math.random() - 0.5) * baseVal * 0.4);
+                }
+            }
+
+            const pad = { top: 20, bottom: 30, left: 45, right: 15 };
+            const cw = w - pad.left - pad.right;
+            const ch = h - pad.top - pad.bottom;
+            const maxVal = Math.max(...ticketHistory) * 1.3;
+
+            // Y-axis
+            ctx.fillStyle = '#6A6A6A';
+            ctx.font = '400 10px "JetBrains Mono"';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const val = Math.round((maxVal / 4) * i);
+                const y = pad.top + ch - (ch / 4) * i;
+                ctx.fillText(val + 'ms', pad.left - 8, y + 3);
+            }
+
+            // Draw scatter dots representing requests
+            ticketHistory.forEach((val, i) => {
+                const x = pad.left + (i / (ticketHistory.length - 1)) * cw;
+                const y = pad.top + ch - (val / maxVal) * ch;
+                
+                // Color dots depending on threshold
+                let dotColor = themeColors.success;
+                if (val > baseVal * 1.25) dotColor = themeColors.danger;
+                else if (val > baseVal * 1.05) dotColor = themeColors.warning;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = dotColor;
+                ctx.fill();
+            });
+
+            // Trend average line
+            const sum = ticketHistory.reduce((s, v) => s + v, 0);
+            const avgVal = sum / ticketHistory.length;
+            const avgY = pad.top + ch - (avgVal / maxVal) * ch;
+            
+            ctx.strokeStyle = themeColors.cat;
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(pad.left, avgY);
+            ctx.lineTo(w - pad.right, avgY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = themeColors.cat;
+            ctx.font = '600 10px "Inter"';
+            ctx.textAlign = 'left';
+            ctx.fillText('Average: ' + Math.round(avgVal) + 'ms', pad.left + 8, avgY - 6);
+        }
+
+        // ─── LIVE DATA SIMULATION JITTER ──────────────────
+        function simulateLiveUpdate() {
+            const data = tierData[currentTier];
+
+            const applyJitter = (val, range) => val + (Math.random() - 0.5) * val * range;
+
+            const p95 = Math.round(applyJitter(data.p95, 0.08));
+            document.getElementById('kpiP95').innerHTML = p95 + '<span class="kpi-unit">ms</span>';
+
+            const rps = Math.round(applyJitter(data.rps, 0.06));
+            document.getElementById('kpiRPS').innerHTML = rps.toLocaleString() + '<span class="kpi-unit">rps</span>';
+
+            const activeUsers = Math.round(applyJitter(data.users, 0.03));
+            document.getElementById('kpiUsers').textContent = activeUsers.toLocaleString('en-IN');
+
+            const errorPct = Math.max(0, applyJitter(data.errorRate, 0.2)).toFixed(2);
+            document.getElementById('kpiErrors').innerHTML = errorPct + '<span class="kpi-unit">%</span>';
+
+            const apdexScore = Math.min(1.0, Math.max(0, applyJitter(data.apdex, 0.015))).toFixed(2);
+            document.getElementById('kpiApdex').textContent = apdexScore;
+
+            // Push to rolling history arrays
+            if (trendData.length > 0) {
+                trendData.shift();
+                trendData.push({
+                    p50: applyJitter(data.p50, 0.15),
+                    p95: applyJitter(data.p95, 0.1),
+                    p99: applyJitter(data.p99, 0.1)
+                });
+                drawTrend(data);
+            }
+
+            if (rpsHistory.length > 0) {
+                rpsHistory.shift();
+                rpsHistory.push(applyJitter(data.rps, 0.08));
+                drawRPS(data);
+            }
+
+            if (segHistory.length > 0) {
+                segHistory.shift();
+                segHistory.push(applyJitter(data.segPerSec, 0.1));
+                drawSegments(data);
+            }
+
+            if (ticketHistory.length > 0) {
+                ticketHistory.shift();
+                ticketHistory.push(applyJitter(data.p95 * 0.8, 0.25));
+                drawTickets(data);
+            }
+
+            // Real-time jitter for percentile cards
+            document.getElementById('percP50').textContent = Math.round(applyJitter(data.p50, 0.05)) + 'ms';
+            document.getElementById('percP75').textContent = Math.round(applyJitter(data.p75, 0.05)) + 'ms';
+            document.getElementById('percP90').textContent = Math.round(applyJitter(data.p90, 0.05)) + 'ms';
+            document.getElementById('percP95').textContent = p95 + 'ms';
+            document.getElementById('percP99').textContent = Math.round(applyJitter(data.p99, 0.08)) + 'ms';
+        }
+
+        // ─── INITIALIZATION ────────────────────────────────
+        function init() {
+            updateDashboard(tierData[currentTier]);
+
+            // Start rolling updates loop
+            setInterval(simulateLiveUpdate, 2000);
+        }
+
+        // Handle canvas re-dimensions on scale adjust
+        let timer;
+        window.addEventListener('resize', () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                trendData = [];
+                rpsHistory = [];
+                segHistory = [];
+                ticketHistory = [];
+                updateDashboard(tierData[currentTier]);
+            }, 250);
+        });
+
+        // Trigger loading
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    })();
+    </script>
+</body>
+</html>

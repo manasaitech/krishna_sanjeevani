@@ -40,11 +40,25 @@ function Search() {
   const results = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return tracks.filter((t) => {
-      const matchesPurpose = purpose ? t.purpose === purpose : true;
+      const matchesPurpose = purpose
+        ? t.purposeTags?.some(
+            (tag: any) => tag.name && tag.name.toLowerCase().trim() === purpose.toLowerCase().trim()
+          ) || (t.purpose && t.purpose.toLowerCase().trim() === purpose.toLowerCase().trim())
+        : true;
+
       if (!needle) return matchesPurpose && (purpose !== null || false);
+
+      const searchFields = [
+        t.title,
+        t.raga,
+        t.purpose,
+        t.subtitle,
+        ...(t.purposeTags?.map((tag: any) => tag.name) || []),
+      ];
+
       return (
         matchesPurpose &&
-        [t.title, t.raga, t.purpose, t.subtitle].filter(Boolean).some((f) =>
+        searchFields.filter(Boolean).some((f) =>
           f!.toLowerCase().includes(needle),
         )
       );

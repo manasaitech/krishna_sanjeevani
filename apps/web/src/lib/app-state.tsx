@@ -8,7 +8,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import { type CategoryId, type Track, tracks as staticTracks, programs as staticPrograms } from "@/lib/content";
+import { type CategoryId, type Track, tracks as staticTracks, programs as staticPrograms, notifications as staticNotifications } from "@/lib/content";
 import { api, storeTokens, clearTokens, getAccessToken, BASE_URL } from "@/lib/api";
 import Hls from "hls.js";
 
@@ -76,6 +76,17 @@ type AppState = {
   historyList: any[];
   continueListeningList: any[];
   fetchHistoryAndContinueListening: () => Promise<void>;
+  notifications: Array<{
+    id: string;
+    kind: string;
+    title: string;
+    time: string;
+    body: string;
+    unread: boolean;
+    group: string;
+  }>;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -104,6 +115,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentProgramId, setCurrentProgramId] = useState<string | null>(null);
   const [historyList, setHistoryList] = useState<any[]>([]);
   const [continueListeningList, setContinueListeningList] = useState<any[]>([]);
+  const [notificationsList, setNotificationsList] = useState(() => [...staticNotifications]);
+
+  const markAsRead = useCallback((id: string) => {
+    setNotificationsList((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
+    );
+  }, []);
+
+  const markAllAsRead = useCallback(() => {
+    setNotificationsList((prev) =>
+      prev.map((n) => ({ ...n, unread: false }))
+    );
+  }, []);
 
   const currentRef = useRef<Track | null>(null);
   const currentProgramIdRef = useRef<string | null>(null);
@@ -765,6 +789,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       historyList,
       continueListeningList,
       fetchHistoryAndContinueListening,
+      notifications: notificationsList,
+      markAsRead,
+      markAllAsRead,
     }),
     [
       user,
@@ -797,6 +824,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       stop,
       close,
       trackProgress,
+      historyList,
+      continueListeningList,
+      notificationsList,
+      markAsRead,
+      markAllAsRead,
     ],
   );
 
