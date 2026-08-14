@@ -4,7 +4,7 @@ import { ArrowLeft, Loader2, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBar } from "@/components/StatusBar";
 import { useApp } from "@/lib/app-state";
-import prabhupadaImg from "@/assets/prabhupada.jpg";
+import prabhupadaImg from "@/assets/prabhupada.png";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -34,6 +34,7 @@ function LoginScreen() {
       }, 3000);
       return () => clearTimeout(timer);
     }
+    return;
   }, [showDedication, navigate]);
 
   const handleGoogleCredentialResponse = async (response: any) => {
@@ -103,45 +104,45 @@ function LoginScreen() {
 
   if (showDedication) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#160d0c] flex flex-col items-center justify-center text-[#FAF8F4] px-6 select-none animate-fade-in">
+      <div className="fixed inset-0 z-50 bg-[#FAF5EC] flex flex-col items-center justify-center text-[#3A3125] px-6 select-none animate-fade-in">
         <div className="text-center max-w-sm flex flex-col items-center gap-6">
           <div className="relative">
             {/* Outer soft glowing ring */}
-            <div className="absolute -inset-4 rounded-full bg-[#D4AF37]/5 blur-xl animate-pulse" />
-            {/* Gold border frame */}
-            <div className="relative h-44 w-44 rounded-full p-1 bg-gradient-to-tr from-[#D4AF37] via-[#F3E5AB] to-[#AA7C11] shadow-2xl">
+            <div className="absolute -inset-4 rounded-full bg-[#C9A84C]/10 blur-xl animate-pulse" />
+            {/* Elegant warm border frame */}
+            <div className="relative h-72 w-52 overflow-hidden rounded-2xl border-2 border-[#C9A84C]/30 bg-white shadow-2xl p-1">
               <img
                 src={prabhupadaImg}
                 alt="Srila Prabhupada"
-                className="h-full w-full rounded-full object-cover"
+                className="h-full w-full rounded-xl object-cover"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <span className="text-[10px] font-bold tracking-[0.25em] text-[#D4AF37] uppercase">
+            <span className="text-[10px] font-bold tracking-[0.25em] text-[#C9A84C] uppercase">
               Dedicated to
             </span>
-            <h2 className="text-2xl font-serif font-semibold tracking-wide mt-1">
+            <h2 className="text-2xl font-serif font-semibold tracking-wide mt-1 text-[#3A3125]">
               His Divine Grace
             </h2>
-            <h1 className="text-xl font-bold font-sans tracking-wide text-[#FAF8F4]">
+            <h1 className="text-xl font-bold font-sans tracking-wide text-[#261E14]">
               A.C. Bhaktivedanta Swami Prabhupada
             </h1>
-            <p className="text-xs text-[#FAF8F4]/60 italic font-serif leading-relaxed mt-2">
+            <p className="text-xs text-[#5C5040] italic font-serif leading-relaxed mt-2 max-w-[280px] mx-auto">
               Founder-Acharya of the International Society for Krishna Consciousness
             </p>
-            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-[#D4AF37]/40 to-transparent mx-auto my-4" />
-            <p className="text-[10px] uppercase font-semibold tracking-widest text-[#FAF8F4]/40">
+            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/40 to-transparent mx-auto my-4" />
+            <p className="text-[9px] uppercase font-semibold tracking-widest text-[#8A7963]">
               Krishna Sanjeevani Music Healing Research
             </p>
           </div>
 
           {/* Simple fading circular progress indicator */}
-          <div className="mt-4 flex gap-1 items-center justify-center">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37] animate-bounce" style={{ animationDelay: "0ms" }} />
-            <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37] animate-bounce" style={{ animationDelay: "150ms" }} />
-            <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37] animate-bounce" style={{ animationDelay: "300ms" }} />
+          <div className="mt-2 flex gap-1.5 items-center justify-center">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "0ms" }} />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "150ms" }} />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "300ms" }} />
           </div>
         </div>
       </div>

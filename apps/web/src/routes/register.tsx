@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { StatusBar } from "@/components/StatusBar";
 import { useApp } from "@/lib/app-state";
 import { categories } from "@/lib/content";
+import prabhupadaImg from "@/assets/prabhupada.png";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -27,11 +28,22 @@ function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [category, setCategory] = useState("devotional");
   const [loading, setLoading] = useState(false);
+  const [showDedication, setShowDedication] = useState(false);
 
   const categoryRef = useRef(category);
   useEffect(() => {
     categoryRef.current = category;
   }, [category]);
+
+  useEffect(() => {
+    if (showDedication) {
+      const timer = setTimeout(() => {
+        navigate({ to: "/home" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+    return;
+  }, [showDedication, navigate]);
 
   const handleGoogleCredentialResponse = async (response: any) => {
     setLoading(true);
@@ -39,7 +51,7 @@ function RegisterScreen() {
       const res = await loginWithGoogle(response.credential, categoryRef.current);
       if (res.success) {
         toast.success("Welcome to Krishna Sanjeevani!");
-        navigate({ to: "/home" });
+        setShowDedication(true);
       } else {
         toast.error(res.message);
       }
@@ -104,7 +116,7 @@ function RegisterScreen() {
 
       if (res.success) {
         toast.success("Account created successfully!");
-        navigate({ to: "/home" });
+        setShowDedication(true);
       } else {
         toast.error(res.message);
       }
@@ -114,6 +126,53 @@ function RegisterScreen() {
       setLoading(false);
     }
   };
+
+  if (showDedication) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#FAF5EC] flex flex-col items-center justify-center text-[#3A3125] px-6 select-none animate-fade-in">
+        <div className="text-center max-w-sm flex flex-col items-center gap-6">
+          <div className="relative">
+            {/* Outer soft glowing ring */}
+            <div className="absolute -inset-4 rounded-full bg-[#C9A84C]/10 blur-xl animate-pulse" />
+            {/* Elegant warm border frame */}
+            <div className="relative h-72 w-52 overflow-hidden rounded-2xl border-2 border-[#C9A84C]/30 bg-white shadow-2xl p-1">
+              <img
+                src={prabhupadaImg}
+                alt="Srila Prabhupada"
+                className="h-full w-full rounded-xl object-cover"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold tracking-[0.25em] text-[#C9A84C] uppercase">
+              Dedicated to
+            </span>
+            <h2 className="text-2xl font-serif font-semibold tracking-wide mt-1 text-[#3A3125]">
+              His Divine Grace
+            </h2>
+            <h1 className="text-xl font-bold font-sans tracking-wide text-[#261E14]">
+              A.C. Bhaktivedanta Swami Prabhupada
+            </h1>
+            <p className="text-xs text-[#5C5040] italic font-serif leading-relaxed mt-2 max-w-[280px] mx-auto">
+              Founder-Acharya of the International Society for Krishna Consciousness
+            </p>
+            <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/40 to-transparent mx-auto my-4" />
+            <p className="text-[9px] uppercase font-semibold tracking-widest text-[#8A7963]">
+              Krishna Sanjeevani Music Healing Research
+            </p>
+          </div>
+
+          {/* Simple fading circular progress indicator */}
+          <div className="mt-2 flex gap-1.5 items-center justify-center">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "0ms" }} />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "150ms" }} />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "300ms" }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-dvh bg-background flex flex-col">

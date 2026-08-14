@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -25,14 +26,54 @@ const icons: Record<CategoryId, typeof Flower> = {
   pregnancy: Baby,
 };
 
+const prabhupadaImg = require("../assets/images/prabhupada.png");
+
+import { signInWithGoogle } from "@/lib/google-auth";
+
 export default function RegisterScreen() {
-  const { register, theme, setCategory } = useApp();
+  const { register, loginWithGoogle, theme, setCategory } = useApp();
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>("devotional");
   const [loading, setLoading] = useState(false);
+  const [showDedication, setShowDedication] = useState(false);
+
+  useEffect(() => {
+    if (showDedication) {
+      const timer = setTimeout(() => {
+        router.replace("/(tabs)/home");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showDedication]);
+
+  const handleGoogleRegister = async () => {
+    setLoading(true);
+    try {
+      const authRes = await signInWithGoogle();
+      if (!authRes.success || !authRes.idToken) {
+        if (authRes.error && authRes.error !== "Sign-in cancelled by user") {
+          Alert.alert("Google Login Error", authRes.error);
+        }
+        setLoading(false);
+        return;
+      }
+
+      setCategory(selectedCategory);
+      const res = await loginWithGoogle(authRes.idToken);
+      if (res.success) {
+        setShowDedication(true);
+      } else {
+        Alert.alert("Google Login Failed", res.message);
+      }
+    } catch {
+      Alert.alert("Error", "Google authentication failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Password rules
   const hasMinLength = password.length >= 8;
@@ -63,9 +104,12 @@ export default function RegisterScreen() {
       });
 
       if (res.success) {
-        router.replace("/(tabs)/home");
+        setShowDedication(true);
       } else {
-        Alert.alert("Registration Failed", res.message);
+        const errorMsg = res.errors && res.errors.length > 0
+          ? res.errors.map((e: any) => e.message).join("\n")
+          : res.message;
+        Alert.alert("Registration Failed", errorMsg);
       }
     } catch {
       Alert.alert("Error", "An unexpected error occurred. Please try again.");
@@ -85,6 +129,37 @@ export default function RegisterScreen() {
         <Text style={[styles.ruleText, met && { color: "#10B981" }]}>
           {text}
         </Text>
+      </View>
+    );
+  }
+
+  if (showDedication) {
+    return (
+      <View style={styles.dedicationContainer}>
+        <View style={styles.dedicationContent}>
+          <View style={styles.glowOuter}>
+            <View style={styles.imageBorderFrame}>
+              <Image source={prabhupadaImg} style={styles.prabhupadaImg} />
+            </View>
+          </View>
+
+          <View style={styles.textBlock}>
+            <Text style={styles.dedicationLabel}>DEDICATED TO</Text>
+            <Text style={styles.divineGrace}>His Divine Grace</Text>
+            <Text style={styles.prabhupadaName}>A.C. Bhaktivedanta Swami Prabhupada</Text>
+            <Text style={styles.founderText}>
+              Founder-Acharya of the International Society for Krishna Consciousness
+            </Text>
+            <View style={styles.lineDivider} />
+            <Text style={styles.researchText}>
+              Krishna Sanjeevani Music Healing Research
+            </Text>
+          </View>
+
+          <View style={styles.loaderWrap}>
+            <ActivityIndicator size="small" color="#C9A84C" />
+          </View>
+        </View>
       </View>
     );
   }
@@ -246,6 +321,27 @@ export default function RegisterScreen() {
                 <Text style={styles.submitBtnText}>Create Account</Text>
               )}
             </Pressable>
+
+            {/* Divider */}
+            <View style={styles.dividerWrap}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Google Button */}
+            <Pressable
+              onPress={handleGoogleRegister}
+              disabled={loading}
+              style={[styles.googleBtn, loading && { opacity: 0.7 }]}
+            >
+              <View style={styles.googleBtnContent}>
+                <View style={styles.googleIconCircle}>
+                  <Text style={styles.googleIconLetter}>G</Text>
+                </View>
+                <Text style={styles.googleBtnText}>Continue with Google</Text>
+              </View>
+            </Pressable>
           </View>
 
           {/* Footer */}
@@ -406,5 +502,141 @@ const styles = StyleSheet.create({
   footerLink: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  dividerWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#E8E4DC",
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    fontSize: 14,
+    color: "#7C7A85",
+  },
+  googleBtn: {
+    height: 52,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E8E4DC",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  googleBtnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  googleIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#EA4335",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  googleIconLetter: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  googleBtnText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#1A1A1A",
+  },
+  dedicationContainer: {
+    flex: 1,
+    backgroundColor: "#FAF5EC",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  dedicationContent: {
+    alignItems: "center",
+    maxWidth: 320,
+  },
+  glowOuter: {
+    shadowColor: "#C9A84C",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 25,
+    elevation: 8,
+  },
+  imageBorderFrame: {
+    height: 280,
+    width: 196,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: "rgba(201, 168, 76, 0.3)",
+    backgroundColor: "#FFFFFF",
+    padding: 4,
+    overflow: "hidden",
+  },
+  prabhupadaImg: {
+    height: "100%",
+    width: "100%",
+    borderRadius: 18,
+    resizeMode: "cover",
+  },
+  textBlock: {
+    marginTop: 24,
+    alignItems: "center",
+    gap: 8,
+  },
+  dedicationLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 2.5,
+    color: "#C9A84C",
+  },
+  divineGrace: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#3A3125",
+    fontFamily: "DMSans",
+    marginTop: 4,
+  },
+  prabhupadaName: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#261E14",
+    textAlign: "center",
+    marginTop: 2,
+  },
+  founderText: {
+    fontSize: 12,
+    color: "#5C5040",
+    fontStyle: "italic",
+    textAlign: "center",
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  lineDivider: {
+    height: 1,
+    width: 96,
+    backgroundColor: "rgba(201, 168, 76, 0.4)",
+    marginVertical: 12,
+  },
+  researchText: {
+    fontSize: 9,
+    fontWeight: "600",
+    letterSpacing: 1.2,
+    color: "#8A7963",
+    textTransform: "uppercase",
+    textAlign: "center",
+  },
+  loaderWrap: {
+    marginTop: 24,
   },
 });

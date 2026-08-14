@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { View, Text, Pressable, Image, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Pressable, Image, ScrollView, StyleSheet, Modal, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { Bell, Crown, Search as SearchIcon, Sparkles } from "lucide-react-native";
+import { Bell, Crown, Search as SearchIcon, Sparkles, CheckCheck, RefreshCw, X } from "lucide-react-native";
 import { AppShell } from "@/components/AppShell";
 import { Chip, Rail, Section } from "@/components/layout-bits";
 import { ContinueCard, ProgramCard, TrackCard, TrackRow } from "@/components/cards";
@@ -31,10 +31,18 @@ export default function Home() {
     historyList,
     continueListeningList,
     fetchHistoryAndContinueListening,
+    notifications,
+    unreadCount,
+    notificationsLoading,
+    notificationsError,
+    fetchNotifications,
+    markNotificationRead,
+    markAllNotificationsRead,
   } = useApp();
   const userName = user?.profile?.fullName || user?.email?.split("@")[0] || "Guest";
   const router = useRouter();
   const [purpose, setPurpose] = useState<string | null>(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const catTracks = useMemo(
     () => tracks.filter((t) => t.category === category),
@@ -126,11 +134,17 @@ export default function Home() {
           </View>
         </View>
         <Pressable
-          onPress={() => router.push("/notifications")}
+          onPress={() => setNotificationsOpen(!notificationsOpen)}
           style={styles.bellBtn}
         >
           <Bell size={18} color="#1A1A1A" />
-          <View style={[styles.bellDot, { backgroundColor: theme.cat }]} />
+          {unreadCount > 0 && (
+            <View style={[styles.badgeContainer, { backgroundColor: theme.cat }]}>
+              <Text style={styles.badgeText}>
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </Text>
+            </View>
+          )}
         </Pressable>
       </View>
 
@@ -208,7 +222,7 @@ export default function Home() {
       </Section>
 
       {/* Recently played */}
-      <Section title="Recently played">
+      <Section title="Recently played" hint="See all" onPressHint={() => router.push("/history")}>
         {historyList.length ? (
           <View style={{ gap: 12 }}>
             {historyList.slice(0, 3).map((item) => (
@@ -232,7 +246,7 @@ export default function Home() {
       </Section>
 
       {/* Therapeutic programs */}
-      <Section title="Therapeutic programs">
+      <Section title="Therapeutic programs" hint="See all" onPressHint={() => router.push("/programs")}>
         <Rail>
           {(catPrograms.length ? catPrograms : programs).map((p) => (
             <ProgramCard key={p.id} program={p} />
@@ -251,10 +265,95 @@ export default function Home() {
         </Rail>
       </Section>
 
-      {/* Arriving soon */}
-      <Section title="Arriving soon" hint="Loading new sequences">
-        <CardsLoading count={4} />
-      </Section>
+      {/* Notifications Popover Modal */}
+      <Modal
+        visible={notificationsOpen}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setNotificationsOpen(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay} 
+          onPress={() => setNotificationsOpen(false)}
+        >
+          <Pressable 
+            style={[styles.popoverCard, { borderColor: theme.cat }]}
+            onPress={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <View style={styles.popoverHeader}>
+              <Text style={styles.popoverTitle}>Notifications</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <Pressable onPress={fetchNotifications} disabled={notificationsLoading} style={styles.headerActionBtn}>
+                  <RefreshCw size={14} color="#7C7A85" />
+                </Pressable>
+                {unreadCount > 0 && (
+                  <Pressable onPress={markAllNotificationsRead} style={styles.headerActionBtn}>
+                    <CheckCheck size={14} color={theme.cat} />
+                  </Pressable>
+                )}
+                <Pressable onPress={() => setNotificationsOpen(false)} style={styles.headerActionBtn}>
+                  <X size={14} color="#7C7A85" />
+                </Pressable>
+              </View>
+            </View>
+
+            {notificationsError ? (
+              <View style={styles.statusBox}>
+                <Text style={styles.errorMsg}>{notificationsError}</Text>
+                <Pressable onPress={fetchNotifications} style={[styles.retryBtn, { backgroundColor: theme.cat }]}>
+                  <Text style={styles.retryBtnText}>Retry</Text>
+                </Pressable>
+              </View>
+            ) : notificationsLoading && notifications.length === 0 ? (
+              <View style={styles.statusBox}>
+                <ActivityIndicator size="small" color={theme.cat} />
+                <Text style={styles.loadingMsg}>Loading...</Text>
+              </View>
+            ) : notifications.length === 0 ? (
+              <View style={styles.statusBox}>
+                <Text style={styles.emptyMsg}>No notifications yet</Text>
+              </View>
+            ) : (
+              <ScrollView 
+                style={styles.notificationsList} 
+                showsVerticalScrollIndicator={false}
+              >
+                {notifications.map((item) => {
+                  return (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => {
+                        if (!item.read) {
+                          markNotificationRead(item.id);
+                        }
+                      }}
+                      style={[
+                        styles.notificationItem,
+                        !item.read && { backgroundColor: theme.catLight }
+                      ]}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <View style={styles.notificationTitleRow}>
+                          <Text style={[styles.notificationTitle, !item.read && { fontWeight: "600" }]}>
+                            {item.title}
+                          </Text>
+                          {!item.read && <View style={[styles.unreadDot, { backgroundColor: theme.cat }]} />}
+                        </View>
+                        <Text style={styles.notificationMessage}>{item.message}</Text>
+                        <Text style={styles.notificationTime}>
+                          {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {new Date(item.createdAt).toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </AppShell>
   );
 }
@@ -306,13 +405,134 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     elevation: 4,
   },
-  bellDot: {
+  badgeContainer: {
     position: "absolute",
-    top: 10,
-    right: 12,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 9,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.15)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: 80,
+    paddingRight: 20,
+  },
+  popoverCard: {
+    width: 320,
+    maxHeight: 400,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#E8E4DC",
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  popoverHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderColor: "#F5F1EB",
+    paddingBottom: 10,
+    marginBottom: 10,
+  },
+  popoverTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1A1A1A",
+    fontFamily: "DMSans",
+  },
+  headerActionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    padding: 4,
+  },
+  headerActionText: {
+    fontSize: 11,
+    fontWeight: "500",
+  },
+  statusBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    gap: 12,
+  },
+  errorMsg: {
+    fontSize: 13,
+    color: "#C07B8A",
+    textAlign: "center",
+  },
+  retryBtn: {
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  retryBtnText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  loadingMsg: {
+    fontSize: 13,
+    color: "#7C7A85",
+  },
+  emptyMsg: {
+    fontSize: 13,
+    color: "#7C7A85",
+  },
+  notificationsList: {
+    maxHeight: 300,
+  },
+  notificationItem: {
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  notificationTitleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  notificationTitle: {
+    fontSize: 14,
+    color: "#1A1A1A",
+    flex: 1,
+  },
+  unreadDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginTop: 6,
+  },
+  notificationMessage: {
+    fontSize: 13,
+    color: "#7C7A85",
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  notificationTime: {
+    fontSize: 11,
+    color: "#7C7A85",
+    marginTop: 6,
   },
   searchBar: {
     marginTop: 24,

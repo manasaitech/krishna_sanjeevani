@@ -57,6 +57,7 @@ export type Track = {
   purpose?: string;
   frequency?: string;
   instructions?: string;
+  purposeTags?: any[];
 };
 
 export type Program = {

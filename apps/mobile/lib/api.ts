@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import Constants from "expo-constants";
+import * as SecureStore from "expo-secure-store";
 
 const getBaseUrl = () => {
   if (__DEV__) {
@@ -18,8 +19,57 @@ const getBaseUrl = () => {
 
 export const BASE_URL = getBaseUrl();
 
+const KEYS = {
+  ACCESS_TOKEN: "ks_mobile_access_token",
+  REFRESH_TOKEN: "ks_mobile_refresh_token",
+};
+
+async function setItem(key: string, value: string) {
+  if (Platform.OS === "web") {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn("Storage error on web", e);
+    }
+    return;
+  }
+  await SecureStore.setItemAsync(key, value);
+}
+
+async function getItem(key: string): Promise<string | null> {
+  if (Platform.OS === "web") {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+  return await SecureStore.getItemAsync(key);
+}
+
+async function deleteItem(key: string) {
+  if (Platform.OS === "web") {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {}
+    return;
+  }
+  await SecureStore.deleteItemAsync(key);
+}
+
 let _accessToken: string | null = null;
 let _refreshToken: string | null = null;
+let _onAuthFailure: (() => void) | null = null;
+let _refreshPromise: Promise<boolean> | null = null;
+
+export function registerAuthFailureHandler(handler: () => void) {
+  _onAuthFailure = handler;
+}
+
+export async function loadPersistedTokens(): Promise<void> {
+  _accessToken = await getItem(KEYS.ACCESS_TOKEN);
+  _refreshToken = await getItem(KEYS.REFRESH_TOKEN);
+}
 
 export function getAccessToken(): string | null {
   return _accessToken;
@@ -29,14 +79,18 @@ export function getRefreshToken(): string | null {
   return _refreshToken;
 }
 
-export function storeTokens(accessToken: string, refreshToken: string) {
+export async function storeTokens(accessToken: string, refreshToken: string) {
   _accessToken = accessToken;
   _refreshToken = refreshToken;
+  await setItem(KEYS.ACCESS_TOKEN, accessToken);
+  await setItem(KEYS.REFRESH_TOKEN, refreshToken);
 }
 
-export function clearTokens() {
+export async function clearTokens() {
   _accessToken = null;
   _refreshToken = null;
+  await deleteItem(KEYS.ACCESS_TOKEN);
+  await deleteItem(KEYS.REFRESH_TOKEN);
 }
 
 type ApiResponse<T = any> = {
@@ -47,33 +101,43 @@ type ApiResponse<T = any> = {
 };
 
 async function refreshAccessToken(): Promise<boolean> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return false;
-
-  try {
-    const res = await fetch(`${BASE_URL}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
-    });
-
-    if (!res.ok) {
-      clearTokens();
-      return false;
-    }
-
-    const json: ApiResponse<{ accessToken: string; refreshToken: string }> = await res.json();
-    if (json.success && json.data) {
-      storeTokens(json.data.accessToken, json.data.refreshToken);
-      return true;
-    }
-
-    clearTokens();
-    return false;
-  } catch {
-    clearTokens();
-    return false;
+  if (_refreshPromise) {
+    return _refreshPromise;
   }
+
+  _refreshPromise = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return false;
+
+    try {
+      const res = await fetch(`${BASE_URL}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!res.ok) {
+        await clearTokens();
+        return false;
+      }
+
+      const json: ApiResponse<{ accessToken: string; refreshToken: string }> = await res.json();
+      if (json.success && json.data) {
+        await storeTokens(json.data.accessToken, json.data.refreshToken);
+        return true;
+      }
+
+      await clearTokens();
+      return false;
+    } catch {
+      await clearTokens();
+      return false;
+    } finally {
+      _refreshPromise = null;
+    }
+  })();
+
+  return _refreshPromise;
 }
 
 async function request<T = any>(
@@ -91,21 +155,97 @@ async function request<T = any>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  // Support 15s network timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  // Auto-refresh on 401
-  if (res.status === 401 && retry) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      return request<T>(path, options, false);
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    // Auto-refresh on 401
+    if (res.status === 401) {
+      if (retry) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          return request<T>(path, options, false);
+        }
+      }
+      // Refresh failed or already retried and failed
+      if (_onAuthFailure) {
+        _onAuthFailure();
+      }
+      return {
+        success: false,
+        message: "Session expired. Please login again.",
+        errors: [{ name: "UnauthorizedError", message: "Session expired. Please log in again." }],
+      };
     }
-  }
 
-  const json: ApiResponse<T> = await res.json();
-  return json;
+    if (res.status === 403) {
+      return {
+        success: false,
+        message: "Access Denied",
+        errors: [{ name: "ForbiddenError", message: "You do not have permission to perform this action." }],
+      };
+    }
+
+    if (res.status === 404) {
+      return {
+        success: false,
+        message: "Not Found",
+        errors: [{ name: "NotFoundError", message: "The requested resource was not found." }],
+      };
+    }
+
+    if (res.status === 429) {
+      return {
+        success: false,
+        message: "Too Many Requests",
+        errors: [{ name: "RateLimitError", message: "Too many requests. Please try again later." }],
+      };
+    }
+
+    if (res.status >= 500) {
+      return {
+        success: false,
+        message: "Server Error",
+        errors: [{ name: "ServerError", message: "Server encountered an error. Please try again later." }],
+      };
+    }
+
+    let json: any;
+    try {
+      json = await res.json();
+    } catch {
+      json = {
+        success: res.ok,
+        message: res.statusText || "Response processed successfully",
+      };
+    }
+    return json;
+
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+
+    const isTimeout = err.name === "AbortError";
+    return {
+      success: false,
+      message: isTimeout ? "Request timed out" : "Network connection error",
+      errors: [
+        {
+          name: isTimeout ? "TimeoutError" : "NetworkError",
+          message: isTimeout
+            ? "The server took too long to respond. Please check your connection."
+            : "No internet connection detected. Please verify your network and try again.",
+        },
+      ],
+    };
+  }
 }
 
 const http = {
@@ -150,13 +290,17 @@ export const api = {
       http.post("/auth/register", { email, password, fullName, category }),
     login: (email: string, password: string) =>
       http.post("/auth/login", { email, password }),
-    logout: () => {
-      clearTokens();
+    loginWithGoogle: (idToken: string, category?: string) =>
+      http.post("/auth/google", { idToken, category }),
+    logout: async () => {
+      await clearTokens();
       return http.post("/auth/logout");
     },
     me: () => http.get("/auth/me"),
     changePassword: (password: string) =>
       http.post("/auth/change-password", { password }),
+    updateProfile: (fullName?: string, language?: string) =>
+      http.patch("/auth/profile", { fullName, language }),
   },
 
   // ── Tracks ──
@@ -271,5 +415,12 @@ export const api = {
   },
   payments: {
     list: () => http.get("/subscriptions/payments"),
+  },
+  // ── Notifications ──
+  notifications: {
+    list: () => http.get("/notifications"),
+    unreadCount: () => http.get("/notifications/unread/count"),
+    markAsRead: (id: string) => http.post(`/notifications/${id}/read`),
+    markAllAsRead: () => http.post("/notifications/read/all"),
   },
 };

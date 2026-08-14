@@ -18,6 +18,8 @@ class PlayerService {
     url: string,
     initialPositionSeconds = 0,
     speed = 1,
+    volume = 0.8,
+    isMuted = false,
     onStatus: (status: AVPlaybackStatus) => void
   ) {
     if (this.sound) {
@@ -35,6 +37,8 @@ class PlayerService {
           rate: speed,
           shouldCorrectPitch: true,
           progressUpdateIntervalMillis: 500, // updates twice a second
+          volume: isMuted ? 0 : volume,
+          isMuted: isMuted,
         },
         this.handleStatusUpdate.bind(this)
       );
@@ -43,6 +47,18 @@ class PlayerService {
     } catch (err) {
       console.error("PlayerService: Failed to create sound instance", err);
       throw err;
+    }
+  }
+
+  async setVolume(volume: number) {
+    if (this.sound) {
+      await this.sound.setVolumeAsync(volume);
+    }
+  }
+
+  async setMuted(isMuted: boolean) {
+    if (this.sound) {
+      await this.sound.setIsMutedAsync(isMuted);
     }
   }
 

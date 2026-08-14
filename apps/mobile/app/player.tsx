@@ -15,6 +15,11 @@ import {
   Timer,
   Waves,
   X,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+  ListMusic,
 } from "lucide-react-native";
 // Using a simple View-based progress bar instead of @react-native-community/slider
 import { useApp } from "@/lib/app-state";
@@ -121,11 +126,23 @@ export default function Player() {
     toggleFavorite,
     theme,
     buffering,
+    next,
+    previous,
+    volume,
+    muted,
+    setVolume,
+    setMuted,
+    queue,
+    queueIndex,
+    play,
+    currentProgram,
   } = useApp();
   const router = useRouter();
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [queueOpen, setQueueOpen] = useState(false);
   const [sliderWidth, setSliderWidth] = useState(300);
+  const [volumeSliderWidth, setVolumeSliderWidth] = useState(200);
 
   if (!current) {
     return (
@@ -225,8 +242,8 @@ export default function Player() {
           >
             <Heart size={20} color={fav ? theme.cat : "#7C7A85"} fill={fav ? theme.cat : "none"} />
           </Pressable>
-          <Pressable onPress={() => skip(-15)} style={styles.skipBtn}>
-            <RotateCcw size={24} color="#1A1A1A" strokeWidth={1.8} />
+          <Pressable onPress={previous} style={styles.skipBtn}>
+            <SkipBack size={24} color="#1A1A1A" strokeWidth={1.8} />
           </Pressable>
           <Pressable
             onPress={toggle}
@@ -241,11 +258,34 @@ export default function Player() {
               <Play size={28} color={theme.catForeground} fill={theme.catForeground} />
             )}
           </Pressable>
-          <Pressable onPress={() => skip(30)} style={styles.skipBtn}>
-            <RotateCw size={24} color="#1A1A1A" strokeWidth={1.8} />
+          <Pressable onPress={next} style={styles.skipBtn}>
+            <SkipForward size={24} color="#1A1A1A" strokeWidth={1.8} />
           </Pressable>
-          <Pressable onPress={() => setSettingsOpen(true)} style={styles.iconCircle}>
-            <Gauge size={20} color="#7C7A85" />
+          <Pressable onPress={() => setQueueOpen(true)} style={styles.iconCircle}>
+            <ListMusic size={20} color="#7C7A85" />
+          </Pressable>
+        </View>
+
+        {/* Volume controls */}
+        <View style={styles.volumeRow}>
+          <Pressable onPress={() => setMuted(!muted)} style={styles.muteBtn}>
+            {muted ? (
+              <VolumeX size={18} color="#7C7A85" />
+            ) : (
+              <Volume2 size={18} color="#7C7A85" />
+            )}
+          </Pressable>
+          <Pressable
+            onLayout={(e) => {
+              setVolumeSliderWidth(e.nativeEvent.layout.width);
+            }}
+            onPress={(e) => {
+              const ratio = Math.max(0, Math.min(1, (e.nativeEvent as any).locationX / volumeSliderWidth));
+              setVolume(ratio);
+            }}
+            style={styles.volumeSliderTrack}
+          >
+            <View style={[styles.volumeSliderFill, { width: `${(muted ? 0 : volume) * 100}%`, backgroundColor: theme.cat }]} />
           </Pressable>
         </View>
 
@@ -380,6 +420,48 @@ export default function Player() {
                 </Pressable>
               ))}
             </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Queue Modal */}
+      <Modal visible={queueOpen} animationType="slide" transparent>
+        <Pressable style={styles.modalOverlay} onPress={() => setQueueOpen(false)}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Playback Queue</Text>
+            
+            <ScrollView style={{ maxHeight: 300, width: "100%", marginTop: 12 }} showsVerticalScrollIndicator={false}>
+              {queue.map((t, idx) => {
+                const isCurrent = idx === queueIndex;
+                return (
+                  <Pressable
+                    key={t.id + "-" + idx}
+                    onPress={() => {
+                      play(t, currentProgram?.id || undefined);
+                      setQueueOpen(false);
+                    }}
+                    style={[
+                      styles.queueItem,
+                      isCurrent && { backgroundColor: theme.catLight }
+                    ]}
+                  >
+                    <Image source={resolveImageSource(t.art, t.category)} style={styles.queueArt} />
+                    <View style={{ flex: 1 }}>
+                      <Text numberOfLines={1} style={[styles.queueTitle, isCurrent && { color: theme.cat, fontWeight: "600" }]}>
+                        {t.title}
+                      </Text>
+                      <Text numberOfLines={1} style={styles.queueSubtitle}>
+                        {t.raga} · {t.purpose}
+                      </Text>
+                    </View>
+                    {isCurrent && (
+                      <View style={[styles.playingIndicator, { backgroundColor: theme.cat }]} />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
           </View>
         </Pressable>
       </Modal>
@@ -608,5 +690,62 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: "center",
     justifyContent: "center",
+  },
+  volumeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 20,
+    paddingHorizontal: 16,
+  },
+  muteBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E8E4DC",
+  },
+  volumeSliderTrack: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#E8E4DC",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  volumeSliderFill: {
+    height: "100%",
+    borderRadius: 3,
+  },
+  queueItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 8,
+  },
+  queueArt: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+  },
+  queueTitle: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#1A1A1A",
+  },
+  queueSubtitle: {
+    fontSize: 12,
+    color: "#7C7A85",
+    marginTop: 2,
+  },
+  playingIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });

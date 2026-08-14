@@ -21,6 +21,13 @@ export default function ProgramDetail() {
 
   const [programTracks, setProgramTracks] = useState<Track[]>([]);
   const [loadingTracks, setLoadingTracks] = useState(true);
+  const [progress, setProgress] = useState<{
+    completedTracks: string[];
+    progressPercentage: number;
+    startedAt: number | null;
+    completedAt: number | null;
+  } | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -45,6 +52,35 @@ export default function ProgramDetail() {
     return () => { active = false; };
   }, [programId, BASE_URL]);
 
+  useEffect(() => {
+    let active = true;
+    if (!programId) return;
+    setLoadingProgress(true);
+    api.progress.get(programId)
+      .then((res) => {
+        if (active && res.success && res.data) {
+          setProgress(res.data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoadingProgress(false);
+      });
+    return () => { active = false; };
+  }, [programId]);
+
+  const list = programTracks;
+
+  const resumeTrack = useMemo(() => {
+    if (!progress || !progress.completedTracks || progress.completedTracks.length === 0) {
+      return list[0] || null;
+    }
+    const uncompleted = list.find((t) => !progress.completedTracks.includes(t.id));
+    return uncompleted || list[0] || null;
+  }, [list, progress]);
+
+  const hasStarted = progress && progress.progressPercentage > 0;
+
   if (!program) {
     return (
       <AppShell title="Not found" back>
@@ -56,7 +92,6 @@ export default function ProgramDetail() {
   }
 
   const saved = savedPrograms.includes(program.id);
-  const list = programTracks;
 
   return (
     <AppShell bare>
@@ -77,6 +112,29 @@ export default function ProgramDetail() {
           <Text style={styles.heroSubtitle}>{program.subtitle}</Text>
         </View>
       </View>
+
+      {/* Progress display */}
+      {progress && progress.progressPercentage > 0 && (
+        <View style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressTitle}>Your Journey Progress</Text>
+            <Text style={[styles.progressPercentageText, { color: theme.cat }]}>
+              {progress.progressPercentage}% Completed
+            </Text>
+          </View>
+          <View style={styles.progressBarTrack}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${progress.progressPercentage}%`, backgroundColor: theme.cat },
+              ]}
+            />
+          </View>
+          <Text style={styles.progressHelper}>
+            {progress.completedTracks?.length || 0} of {list.length} sessions completed
+          </Text>
+        </View>
+      )}
 
       {/* Stats */}
       <View style={styles.statsRow}>
@@ -145,14 +203,16 @@ export default function ProgramDetail() {
       <View style={styles.actions}>
         <Pressable
           onPress={() => {
-            if (list[0]) play(list[0], program.id);
+            if (resumeTrack) play(resumeTrack, program.id);
             router.push("/player");
           }}
           disabled={list.length === 0}
           style={[styles.primaryBtn, { backgroundColor: "#264653", flex: 1 }, list.length === 0 && { opacity: 0.6 }]}
         >
           <Play size={16} color="#FAF8F4" fill="#FAF8F4" />
-          <Text style={styles.primaryBtnText}>Play program</Text>
+          <Text style={styles.primaryBtnText}>
+            {hasStarted ? "Resume program" : "Play program"}
+          </Text>
         </Pressable>
         <Pressable
           onPress={() => toggleSavedProgram(program.id)}
@@ -332,4 +392,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   saveBtnText: { fontSize: 15, fontWeight: "600", color: "#1A1A1A" },
+  progressCard: {
+    marginTop: 24,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#E8E4DC",
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  progressHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  progressTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1A1A1A",
+  },
+  progressPercentageText: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  progressBarTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#E8E4DC",
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+  progressBarFill: {
+    height: "100%",
+    borderRadius: 3,
+  },
+  progressHelper: {
+    fontSize: 12,
+    color: "#7C7A85",
+  },
 });

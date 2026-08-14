@@ -11,10 +11,11 @@ import {
 import { Platform } from "react-native";
 import Hls from "hls.js";
 import { type CategoryId, type Track, tracks as staticTracks, programs as staticPrograms } from "@/lib/content";
-import { api, storeTokens, clearTokens, getAccessToken, BASE_URL } from "@/lib/api";
+import { api, storeTokens, clearTokens, getAccessToken, BASE_URL, loadPersistedTokens, registerAuthFailureHandler } from "@/lib/api";
 import { Alert } from "react-native";
 import { playerService } from "./player-service";
 import { AVPlaybackStatus } from "expo-av";
+import { router } from "expo-router";
 
 /** Category-specific color palettes (hex values for RN) */
 export const categoryThemes: Record<
@@ -47,8 +48,10 @@ type AppState = {
   isAuthenticated: boolean;
   authLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
-  register: (data: { email: string; password: string; fullName: string; category: string }) => Promise<{ success: boolean; message: string }>;
+  register: (data: { email: string; password: string; fullName: string; category: string }) => Promise<{ success: boolean; message: string; errors?: any[] }>;
+  loginWithGoogle: (idToken: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
+  updateProfile: (fullName?: string, language?: string) => Promise<{ success: boolean; message: string }>;
 
   // Data
   tracks: Track[];
@@ -82,6 +85,34 @@ type AppState = {
   historyList: any[];
   continueListeningList: any[];
   fetchHistoryAndContinueListening: () => Promise<void>;
+
+  // Authoritative Audio Player additions
+  currentTrack: Track | null;
+  currentProgram: any | null;
+  queue: Track[];
+  queueIndex: number;
+  volume: number;
+  muted: boolean;
+  playbackRate: number;
+  error: string | null;
+  setVolume: (v: number) => void;
+  setMuted: (m: boolean) => void;
+  setPlaybackRate: (r: number) => void;
+  next: () => void;
+  previous: () => void;
+  close: () => void;
+  setQueue: (tracks: Track[], index?: number) => void;
+  addToQueue: (track: Track) => void;
+  clearQueue: () => void;
+
+  // Notifications additions
+  notifications: any[];
+  unreadCount: number;
+  notificationsLoading: boolean;
+  notificationsError: string | null;
+  fetchNotifications: () => Promise<void>;
+  markNotificationRead: (id: string) => Promise<void>;
+  markAllNotificationsRead: () => Promise<void>;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -110,6 +141,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [trackPositions, setTrackPositions] = useState<Record<string, number>>({});
   const [historyList, setHistoryList] = useState<any[]>([]);
   const [continueListeningList, setContinueListeningList] = useState<any[]>([]);
+
+  // Authoritative Audio Player States
+  const [queue, setQueueState] = useState<Track[]>([]);
+  const [queueIndex, setQueueIndex] = useState<number>(0);
+  const [volume, setVolumeState] = useState<number>(0.8);
+  const [muted, setMutedState] = useState<boolean>(false);
+  const [error, setErrorState] = useState<string | null>(null);
+
+  // Notifications States
+  const [notificationsList, setNotificationsList] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [notificationsLoading, setNotificationsLoading] = useState<boolean>(false);
+  const [notificationsError, setNotificationsError] = useState<string | null>(null);
+
+  const queueRef = useRef<Track[]>([]);
+  const queueIndexRef = useRef<number>(0);
+
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
+
+  useEffect(() => {
+    queueIndexRef.current = queueIndex;
+  }, [queueIndex]);
 
   const currentRef = useRef<Track | null>(null);
   const currentProgramIdRef = useRef<string | null>(null);
@@ -225,24 +280,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchTracksAndPrograms(category);
   }, [category, fetchTracksAndPrograms]);
 
+  // Register auth failure callback
+  useEffect(() => {
+    registerAuthFailureHandler(() => {
+      Alert.alert("Session Expired", "Your session has expired. Please log in again.");
+      clearTokens().then(() => {
+        setUser(null);
+        router.replace("/welcome");
+      }).catch(err => console.warn(err));
+    });
+  }, []);
+
   // Restore Session
   useEffect(() => {
     const checkAuth = async () => {
-      const token = getAccessToken();
-      if (!token) {
-        setAuthLoading(false);
-        return;
-      }
       try {
+        await loadPersistedTokens();
+        const token = getAccessToken();
+        if (!token) {
+          setAuthLoading(false);
+          return;
+        }
         const res = await api.auth.me();
         if (res.success && res.data) {
           setUser(res.data);
           if (res.data.profile?.category) {
             setCategory(res.data.profile.category as CategoryId);
           }
+        } else {
+          await clearTokens();
+          setUser(null);
         }
       } catch {
-        clearTokens();
+        await clearTokens();
+        setUser(null);
       } finally {
         setAuthLoading(false);
       }
@@ -278,16 +349,78 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const fetchNotifications = useCallback(async () => {
+    setNotificationsLoading(true);
+    setNotificationsError(null);
+    try {
+      const [listRes, countRes] = await Promise.all([
+        api.notifications.list(),
+        api.notifications.unreadCount()
+      ]);
+      if (listRes.success && Array.isArray(listRes.data)) {
+        setNotificationsList(listRes.data);
+      } else {
+        throw new Error(listRes.message || "Failed to fetch notifications");
+      }
+      if (countRes.success && countRes.data) {
+        setUnreadCount(countRes.data.count);
+      }
+    } catch (err: any) {
+      console.warn("Failed to fetch notifications", err);
+      setNotificationsError(err.message || "Failed to load notifications");
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }, []);
+
+  const markNotificationRead = useCallback(async (id: string) => {
+    // Optimistic Update
+    setNotificationsList((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    try {
+      const res = await api.notifications.markAsRead(id);
+      if (!res.success) {
+        throw new Error(res.message);
+      }
+    } catch (err) {
+      console.warn("Failed to mark notification read, rolling back...", err);
+      fetchNotifications();
+    }
+  }, [fetchNotifications]);
+
+  const markAllNotificationsRead = useCallback(async () => {
+    // Optimistic Update
+    setNotificationsList((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
+
+    try {
+      const res = await api.notifications.markAllAsRead();
+      if (!res.success) {
+        throw new Error(res.message);
+      }
+    } catch (err) {
+      console.warn("Failed to mark all notifications read, rolling back...", err);
+      fetchNotifications();
+    }
+  }, [fetchNotifications]);
+
   useEffect(() => {
     if (user) {
       fetchFavorites();
       fetchHistoryAndContinueListening();
+      fetchNotifications();
     } else {
       setFavorites([]);
       setHistoryList([]);
       setContinueListeningList([]);
+      setNotificationsList([]);
+      setUnreadCount(0);
+      setNotificationsError(null);
     }
-  }, [user, fetchFavorites, fetchHistoryAndContinueListening]);
+  }, [user, fetchFavorites, fetchHistoryAndContinueListening, fetchNotifications]);
 
   const toggleFavorite = useCallback(async (id: string) => {
     const isFav = favorites.includes(id);
@@ -320,7 +453,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.auth.login(email, password);
       if (res.success && res.data) {
-        storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
+        await storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
         const me = await api.auth.me();
         if (me.success && me.data) {
           setUser(me.data);
@@ -340,7 +473,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.auth.register(data.email, data.password, data.fullName, data.category);
       if (res.success && res.data) {
-        storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
+        await storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
         const me = await api.auth.me();
         if (me.success && me.data) {
           setUser(me.data);
@@ -350,7 +483,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         return { success: true, message: "Registration successful" };
       }
-      return { success: false, message: res.message || "Registration failed" };
+      return { success: false, message: res.message || "Registration failed", errors: res.errors };
+    } catch {
+      return { success: false, message: "Network error" };
+    }
+  }, []);
+
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    try {
+      const res = await api.auth.loginWithGoogle(idToken);
+      if (res.success && res.data) {
+        await storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
+        const me = await api.auth.me();
+        if (me.success && me.data) {
+          setUser(me.data);
+          if (me.data.profile?.category) {
+            setCategory(me.data.profile.category as CategoryId);
+          }
+        }
+        return { success: true, message: "Login successful" };
+      }
+      return { success: false, message: res.message || "Google login failed" };
     } catch {
       return { success: false, message: "Network error" };
     }
@@ -362,8 +515,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch {
       // Continue locally on error
     } finally {
-      clearTokens();
+      await clearTokens();
       setUser(null);
+    }
+  }, []);
+
+  const updateProfile = useCallback(async (fullName?: string, language?: string) => {
+    try {
+      const res = await api.auth.updateProfile(fullName, language);
+      if (res.success) {
+        setUser((prev: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            profile: {
+              ...prev.profile,
+              ...(fullName && { fullName }),
+              ...(language && { language }),
+            },
+          };
+        });
+        return { success: true, message: "Profile updated successfully" };
+      }
+      return { success: false, message: res.message || "Failed to update profile" };
+    } catch {
+      return { success: false, message: "Network connection error" };
     }
   }, []);
 
@@ -391,6 +567,202 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const currentProgram = useMemo(() => {
+    return programsList.find((p) => p.id === currentProgramId) || null;
+  }, [programsList, currentProgramId]);
+
+  const play = useCallback(async (t: Track, programId?: string) => {
+    setCurrent(t);
+    setCurrentProgramId(programId ?? null);
+    setPosition(0);
+    setPlaying(false);
+    setBuffering(true);
+    retryCountRef.current = 0;
+    lastSyncedPosRef.current = 0;
+    setErrorState(null);
+
+    // Setup Queue
+    let newQueue: Track[] = [];
+    let newIndex = 0;
+
+    if (programId) {
+      try {
+        const res = await api.programs.getTracks(programId);
+        if (res.success && Array.isArray(res.data)) {
+          const tList = res.data.map((pt: any) => {
+            const track = pt.track || pt;
+            return {
+              ...track,
+              art: track.thumbnailKey ? `${BASE_URL}/storage/file/${track.thumbnailKey}` : undefined,
+              raga: track.subtitle || "",
+              purpose: (track.purposeTags && track.purposeTags[0]?.name) || track.description || "Healing",
+            };
+          });
+          newQueue = tList;
+          const idx = newQueue.findIndex((q) => q.id === t.id);
+          newIndex = idx !== -1 ? idx : 0;
+        } else {
+          newQueue = [t];
+          newIndex = 0;
+        }
+      } catch (err) {
+        newQueue = [t];
+        newIndex = 0;
+      }
+    } else {
+      const catTracks = tracksList.filter((track) => track.category === category);
+      newQueue = catTracks.length > 0 ? catTracks : [t];
+      const idx = newQueue.findIndex((q) => q.id === t.id);
+      newIndex = idx !== -1 ? idx : 0;
+    }
+
+    setQueueState(newQueue);
+    setQueueIndex(newIndex);
+
+    if (Platform.OS !== "web" || typeof window === "undefined") {
+      try {
+        const res = await api.stream.getTicket(t.id);
+        if (!res.success || !res.data) {
+          throw new Error(res.message || "Failed to get streaming ticket");
+        }
+
+        const { streamUrl } = res.data;
+        const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
+        const absoluteStreamUrl = `${origin}${streamUrl}`;
+
+        // Get saved position from backend D1
+        let initialPos = 0;
+        try {
+          const progressRes = await api.progress.getTrackProgress(t.id);
+          if (progressRes.success && progressRes.data) {
+            initialPos = progressRes.data.position || 0;
+          }
+        } catch (err) {
+          console.warn("Failed to get track progress from backend", err);
+        }
+
+        await playerService.load(
+          absoluteStreamUrl,
+          initialPos,
+          speed,
+          volume,
+          muted,
+          (status) => statusCallbackRef.current(status)
+        );
+        await playerService.play();
+      } catch (err: any) {
+        console.error("Failed to load and play HLS track on mobile", err);
+        setBuffering(false);
+        setErrorState(err.message || "Playback error");
+        Alert.alert("Playback Error", "Failed to load audio stream.");
+      }
+      return;
+    }
+
+    const audio = getAudioElement();
+    if (!audio) return;
+
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+    audio.src = "";
+    audio.setAttribute("data-track-id", t.id);
+    audio.volume = muted ? 0 : volume;
+
+    try {
+      const res = await api.stream.getTicket(t.id);
+      if (!res.success || !res.data) {
+        throw new Error(res.message || "Failed to get streaming ticket");
+      }
+
+      const { streamUrl } = res.data;
+      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
+      const absoluteStreamUrl = `${origin}${streamUrl}`;
+
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hlsRef.current = hls;
+        hls.loadSource(absoluteStreamUrl);
+        hls.attachMedia(audio);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          audio.playbackRate = speed;
+          audio.play()
+            .then(() => setPlaying(true))
+            .catch((err) => console.error("Playback failed to start", err));
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                hls.recoverMediaError();
+                break;
+              default:
+                hls.destroy();
+                hlsRef.current = null;
+                break;
+            }
+          }
+        });
+      } else if (audio.canPlayType("application/vnd.apple.mpegurl")) {
+        audio.src = absoluteStreamUrl;
+        audio.addEventListener("canplay", () => {
+          audio.playbackRate = speed;
+          audio.play()
+            .then(() => setPlaying(true))
+            .catch((err) => console.error("Native playback failed to start", err));
+        }, { once: true });
+      } else {
+        console.error("HLS streaming is not supported in this browser");
+      }
+    } catch (err: any) {
+      console.error("Failed to load and play HLS track", err);
+      setErrorState(err.message || "Playback error");
+    }
+  }, [getAudioElement, speed, volume, muted, tracksList, category]);
+
+  const next = useCallback(() => {
+    const q = queueRef.current;
+    const idx = queueIndexRef.current;
+    if (idx + 1 < q.length) {
+      const nextTrack = q[idx + 1];
+      play(nextTrack, currentProgramIdRef.current || undefined);
+    } else {
+      setPlaying(false);
+      if (currentProgramIdRef.current) {
+        router.replace("/session-complete");
+      }
+    }
+  }, [play]);
+
+  const previous = useCallback(() => {
+    const threshold = 3; // 3 seconds threshold
+    if (position > threshold) {
+      if (Platform.OS === "web" && audioRef.current) {
+        audioRef.current.currentTime = 0;
+      } else {
+        playerService.seek(0).catch((err) => console.warn(err));
+      }
+      setPosition(0);
+    } else {
+      const idx = queueIndexRef.current;
+      if (idx > 0) {
+        const prevTrack = queueRef.current[idx - 1];
+        play(prevTrack, currentProgramIdRef.current || undefined);
+      } else {
+        if (Platform.OS === "web" && audioRef.current) {
+          audioRef.current.currentTime = 0;
+        } else {
+          playerService.seek(0).catch((err) => console.warn(err));
+        }
+        setPosition(0);
+      }
+    }
+  }, [position, play]);
+
   const handlePlaybackComplete = useCallback(() => {
     const currentTrack = currentRef.current;
     if (!currentTrack) return;
@@ -407,9 +779,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       [currentTrack.id]: 0,
     }));
 
-    setPlaying(false);
     fetchHistoryAndContinueListening();
-  }, [syncProgressToBackend, fetchHistoryAndContinueListening]);
+    
+    // Trigger auto-next
+    next();
+  }, [syncProgressToBackend, fetchHistoryAndContinueListening, next]);
 
   const handlePlaybackError = useCallback(async (errorMsg: string) => {
     const currentTrack = currentRef.current;
@@ -430,6 +804,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             absoluteStreamUrl,
             currentPos,
             speed,
+            volume,
+            muted,
             (status) => statusCallbackRef.current(status)
           );
           await playerService.play();
@@ -443,8 +819,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await playerService.unload();
     setPlaying(false);
     setBuffering(false);
+    setErrorState(errorMsg);
     Alert.alert("Playback Error", "Failed to stream audio. Please check your connection.");
-  }, [speed, trackPositions]);
+  }, [speed, trackPositions, volume, muted]);
 
   // Sync ref to always run the latest callback on expo-av events
   useEffect(() => {
@@ -498,124 +875,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   });
 
-  // Clean up native player on unmount
-  useEffect(() => {
-    return () => {
-      if (Platform.OS !== "web") {
-        playerService.unload().catch((err) => console.warn("Cleanup unload failed", err));
-      }
-    };
-  }, []);
-
-  const play = useCallback(async (t: Track, programId?: string) => {
-    setCurrent(t);
-    setCurrentProgramId(programId ?? null);
-    setPosition(0);
-    setPlaying(false);
-    setBuffering(true);
-    retryCountRef.current = 0;
-    lastSyncedPosRef.current = 0;
-
-    if (Platform.OS !== "web" || typeof window === "undefined") {
-      try {
-        const res = await api.stream.getTicket(t.id);
-        if (!res.success || !res.data) {
-          throw new Error(res.message || "Failed to get streaming ticket");
-        }
-
-        const { streamUrl } = res.data;
-        const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
-        const absoluteStreamUrl = `${origin}${streamUrl}`;
-
-        // Get saved position from backend D1
-        let initialPos = 0;
-        try {
-          const progressRes = await api.progress.getTrackProgress(t.id);
-          if (progressRes.success && progressRes.data) {
-            initialPos = progressRes.data.position || 0;
-          }
-        } catch (err) {
-          console.warn("Failed to get track progress from backend", err);
-        }
-
-        await playerService.load(
-          absoluteStreamUrl,
-          initialPos,
-          speed,
-          (status) => statusCallbackRef.current(status)
-        );
-        await playerService.play();
-      } catch (err) {
-        console.error("Failed to load and play HLS track on mobile", err);
-        setBuffering(false);
-        Alert.alert("Playback Error", "Failed to load audio stream.");
-      }
-      return;
-    }
-
-    const audio = getAudioElement();
-    if (!audio) return;
-
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-    audio.src = "";
-    audio.setAttribute("data-track-id", t.id);
-
-    try {
-      const res = await api.stream.getTicket(t.id);
-      if (!res.success || !res.data) {
-        throw new Error(res.message || "Failed to get streaming ticket");
-      }
-
-      const { streamUrl } = res.data;
-      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
-      const absoluteStreamUrl = `${origin}${streamUrl}`;
-
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hlsRef.current = hls;
-        hls.loadSource(absoluteStreamUrl);
-        hls.attachMedia(audio);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          audio.playbackRate = speed;
-          audio.play()
-            .then(() => setPlaying(true))
-            .catch((err) => console.error("Playback failed to start", err));
-        });
-        hls.on(Hls.Events.ERROR, (event, data) => {
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                hls.startLoad();
-                break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                hls.recoverMediaError();
-                break;
-              default:
-                hls.destroy();
-                hlsRef.current = null;
-                break;
-            }
-          }
-        });
-      } else if (audio.canPlayType("application/vnd.apple.mpegurl")) {
-        audio.src = absoluteStreamUrl;
-        audio.addEventListener("canplay", () => {
-          audio.playbackRate = speed;
-          audio.play()
-            .then(() => setPlaying(true))
-            .catch((err) => console.error("Native playback failed to start", err));
-        }, { once: true });
-      } else {
-        console.error("HLS streaming is not supported in this browser");
-      }
-    } catch (err) {
-      console.error("Failed to load and play HLS track", err);
-    }
-  }, [getAudioElement, speed, trackPositions]);
-
   const value = useMemo<AppState>(
     () => ({
       user,
@@ -623,7 +882,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authLoading,
       login,
       register,
+      loginWithGoogle,
       logout,
+      updateProfile,
 
       tracks: tracksList,
       programs: programsList,
@@ -720,13 +981,97 @@ export function AppProvider({ children }: { children: ReactNode }) {
       historyList,
       continueListeningList,
       fetchHistoryAndContinueListening,
+
+      // New properties
+      currentTrack: current,
+      currentProgram,
+      queue,
+      queueIndex,
+      volume,
+      muted,
+      playbackRate: speed,
+      error,
+      setVolume: (v) => {
+        const bound = Math.max(0, Math.min(1, v));
+        setVolumeState(bound);
+        if (!muted) {
+          if (Platform.OS === "web" && audioRef.current) {
+            audioRef.current.volume = bound;
+          } else {
+            playerService.setVolume(bound).catch((err) => console.warn(err));
+          }
+        }
+      },
+      setMuted: (m) => {
+        setMutedState(m);
+        if (Platform.OS === "web" && audioRef.current) {
+          audioRef.current.muted = m;
+        } else {
+          playerService.setMuted(m).catch((err) => console.warn(err));
+        }
+      },
+      setPlaybackRate: (r) => {
+        setSpeed(r);
+        if (Platform.OS === "web" && audioRef.current) {
+          audioRef.current.playbackRate = r;
+        } else {
+          playerService.setSpeed(r).catch((err) => console.warn(err));
+        }
+      },
+      next,
+      previous,
+      close: () => {
+        if (Platform.OS === "web") {
+          if (hlsRef.current) {
+            hlsRef.current.destroy();
+            hlsRef.current = null;
+          }
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.src = "";
+          }
+        } else {
+          playerService.unload().catch((err) => console.warn("PlayerService close unload failed", err));
+        }
+        setCurrent(null);
+        setCurrentProgramId(null);
+        setQueueState([]);
+        setQueueIndex(0);
+        setPlaying(false);
+        setPosition(0);
+      },
+      setQueue: (tracks, index = 0) => {
+        setQueueState(tracks);
+        setQueueIndex(Math.max(0, Math.min(tracks.length - 1, index)));
+      },
+      addToQueue: (track) => {
+        setQueueState((prev) => {
+          if (prev.some((t) => t.id === track.id)) return prev;
+          return [...prev, track];
+        });
+      },
+      clearQueue: () => {
+        setQueueState([]);
+        setQueueIndex(0);
+      },
+
+      // Notifications additions
+      notifications: notificationsList,
+      unreadCount,
+      notificationsLoading,
+      notificationsError,
+      fetchNotifications,
+      markNotificationRead,
+      markAllNotificationsRead,
     }),
     [
       user,
       authLoading,
       login,
       register,
+      loginWithGoogle,
       logout,
+      updateProfile,
       tracksList,
       programsList,
       loading,
@@ -746,6 +1091,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       historyList,
       continueListeningList,
       fetchHistoryAndContinueListening,
+      currentProgram,
+      queue,
+      queueIndex,
+      volume,
+      muted,
+      error,
+      next,
+      previous,
+      notificationsList,
+      unreadCount,
+      notificationsLoading,
+      notificationsError,
+      fetchNotifications,
+      markNotificationRead,
+      markAllNotificationsRead,
     ]
   );
 

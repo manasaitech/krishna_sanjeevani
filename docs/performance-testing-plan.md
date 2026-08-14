@@ -865,63 +865,45 @@ Step 7: Repeat until target tier is achieved.
 
 | Tool | Purpose | Why |
 | :--- | :--- | :--- |
-| **k6 (Grafana)** | Primary load generator | JavaScript-based, supports HTTP/2, excellent histogram output |
-| **Artillery** | Secondary/validation | YAML config, great for HLS streaming scenarios |
+| **Locust** | Primary load generator | Python-based, excellent for stateful virtual users, handles API & HLS workloads, supports distributed mode, fits Python tooling |
+| **k6 (Grafana)** | Optional secondary/validation | JavaScript-based, supports HTTP/2, excellent histogram output |
+| **Artillery** | Alternative/validation | YAML config, great for simple HLS scenarios |
 | **Cloudflare Analytics** | Server-side metrics | Native D1/R2/Worker metrics, zero-config |
 | **Grafana + Prometheus** | Dashboard | Real-time metric visualization and alerting |
 | **Custom HTML Dashboard** | Presentation | Self-contained report for mentor/stakeholders |
 
-### 13.2 k6 Test Script Structure
+### 13.2 Locust Test Script Structure Reference
 
-```javascript
-// k6 performance test for Krishna Sanjeevani
-import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { Trend, Rate, Counter } from 'k6/metrics';
+```python
+# Locust performance test model for Krishna Sanjeevani
+# Full implementation available in performance/locustfile.py
 
-// Custom metrics
-const streamLatency = new Trend('stream_segment_latency');
-const ticketLatency  = new Trend('ticket_request_latency');
-const errorRate      = new Rate('errors');
-const segmentsServed = new Counter('segments_served');
+from locust import HttpUser, task, between
+from performance.scenarios import streaming, browsing
 
-export const options = {
-  stages: [
-    { duration: '10m', target: 100  },  // Ramp to 100
-    { duration: '30m', target: 100  },  // Steady at 100
-    { duration: '10m', target: 1000 },  // Ramp to 1000
-    { duration: '60m', target: 1000 },  // Steady at 1000
-    { duration: '5m',  target: 0    },  // Cooldown
-  ],
-  thresholds: {
-    'http_req_duration': ['p(95)<500', 'p(99)<1000'],
-    'errors': ['rate<0.01'],
-    'stream_segment_latency': ['p(95)<300'],
-  },
-};
+class SanjeevaniUser(HttpUser):
+    wait_time = between(2, 5)
 
-export default function () {
-  // 1. Request streaming ticket
-  const ticketRes = http.post(BASE_URL + '/api/v1/stream/TRACK_ID/ticket');
-  ticketLatency.add(ticketRes.timings.duration);
-
-  // 2. Fetch HLS playlist
-  const ticket = JSON.parse(ticketRes.body).ticket;
-  http.get(BASE_URL + '/api/v1/stream/TRACK_ID/master.m3u8?ticket=' + ticket);
-
-  // 3. Fetch 6 segments (simulating 36-second playback)
-  for (let i = 0; i < 6; i++) {
-    const segRes = http.get(BASE_URL + '/api/v1/stream/TRACK_ID/audio/segment' +
-      String(i).padStart(3, '0') + '.mp3?ticket=' + ticket);
-    streamLatency.add(segRes.timings.duration);
-    segmentsServed.add(1);
-    check(segRes, { 'segment OK': (r) => r.status === 200 });
-    sleep(6); // Wait 6 seconds between segments
-  }
-
-  sleep(3); // Think time between songs
-}
+    @task
+    def play_hls_stream(self):
+        # 1. POST /stream/:trackId/ticket (Generate Ticket)
+        # 2. GET /stream/:trackId/master.m3u8?ticket=xyz (Fetch Playlist)
+        # 3. GET /stream/:trackId/keys/aes.key?ticket=xyz (Fetch Decryption Key)
+        # 4. Loop: GET /stream/:trackId/audio/segmentXXX.mp3 (Fetch segments, wait 6s)
+        streaming.stream_track_flow(self, "track-free-id")
 ```
+
+### 13.3 Locust Limitations & Test Scope
+
+Locust is designed for simulating server load (network and API layer concurrency). It does not replicate browser rendering or real-world media playback constraints. To address this, testing is split into two categories:
+
+#### Category A: Locust Performance Test (API & Infrastructure)
+- **Targets**: REST endpoints, Authentication, D1 reads/writes, R2 bandwidth, Queues, memory OOMs.
+- **Metrics**: Requests/sec, response latency (P50/P95/P99), HTTP error rates, Workers limits.
+
+#### Category B: Real Client Playback Test (Device & Player)
+- **Targets**: Web HLS.js, iOS AVPlayer, Android ExoPlayer.
+- **Metrics**: Startup buffer time, player re-buffering ratio, background play stability, hardware AES decryption latency, network radio drops.
 
 ---
 
@@ -934,7 +916,7 @@ export default function () {
 | R2 read costs exceed budget | High at 10K+ | Medium | Implement aggressive KV caching |
 | Queue backlog during peak uploads | Low | Medium | Separate upload Worker from streaming Worker |
 | Session ticket race conditions | Medium | High | Add distributed locks or use Durable Objects |
-| Load testing tool limitations | Medium | Low | Use distributed k6 cloud runners |
+| Load testing tool limitations | Medium | Low | Use distributed Locust workers |
 
 ---
 

@@ -10,6 +10,7 @@ import favoritesRoute from "../modules/favorites/favorite.route";
 import progressRoute from "../modules/progress/progress.route";
 import subscriptionRoute from "../modules/subscriptions/subscription.route";
 import adminRoute from "../modules/admin/admin.route";
+import notificationsRoute from "../modules/notifications/notification.route";
 
 const routes = new Hono();
 
@@ -24,5 +25,6 @@ routes.route("/favorites", favoritesRoute);
 routes.route("/progress", progressRoute);
 routes.route("/subscriptions", subscriptionRoute);
 routes.route("/admin", adminRoute);
+routes.route("/notifications", notificationsRoute);
 
 export default routes;

@@ -6,6 +6,8 @@ import { ApiResponse } from "../../shared/responses";
 import { ValidationError } from "../../shared/errors";
 import { getDB } from "../../shared/db/client";
 import { Env } from "../../shared/config/env";
+import { userProfiles } from "../../shared/db/schema/user";
+import { eq } from "drizzle-orm";
 
 function getAuthService(env: Env): AuthService {
   const db = getDB(env);
@@ -19,6 +21,7 @@ export class AuthController {
     const parsed = registerSchema.safeParse(body);
 
     if (!parsed.success) {
+      console.error("Zod validation errors on register body:", JSON.stringify(body), parsed.error.issues);
       throw new ValidationError("Validation failed", parsed.error.issues);
     }
 
@@ -100,5 +103,108 @@ export class AuthController {
     await service.changePassword(userId, parsed.data.currentPassword, parsed.data.newPassword);
 
     return ApiResponse.success(c, null, "Password changed successfully");
+  }
+
+  static async updateProfile(c: Context<{ Bindings: Env }>) {
+    const userId = c.get("userId" as never) as string;
+    const body = await c.req.json().catch(() => ({}));
+    const { fullName, language } = body;
+
+    if (!fullName && !language) {
+      throw new ValidationError("At least one field (fullName or language) is required to update");
+    }
+
+    const db = getDB(c.env);
+    const now = Date.now();
+
+    await db
+      .update(userProfiles)
+      .set({
+        ...(fullName && { fullName }),
+        ...(language && { language }),
+        updatedAt: now,
+      })
+      .where(eq(userProfiles.userId, userId));
+
+    const updated = await db
+      .select()
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId))
+      .get();
+
+    return ApiResponse.success(c, updated, "Profile updated successfully");
+  }
+
+  static async serveGoogleMobilePage(c: Context<{ Bindings: Env }>) {
+    const redirectUri = c.req.query("redirect_uri") || "krishna-sanjeevani://redirect";
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Sign-In</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #FAF8F4;
+    }
+    .container {
+      text-align: center;
+      padding: 32px 24px;
+      background: white;
+      border-radius: 24px;
+      border: 1px solid #E8E4DC;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      max-width: 320px;
+      width: 90%;
+    }
+    h2 { color: #1A1A1A; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 8px; }
+    p { color: #7C7A85; font-size: 13px; margin-bottom: 28px; line-height: 18px; }
+    .btn-wrap {
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Krishna Sanjeevani</h2>
+    <p>Sign in with your Google account to tune into your listening path.</p>
+    <div class="btn-wrap">
+      <div id="g_id_onload"
+           data-client_id="29791277131-bsaqqk5jighca3c93fud61jidb6f3l6f.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="continue_with"
+           data-shape="pill"
+           data-logo_alignment="left">
+      </div>
+    </div>
+  </div>
+  <script>
+    function handleCredentialResponse(response) {
+      const idToken = response.credential;
+      if (idToken) {
+        window.location.href = "${redirectUri}#id_token=" + encodeURIComponent(idToken);
+      }
+    }
+  </script>
+</body>
+</html>
+    `;
+    c.header("Content-Type", "text/html");
+    return c.html(html);
   }
 }

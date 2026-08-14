@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, Image, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { Heart, Lock, Pause, Play } from "lucide-react-native";
+import { Heart, Lock, Pause, Play, CheckCircle2 } from "lucide-react-native";
 import { useApp } from "@/lib/app-state";
 import { categories, formatDuration, type Track, type Program } from "@/lib/content";
 import { resolveImageSource } from "@/lib/utils";
@@ -101,7 +101,8 @@ export function TrackCard({ track, programId }: { track: Track; programId?: stri
 /* ── Track row (horizontal, for lists) ── */
 export function TrackRow({ track, index, programId }: { track: Track; index?: number; programId?: string }) {
   const router = useRouter();
-  const { play } = useApp();
+  const { play, trackProgress } = useApp();
+  const isCompleted = trackProgress[track.id] === 100;
 
   const handlePress = () => {
     play(track, programId);
@@ -113,8 +114,12 @@ export function TrackRow({ track, index, programId }: { track: Track; index?: nu
       onPress={handlePress}
       style={styles.trackRow}
     >
-      {typeof index === "number" && (
-        <Text style={styles.indexText}>{index + 1}</Text>
+      {isCompleted ? (
+        <CheckCircle2 size={16} color="#4CAF50" style={{ marginRight: 8 }} />
+      ) : (
+        typeof index === "number" && (
+          <Text style={styles.indexText}>{index + 1}</Text>
+        )
       )}
       <Image source={resolveImageSource(track.art, track.category)} style={styles.rowArt} resizeMode="cover" />
       <View style={{ flex: 1, minWidth: 0 }}>

@@ -5,14 +5,17 @@ import { useApp } from "@/lib/app-state";
 export function Section({
   title,
   hint,
+  onPressHint,
   children,
   style,
 }: {
   title: string;
   hint?: string;
+  onPressHint?: () => void;
   children: React.ReactNode;
   style?: ViewStyle;
 }) {
+  const { theme } = useApp();
   return (
     <View style={[{ marginTop: 40 }, style]}>
       <View
@@ -28,9 +31,11 @@ export function Section({
           {title}
         </Text>
         {hint && (
-          <Text style={{ fontSize: 12, fontWeight: "500", color: "#7C7A85" }}>
-            {hint}
-          </Text>
+          <Pressable onPress={onPressHint} disabled={!onPressHint}>
+            <Text style={{ fontSize: 12, fontWeight: "500", color: onPressHint ? theme.cat : "#7C7A85" }}>
+              {hint}
+            </Text>
+          </Pressable>
         )}
       </View>
       {children}

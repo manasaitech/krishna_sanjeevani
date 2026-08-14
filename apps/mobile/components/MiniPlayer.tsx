@@ -7,7 +7,7 @@ import { formatTime } from "@/lib/content";
 import { resolveImageSource } from "@/lib/utils";
 
 export function MiniPlayer({ lifted = true }: { lifted?: boolean }) {
-  const { current, playing, toggle, position, skip, theme, buffering } = useApp();
+  const { current, playing, toggle, position, next, theme, buffering } = useApp();
   const router = useRouter();
   if (!current) return null;
 
@@ -55,7 +55,7 @@ export function MiniPlayer({ lifted = true }: { lifted?: boolean }) {
         </Pressable>
 
         <Pressable
-          onPress={() => skip(30)}
+          onPress={next}
           style={styles.skipBtn}
         >
           <SkipForward size={16} color="#7C7A85" />

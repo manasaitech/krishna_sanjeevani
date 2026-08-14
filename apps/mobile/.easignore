@@ -1,0 +1,6 @@
+# Ignore local native directories to force EAS to generate them fresh in the cloud
+android/
+ios/
+node_modules/
+.expo/
+dist/
