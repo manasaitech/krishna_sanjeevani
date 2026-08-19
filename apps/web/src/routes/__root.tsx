@@ -133,11 +133,20 @@ function RouteGuard({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (authLoading) return;
 
-    const publicPaths = ["/", "/welcome", "/login", "/register"];
+    const publicPaths = [
+      "/",
+      "/login",
+      "/register",
+      "/vedic-science",
+      "/inspiration",
+      "/the-beginning",
+      "/about",
+      "/team",
+    ];
     const isPublic = publicPaths.includes(location.pathname);
 
     if (!user && !isPublic) {
-      navigate({ to: "/welcome" });
+      navigate({ to: "/login" });
     }
   }, [user, authLoading, location.pathname, navigate]);
 

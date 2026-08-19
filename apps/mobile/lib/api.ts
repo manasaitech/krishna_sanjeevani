@@ -33,7 +33,11 @@ async function setItem(key: string, value: string) {
     }
     return;
   }
-  await SecureStore.setItemAsync(key, value);
+  try {
+    await SecureStore.setItemAsync(key, value);
+  } catch (e) {
+    console.warn("SecureStore setItem error", e);
+  }
 }
 
 async function getItem(key: string): Promise<string | null> {
@@ -44,7 +48,12 @@ async function getItem(key: string): Promise<string | null> {
       return null;
     }
   }
-  return await SecureStore.getItemAsync(key);
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch (e) {
+    console.warn("SecureStore getItem error", e);
+    return null;
+  }
 }
 
 async function deleteItem(key: string) {
@@ -54,7 +63,11 @@ async function deleteItem(key: string) {
     } catch (e) {}
     return;
   }
-  await SecureStore.deleteItemAsync(key);
+  try {
+    await SecureStore.deleteItemAsync(key);
+  } catch (e) {
+    console.warn("SecureStore deleteItem error", e);
+  }
 }
 
 let _accessToken: string | null = null;

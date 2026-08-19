@@ -1,74 +1,87 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import logoWithoutText from "@/assets/logo-without-text.png";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { useVerseAudio } from "@/lib/use-verse-audio";
+import { OpeningExperience } from "@/components/home/OpeningExperience";
+import { VerseMiniPlayer } from "@/components/home/VerseMiniPlayer";
+import { VersePlayerModal } from "@/components/home/VersePlayerModal";
+import { HomeNavbar } from "@/components/home/HomeNavbar";
+import { HomeHeroCarousel } from "@/components/home/HomeHeroCarousel";
+import { HomeIntro } from "@/components/home/HomeIntro";
+import { MusicMantraStory } from "@/components/home/MusicMantraStory";
+import { ExploreCardsGrid } from "@/components/home/ExploreCardsGrid";
+import { FeaturePillars } from "@/components/home/FeaturePillars";
+import { SpiritualVerseSection } from "@/components/home/SpiritualVerseSection";
+import { BeginningPreview } from "@/components/home/BeginningPreview";
+import { HomeFooter } from "@/components/home/HomeFooter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
+      { title: "Krishna Sanjeevani — The Divine Therapeutic Music" },
       {
         name: "description",
         content:
-          "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care.",
+          "An amalgamation of the therapeutic science known as Sur Sanjeevan and the divine power of the Hare Krishna Mahamantra, blending Indian classical music, Ayurveda, and neuroscience.",
       },
-      { property: "og:title", content: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
+      { property: "og:title", content: "Krishna Sanjeevani — The Divine Therapeutic Music" },
       {
         property: "og:description",
         content:
-          "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care.",
+          "Experience therapeutic raga streaming, Sanskrit verse recitations, and restorative soundscapes for mental stillness and spiritual wellbeing.",
       },
     ],
   }),
-  component: Splash,
+  component: HomePage,
 });
 
-function Splash() {
-  const navigate = useNavigate();
-  const [leaving, setLeaving] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("ks_access_token");
-    const targetRoute = token ? "/home" : "/welcome";
-
-    const a = window.setTimeout(() => setLeaving(true), 1900);
-    const b = window.setTimeout(() => navigate({ to: targetRoute }), 2400);
-    return () => {
-      window.clearTimeout(a);
-      window.clearTimeout(b);
-    };
-  }, [navigate]);
+function HomePage() {
+  const audio = useVerseAudio();
+  const [openingFinished, setOpeningFinished] = useState(false);
 
   return (
-    <div
-      className={`grid min-h-dvh place-items-center bg-background px-8 transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`}
-    >
-      <div className="flex flex-col items-center text-center">
-        <div className="relative grid h-24 w-24 place-items-center">
-          <span className="animate-breathe absolute inset-0 rounded-full bg-cat-light" />
-          <div className="relative h-20 w-20 rounded-full overflow-hidden shadow-lift border border-border/40 bg-surface flex items-center justify-center p-2.5 z-10">
-            <img
-              src={logoWithoutText}
-              alt="Krishna Sanjeevani Logo"
-              className="h-full w-full object-contain animate-rise"
-            />
-          </div>
-        </div>
-        <h1 className="animate-rise mt-8 text-[28px] leading-tight font-semibold">
-          Krishna Sanjeevani
-        </h1>
-        <p className="animate-soft-in mt-2 text-[13px] tracking-[0.16em] text-muted-foreground uppercase">
-          Therapeutic Raga Streaming
-        </p>
-        <div className="mt-12 flex items-center gap-1.5" role="status" aria-label="Loading">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="h-1.5 w-1.5 animate-pulse rounded-full bg-cat"
-              style={{ animationDelay: `${i * 160}ms` }}
-            />
-          ))}
-        </div>
-      </div>
+    <div className="min-h-screen bg-background text-foreground selection:bg-cat-light selection:text-cat flex flex-col">
+      {/* 1. 3-Second Cinematic Opening Experience */}
+      {!openingFinished && (
+        <OpeningExperience
+          audio={audio}
+          onComplete={() => setOpeningFinished(true)}
+        />
+      )}
+
+      {/* 2. Persistent Floating Mini Verse Player (Bottom-Right) */}
+      <VerseMiniPlayer audio={audio} />
+
+      {/* 3. Expandable Sacred Verse Modal */}
+      <VersePlayerModal audio={audio} />
+
+      {/* 4. Top Navigation Bar */}
+      <HomeNavbar />
+
+      {/* 5. Main Hero Carousel */}
+      <main id="main-content" className="flex-1">
+        <HomeHeroCarousel />
+
+        {/* 6. Introduction to Krishna Sanjeevani */}
+        <HomeIntro />
+
+        {/* 7. Music + Mantra + Consciousness + Wellbeing Story */}
+        <MusicMantraStory />
+
+        {/* 8. Explore Cards Grid */}
+        <ExploreCardsGrid />
+
+        {/* 9. 5 Conceptual Pillars */}
+        <FeaturePillars />
+
+        {/* 10. Full-width Spiritual Verse Pause */}
+        <SpiritualVerseSection />
+
+        {/* 11. Landmark Beginning (30 May 2026) */}
+        <BeginningPreview />
+      </main>
+
+      {/* 13. Footer */}
+      <HomeFooter />
     </div>
   );
 }

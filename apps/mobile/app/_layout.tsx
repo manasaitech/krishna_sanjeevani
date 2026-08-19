@@ -49,7 +49,6 @@ export default function RootLayout() {
           <Stack.Screen name="program/[programId]" />
           <Stack.Screen name="programs" />
           <Stack.Screen name="history" />
-          <Stack.Screen name="admin" />
         </Stack>
       </ErrorBoundary>
     </AppProvider>

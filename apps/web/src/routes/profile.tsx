@@ -73,7 +73,7 @@ function Profile() {
 
   const handleLogout = async () => {
     await logout();
-    navigate({ to: "/welcome" });
+    navigate({ to: "/" });
   };
 
   const name = user?.profile?.fullName || "Guest User";

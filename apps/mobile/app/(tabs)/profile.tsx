@@ -87,11 +87,15 @@ export default function Profile() {
 
   // Load session reminders from SecureStore on mount
   useEffect(() => {
-    SecureStore.getItemAsync("pref_session_reminders").then((val) => {
-      if (val !== null) {
-        setRemindersEnabled(val === "true");
-      }
-    });
+    SecureStore.getItemAsync("pref_session_reminders")
+      .then((val) => {
+        if (val !== null) {
+          setRemindersEnabled(val === "true");
+        }
+      })
+      .catch((err) => {
+        console.warn("Failed to read session reminders preference", err);
+      });
   }, []);
 
   const handleToggleReminders = async (val: boolean) => {
@@ -251,12 +255,6 @@ export default function Profile() {
           <Row icon={FileText} label="Terms of use" />
           <View style={styles.divider} />
           <Row icon={CircleHelp} label="Help & contact" />
-          <View style={styles.divider} />
-          <Row
-            icon={LayoutDashboard}
-            label="Admin dashboard"
-            onPress={() => router.push("/admin")}
-          />
         </View>
       </Section>
 

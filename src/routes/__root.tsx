@@ -6,13 +6,16 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useLocation,
+  useNavigate,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AppProvider } from "../lib/app-state";
+import { AppProvider, useApp } from "../lib/app-state";
 import { Toaster } from "../components/ui/sonner";
+import { queryClient } from "../router";
 
 function NotFoundComponent() {
   return (
@@ -99,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
   shellComponent: RootShell,
@@ -122,14 +125,53 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+function RouteGuard({ children }: { children: ReactNode }) {
+  const { user, authLoading } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  useEffect(() => {
+    if (authLoading) return;
+
+    const publicPaths = [
+      "/",
+      "/login",
+      "/register",
+      "/vedic-science",
+      "/inspiration",
+      "/the-beginning",
+      "/about",
+      "/team",
+    ];
+    const isPublic = publicPaths.includes(location.pathname);
+
+    if (!user && !isPublic) {
+      navigate({ to: "/login" });
+    }
+  }, [user, authLoading, location.pathname, navigate]);
+
+  if (authLoading) {
+    return (
+      <div className="grid min-h-dvh place-items-center bg-background">
+        <div className="flex flex-col items-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-cat-light border-t-cat" />
+          <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">Restoring calm...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
+        <RouteGuard>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </RouteGuard>
         <Toaster />
       </AppProvider>
     </QueryClientProvider>

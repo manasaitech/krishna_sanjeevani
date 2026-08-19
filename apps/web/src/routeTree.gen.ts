@@ -10,12 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as CategoryRouteImport } from './routes/category'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as InspirationRouteImport } from './routes/inspiration'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgramsRouteImport } from './routes/programs'
@@ -24,7 +28,9 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SessionCompleteRouteImport } from './routes/session-complete'
 import { Route as SubscriptionRouteImport } from './routes/subscription'
-import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as TeamRouteImport } from './routes/team'
+import { Route as TheBeginningRouteImport } from './routes/the-beginning'
+import { Route as VedicScienceRouteImport } from './routes/vedic-science'
 import { Route as ProgramProgramIdRouteImport } from './routes/program.$programId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -32,9 +38,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrowseRoute = BrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoryRoute = CategoryRouteImport.update({
@@ -52,6 +68,11 @@ const HomeRoute = HomeRouteImport.update({
   path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InspirationRoute = InspirationRouteImport.update({
+  id: '/inspiration',
+  path: '/inspiration',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JourneyRoute = JourneyRouteImport.update({
   id: '/journey',
   path: '/journey',
@@ -60,6 +81,11 @@ const JourneyRoute = JourneyRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayerRoute = PlayerRouteImport.update({
@@ -102,9 +128,19 @@ const SubscriptionRoute = SubscriptionRouteImport.update({
   path: '/subscription',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WelcomeRoute = WelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TheBeginningRoute = TheBeginningRouteImport.update({
+  id: '/the-beginning',
+  path: '/the-beginning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VedicScienceRoute = VedicScienceRouteImport.update({
+  id: '/vedic-science',
+  path: '/vedic-science',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgramProgramIdRoute = ProgramProgramIdRouteImport.update({
@@ -115,12 +151,16 @@ const ProgramProgramIdRoute = ProgramProgramIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/inspiration': typeof InspirationRoute
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
@@ -129,17 +169,23 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
-  '/welcome': typeof WelcomeRoute
+  '/team': typeof TeamRoute
+  '/the-beginning': typeof TheBeginningRoute
+  '/vedic-science': typeof VedicScienceRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/inspiration': typeof InspirationRoute
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
@@ -148,18 +194,24 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
-  '/welcome': typeof WelcomeRoute
+  '/team': typeof TeamRoute
+  '/the-beginning': typeof TheBeginningRoute
+  '/vedic-science': typeof VedicScienceRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/inspiration': typeof InspirationRoute
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/player': typeof PlayerRoute
   '/profile': typeof ProfileRoute
   '/programs': typeof ProgramsRoute
@@ -168,19 +220,25 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
-  '/welcome': typeof WelcomeRoute
+  '/team': typeof TeamRoute
+  '/the-beginning': typeof TheBeginningRoute
+  '/vedic-science': typeof VedicScienceRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/admin'
+    | '/browse'
     | '/category'
     | '/favorites'
     | '/home'
+    | '/inspiration'
     | '/journey'
     | '/login'
+    | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
@@ -189,17 +247,23 @@ export interface FileRouteTypes {
     | '/search'
     | '/session-complete'
     | '/subscription'
-    | '/welcome'
+    | '/team'
+    | '/the-beginning'
+    | '/vedic-science'
     | '/program/$programId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/admin'
+    | '/browse'
     | '/category'
     | '/favorites'
     | '/home'
+    | '/inspiration'
     | '/journey'
     | '/login'
+    | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
@@ -208,17 +272,23 @@ export interface FileRouteTypes {
     | '/search'
     | '/session-complete'
     | '/subscription'
-    | '/welcome'
+    | '/team'
+    | '/the-beginning'
+    | '/vedic-science'
     | '/program/$programId'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/admin'
+    | '/browse'
     | '/category'
     | '/favorites'
     | '/home'
+    | '/inspiration'
     | '/journey'
     | '/login'
+    | '/notifications'
     | '/player'
     | '/profile'
     | '/programs'
@@ -227,18 +297,24 @@ export interface FileRouteTypes {
     | '/search'
     | '/session-complete'
     | '/subscription'
-    | '/welcome'
+    | '/team'
+    | '/the-beginning'
+    | '/vedic-science'
     | '/program/$programId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
+  BrowseRoute: typeof BrowseRoute
   CategoryRoute: typeof CategoryRoute
   FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
+  InspirationRoute: typeof InspirationRoute
   JourneyRoute: typeof JourneyRoute
   LoginRoute: typeof LoginRoute
+  NotificationsRoute: typeof NotificationsRoute
   PlayerRoute: typeof PlayerRoute
   ProfileRoute: typeof ProfileRoute
   ProgramsRoute: typeof ProgramsRoute
@@ -247,7 +323,9 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SessionCompleteRoute: typeof SessionCompleteRoute
   SubscriptionRoute: typeof SubscriptionRoute
-  WelcomeRoute: typeof WelcomeRoute
+  TeamRoute: typeof TeamRoute
+  TheBeginningRoute: typeof TheBeginningRoute
+  VedicScienceRoute: typeof VedicScienceRoute
   ProgramProgramIdRoute: typeof ProgramProgramIdRoute
 }
 
@@ -260,11 +338,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/browse': {
+      id: '/browse'
+      path: '/browse'
+      fullPath: '/browse'
+      preLoaderRoute: typeof BrowseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/category': {
@@ -288,6 +380,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inspiration': {
+      id: '/inspiration'
+      path: '/inspiration'
+      fullPath: '/inspiration'
+      preLoaderRoute: typeof InspirationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/journey': {
       id: '/journey'
       path: '/journey'
@@ -300,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player': {
@@ -358,11 +464,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubscriptionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/welcome': {
-      id: '/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof WelcomeRouteImport
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/the-beginning': {
+      id: '/the-beginning'
+      path: '/the-beginning'
+      fullPath: '/the-beginning'
+      preLoaderRoute: typeof TheBeginningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vedic-science': {
+      id: '/vedic-science'
+      path: '/vedic-science'
+      fullPath: '/vedic-science'
+      preLoaderRoute: typeof VedicScienceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/program/$programId': {
@@ -377,12 +497,16 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
+  BrowseRoute: BrowseRoute,
   CategoryRoute: CategoryRoute,
   FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
+  InspirationRoute: InspirationRoute,
   JourneyRoute: JourneyRoute,
   LoginRoute: LoginRoute,
+  NotificationsRoute: NotificationsRoute,
   PlayerRoute: PlayerRoute,
   ProfileRoute: ProfileRoute,
   ProgramsRoute: ProgramsRoute,
@@ -391,7 +515,9 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SessionCompleteRoute: SessionCompleteRoute,
   SubscriptionRoute: SubscriptionRoute,
-  WelcomeRoute: WelcomeRoute,
+  TeamRoute: TeamRoute,
+  TheBeginningRoute: TheBeginningRoute,
+  VedicScienceRoute: VedicScienceRoute,
   ProgramProgramIdRoute: ProgramProgramIdRoute,
 }
 export const routeTree = rootRouteImport

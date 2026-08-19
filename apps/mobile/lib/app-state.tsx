@@ -9,7 +9,6 @@ import {
   type ReactNode,
 } from "react";
 import { Platform } from "react-native";
-import Hls from "hls.js";
 import { type CategoryId, type Track, tracks as staticTracks, programs as staticPrograms } from "@/lib/content";
 import { api, storeTokens, clearTokens, getAccessToken, BASE_URL, loadPersistedTokens, registerAuthFailureHandler } from "@/lib/api";
 import { Alert } from "react-native";
@@ -198,7 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // ── Audio player references for Web ──
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hlsRef = useRef<Hls | null>(null);
+  const hlsRef = useRef<any>(null);
 
   const getAudioElement = useCallback(() => {
     if (Platform.OS !== "web" || typeof window === "undefined") return null;
@@ -680,24 +679,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
       const absoluteStreamUrl = `${origin}${streamUrl}`;
 
-      if (Hls.isSupported()) {
-        const hls = new Hls();
+      let HlsClass: any = null;
+      try {
+        HlsClass = require("hls.js").default || require("hls.js");
+      } catch (err) {
+        console.warn("Failed to load hls.js on web", err);
+      }
+
+      if (HlsClass && HlsClass.isSupported()) {
+        const hls = new HlsClass();
         hlsRef.current = hls;
         hls.loadSource(absoluteStreamUrl);
         hls.attachMedia(audio);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        hls.on(HlsClass.Events.MANIFEST_PARSED, () => {
           audio.playbackRate = speed;
           audio.play()
             .then(() => setPlaying(true))
             .catch((err) => console.error("Playback failed to start", err));
         });
-        hls.on(Hls.Events.ERROR, (event, data) => {
+        hls.on(HlsClass.Events.ERROR, (event: any, data: any) => {
           if (data.fatal) {
             switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
+              case HlsClass.ErrorTypes.NETWORK_ERROR:
                 hls.startLoad();
                 break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
+              case HlsClass.ErrorTypes.MEDIA_ERROR:
                 hls.recoverMediaError();
                 break;
               default:

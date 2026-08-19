@@ -38,13 +38,13 @@ export function FavoriteButton({ id, className }: { id: string; className?: stri
   );
 }
 
-export function PlayButton({ track, small = false }: { track: Track; small?: boolean }) {
+export function PlayButton({ track, small = false, programId }: { track: Track; small?: boolean; programId?: string | undefined }) {
   const { current, playing, play, toggle } = useApp();
   const isCurrent = current?.id === track.id;
   const isPlaying = isCurrent && playing;
   return (
     <button
-      onClick={() => (isCurrent ? toggle() : play(track))}
+      onClick={() => (isCurrent ? toggle() : play(track, programId))}
       aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
       className={cn(
         "press grid place-items-center rounded-full bg-cat text-cat-foreground shadow-lift hover:scale-105 focus-visible:ring-2 focus-visible:ring-cat focus-visible:ring-offset-2 focus-visible:outline-none",
@@ -62,8 +62,13 @@ export function PlayButton({ track, small = false }: { track: Track; small?: boo
 
 /** Grid tile — fills its grid cell. Used on desktop grids. */
 export function TrackTile({ track }: { track: Track }) {
+  const { play } = useApp();
   return (
-    <article className="group animate-soft-in rounded-card border border-border/70 bg-surface p-3 shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift">
+    <Link
+      to="/player"
+      onClick={() => play(track)}
+      className="group block animate-soft-in rounded-card border border-border/70 bg-surface p-3 shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift text-left"
+    >
       <div className="relative overflow-hidden rounded-2xl">
         <img
           src={track.art}
@@ -93,7 +98,7 @@ export function TrackTile({ track }: { track: Track }) {
           {track.raga} · {track.purpose}
         </p>
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -109,12 +114,19 @@ export function TrackCard({ track }: { track: Track }) {
 export function ContinueCard({
   track,
   progress,
+  programId,
 }: {
   track: Track;
   progress: number;
+  programId?: string;
 }) {
+  const { play } = useApp();
   return (
-    <article className="group flex w-[280px] shrink-0 snap-start items-center gap-3.5 rounded-card border border-border/70 bg-surface p-3 shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift sm:w-[320px]">
+    <Link
+      to="/player"
+      onClick={() => play(track, programId)}
+      className="group flex w-[280px] shrink-0 snap-start items-center gap-3.5 rounded-card border border-border/70 bg-surface p-3 shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift sm:w-[320px] text-left"
+    >
       <img
         src={track.art}
         alt=""
@@ -133,11 +145,11 @@ export function ContinueCard({
         </span>
       </div>
       <PlayButton track={track} small />
-    </article>
+    </Link>
   );
 }
 
-export function TrackRow({ track, index }: { track: Track; index?: number }) {
+export function TrackRow({ track, index, programId }: { track: Track; index?: number; programId?: string | undefined }) {
   const { current } = useApp();
   const active = current?.id === track.id;
   return (
@@ -168,15 +180,15 @@ export function TrackRow({ track, index }: { track: Track; index?: number }) {
         </h3>
         <p className="truncate text-[12px] text-muted-foreground">{track.raga}</p>
       </div>
-      <p className="hidden truncate text-[12px] text-muted-foreground md:block">
+      <div className="hidden truncate text-[12px] text-muted-foreground md:block">
         {track.purpose}
-      </p>
+      </div>
       <span className="hidden items-center gap-1.5 text-[12px] tabular-nums text-muted-foreground md:flex">
         <Clock className="h-3.5 w-3.5" /> {formatDuration(track.duration)}
       </span>
       <div className="flex items-center gap-1">
         <FavoriteButton id={track.id} className="hidden sm:grid" />
-        <PlayButton track={track} small />
+        <PlayButton track={track} programId={programId} small />
       </div>
     </article>
   );

@@ -23,7 +23,7 @@ export function AppShell({
   return (
     <div className="min-h-dvh bg-background">
       {chrome && <AppSidebar />}
-      <div className={cn(chrome && "lg:pl-[264px] xl:pl-[288px]")}>
+      <div className={cn(chrome && "lg:pl-[280px] xl:pl-[300px]")}>
         {chrome && <TopBar title={title} subtitle={subtitle} />}
         <main
           className={cn(

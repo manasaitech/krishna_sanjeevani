@@ -7,33 +7,44 @@ import * as Linking from "expo-linking";
 WebBrowser.maybeCompleteAuthSession();
 
 let GoogleSignin: any = null;
+let googleSDKInitialized = false;
+let GoogleSigninStatusCodes: any = null;
 
 // Determine environment
 const isExpoGo = Constants.appOwnership === "expo";
 
-// Only require and configure native SDK on native standalone builds
-if (Platform.OS !== "web" && !isExpoGo) {
-  try {
-    const NativeGoogleSignin = require("@react-native-google-signin/google-signin").GoogleSignin;
-    GoogleSignin = NativeGoogleSignin;
-    GoogleSignin.configure({
-      webClientId: "29791277131-bsaqqk5jighca3c93fud61jidb6f3l6f.apps.googleusercontent.com",
-      offlineAccess: true,
-    });
-  } catch (err) {
-    console.warn("Google Sign-In native module failed to load in this client.", err);
+function initGoogleSDK() {
+  if (googleSDKInitialized) return GoogleSignin;
+  if (Platform.OS !== "web" && !isExpoGo) {
+    try {
+      const googleSigninModule = require("@react-native-google-signin/google-signin");
+      GoogleSignin = googleSigninModule.GoogleSignin;
+      GoogleSigninStatusCodes = googleSigninModule.statusCodes;
+      if (GoogleSignin) {
+        GoogleSignin.configure({
+          webClientId: "29791277131-vmuvo1qjeurjbmh58kk4ue50r2epfi0k.apps.googleusercontent.com",
+          offlineAccess: true,
+        });
+        googleSDKInitialized = true;
+      }
+    } catch (err) {
+      console.warn("Google Sign-In native module failed to initialize:", err);
+    }
   }
+  return GoogleSignin;
 }
 
 export async function signInWithGoogle(): Promise<{ success: boolean; idToken?: string; error?: string }> {
+  const signinInstance = initGoogleSDK();
+
   // If running on Web or inside Expo Go, execute a real Web-based Google OAuth flow
-  if (Platform.OS === "web" || isExpoGo || !GoogleSignin) {
+  if (Platform.OS === "web" || isExpoGo || !signinInstance) {
     try {
       // Use expo-linking which does not depend on the native ExpoCryptoAES module
       const redirectUri = Linking.createURL("redirect");
 
       // Google OAuth Endpoint Configuration
-      const clientId = "29791277131-bsaqqk5jighca3c93fud61jidb6f3l6f.apps.googleusercontent.com";
+      const clientId = "29791277131-vmuvo1qjeurjbmh58kk4ue50r2epfi0k.apps.googleusercontent.com";
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${encodeURIComponent(clientId)}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
@@ -75,8 +86,8 @@ export async function signInWithGoogle(): Promise<{ success: boolean; idToken?: 
 
   // Standalone native build execution flow
   try {
-    await GoogleSignin.hasPlayServices();
-    const userInfo = await GoogleSignin.signIn();
+    await signinInstance.hasPlayServices();
+    const userInfo = await signinInstance.signIn();
     const idToken = userInfo.data?.idToken || userInfo.idToken;
     if (!idToken) {
       return { success: false, error: "Failed to retrieve ID token from Google Sign-In" };
@@ -84,9 +95,29 @@ export async function signInWithGoogle(): Promise<{ success: boolean; idToken?: 
     return { success: true, idToken };
   } catch (err: any) {
     console.error("Google Sign-In native error:", err);
-    if (err.code === "12501" || err.message?.includes("developer error") || err.message?.includes("cancel")) {
+    
+    // Check if the error code matches cancellation or developer error
+    const code = err.code;
+    const message = err.message || "";
+    
+    const isCancelCode = GoogleSigninStatusCodes && code === GoogleSigninStatusCodes.SIGN_IN_CANCELLED;
+    const isDevErrorCode = GoogleSigninStatusCodes && code === GoogleSigninStatusCodes.DEVELOPER_ERROR;
+    
+    // Fallback checks in case statusCodes was not loaded properly
+    const isCancelled = isCancelCode || code === "12501" || code === 12501 || message.toLowerCase().includes("cancel");
+    const isDeveloperError = isDevErrorCode || code === "10" || code === 10 || message.toLowerCase().includes("developer error");
+    
+    if (isCancelled && !isDeveloperError) {
       return { success: false, error: "Sign-in cancelled by user" };
     }
-    return { success: false, error: err.message || "Google Authentication failed" };
+    
+    if (isDeveloperError) {
+      return {
+        success: false,
+        error: "Google Sign-In Developer Error (code 10). This indicates a configuration mismatch between the app and Google Developer Console / Firebase (check package name, SHA-1 fingerprint, or webClientId)."
+      };
+    }
+    
+    return { success: false, error: message || "Google Authentication failed" };
   }
 }
