@@ -74,6 +74,16 @@ export function HomeFooter() {
                   Our Team & Lineage
                 </Link>
               </li>
+              <li>
+                <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -116,9 +126,20 @@ export function HomeFooter() {
             relaxation, spiritual contemplation, and emotional harmony as an adjunct to holistic care.
           </p>
 
-          <p className="text-[11px] shrink-0">
-            © {new Date().getFullYear()} Krishna Sanjeevani. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center md:items-end gap-1.5 text-[11px] shrink-0">
+            <div className="flex items-center gap-3">
+              <Link to="/terms" className="hover:text-foreground transition-colors">
+                Terms of Service
+              </Link>
+              <span className="text-border/60">•</span>
+              <Link to="/privacy" className="hover:text-foreground transition-colors">
+                Privacy Policy
+              </Link>
+            </div>
+            <p>
+              © {new Date().getFullYear()} Krishna Sanjeevani. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
