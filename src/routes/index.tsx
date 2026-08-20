@@ -82,6 +82,30 @@ function HomePage() {
 
         {/* 11. Landmark Beginning (30 May 2026) */}
         <BeginningPreview />
+
+        {/* 12. Application Purpose & OAuth Verification Statement */}
+        <section className="py-16 border-t border-border/80 bg-surface/30">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center font-sans space-y-6">
+            <h2 className="text-xl sm:text-2xl font-bold font-serif text-foreground">
+              About the Krishna Sanjeevani Application
+            </h2>
+            <div className="max-w-2xl mx-auto space-y-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              <p>
+                <strong>Application Name:</strong> <span className="text-foreground font-semibold">Krishna Sanjeevani</span>
+              </p>
+              <p>
+                <strong>Our Purpose:</strong> Krishna Sanjeevani is a dedicated therapeutic audio streaming application. 
+                We combine the therapeutic science of Indian classical ragas (Sur Sanjeevan) with sacred Sanskrit mantra recitations 
+                to provide acoustic support for stress reduction, mental focus, emotional balance, sleep aid, and pregnancy care.
+              </p>
+              <p>
+                <strong>Secure Authentication (Google OAuth):</strong> Our application supports secure registration and sign-in 
+                via Google accounts. We access only your basic profile information (email and name) to create your personal listening 
+                account, track your session history, maintain your favorite playlists, and ensure a seamless, high-quality audio experience.
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* 13. Footer */}
