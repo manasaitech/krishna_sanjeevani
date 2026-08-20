@@ -91,8 +91,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
       { property: "og:description", content: "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care." },
       { name: "twitter:description", content: "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/JsFUiiK1GpVxqMRGHe5uMezquCb2/social-images/social-1785842187968-social-image.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/JsFUiiK1GpVxqMRGHe5uMezquCb2/social-images/social-1785842187968-social-image.webp" },
+      { property: "og:image", content: "/logo.png" },
+      { name: "twitter:image", content: "/logo.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

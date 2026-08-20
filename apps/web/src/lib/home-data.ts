@@ -58,7 +58,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     id: "slide-2",
     image: kulashekaraHeroImg,
     badge: "Sacred Devotional Heritage",
-    title: "The Divine Medicine of Sri Krishna",
+    title: "The Divine Therapeutic Music",
     subtitle: "Piba Manaḥ Śrī-Kṛṣṇa-Divyauṣadham",
     description:
       "Inspired by the 9th-century Mukundamālā Stotra of King Kulasekhara Alvar, recognizing the Holy Name and classical swaras as the ultimate life-saving elixir for existential wellbeing.",
