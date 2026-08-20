@@ -9,6 +9,7 @@ import streamRoute from "./stream.route";
 import favoritesRoute from "../modules/favorites/favorite.route";
 import progressRoute from "../modules/progress/progress.route";
 import subscriptionRoute from "../modules/subscriptions/subscription.route";
+import discoverRoute from "../modules/discover/discover.route";
 import adminRoute from "../modules/admin/admin.route";
 import notificationsRoute from "../modules/notifications/notification.route";
 
@@ -24,6 +25,7 @@ routes.route("/stream", streamRoute);
 routes.route("/favorites", favoritesRoute);
 routes.route("/progress", progressRoute);
 routes.route("/subscriptions", subscriptionRoute);
+routes.route("/discover", discoverRoute);
 routes.route("/admin", adminRoute);
 routes.route("/notifications", notificationsRoute);
 

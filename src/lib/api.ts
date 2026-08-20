@@ -318,6 +318,15 @@ export const api = {
     },
     deleteFile: (key: string) => http.delete("/storage/file", { key }),
   },
+  // ── Discover & Subscriptions ──
+  discover: {
+    getCatalog: () => http.get<any>("/discover"),
+    getSurawali: (id: string) => http.get<any>(`/discover/surawalis/${id}`),
+    subscribe: (surawaliId: string, plan: string, paymentId: string) =>
+      http.post<any>("/discover/subscribe", { surawaliId, plan, paymentId }),
+    listSubscriptions: () => http.get<any[]>("/discover/subscriptions"),
+    cancelSubscription: (id: string) => http.post<any>(`/discover/subscriptions/${id}/cancel`),
+  },
 
   // ── Plans & Subscriptions ──
   plans: {

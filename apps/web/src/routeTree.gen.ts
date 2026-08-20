@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as CategoryRouteImport } from './routes/category'
+import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as InspirationRouteImport } from './routes/inspiration'
@@ -58,6 +59,11 @@ const BrowseRoute = BrowseRouteImport.update({
 const CategoryRoute = CategoryRouteImport.update({
   id: '/category',
   path: '/category',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
+  '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/inspiration': typeof InspirationRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
+  '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/inspiration': typeof InspirationRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
+  '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/inspiration': typeof InspirationRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/browse'
     | '/category'
+    | '/discover'
     | '/favorites'
     | '/home'
     | '/inspiration'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/browse'
     | '/category'
+    | '/discover'
     | '/favorites'
     | '/home'
     | '/inspiration'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/browse'
     | '/category'
+    | '/discover'
     | '/favorites'
     | '/home'
     | '/inspiration'
@@ -333,6 +345,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   BrowseRoute: typeof BrowseRoute
   CategoryRoute: typeof CategoryRoute
+  DiscoverRoute: typeof DiscoverRoute
   FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
   InspirationRoute: typeof InspirationRoute
@@ -390,6 +403,13 @@ declare module '@tanstack/react-router' {
       path: '/category'
       fullPath: '/category'
       preLoaderRoute: typeof CategoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -541,6 +561,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   BrowseRoute: BrowseRoute,
   CategoryRoute: CategoryRoute,
+  DiscoverRoute: DiscoverRoute,
   FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
   InspirationRoute: InspirationRoute,

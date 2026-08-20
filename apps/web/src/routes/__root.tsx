@@ -144,6 +144,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
       "/team",
       "/terms",
       "/privacy",
+      "/discover",
     ];
     const isPublic = publicPaths.includes(location.pathname);
 

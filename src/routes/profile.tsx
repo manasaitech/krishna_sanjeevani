@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
@@ -11,12 +12,17 @@ import {
   Palette,
   ShieldCheck,
   Sparkles,
+  Trash2,
+  Play,
+  Loader2,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Section } from "@/components/layout-bits";
 import { Switch } from "@/components/ui/switch";
 import { useApp } from "@/lib/app-state";
 import { categories } from "@/lib/content";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -81,6 +87,56 @@ function Profile() {
   const role = user?.role || "guest";
   const initial = name.charAt(0).toUpperCase();
 
+  // Surawali Subscriptions State
+  const [surawaliSubs, setSurawaliSubs] = useState<any[]>([]);
+  const [subsLoading, setSubsLoading] = useState(false);
+  const { play, tracks } = useApp();
+
+  const fetchSubs = async () => {
+    if (!user) return;
+    try {
+      setSubsLoading(true);
+      const res = await api.discover.listSubscriptions();
+      if (res.success) {
+        setSurawaliSubs(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubs();
+  }, [user]);
+
+  const handleCancelSub = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to cancel your subscription to ${name}?`)) return;
+    try {
+      const res = await api.discover.cancelSubscription(id);
+      if (res.success) {
+        toast.success(`Subscription to ${name} cancelled successfully.`);
+        fetchSubs();
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to cancel subscription.");
+    }
+  };
+
+  const handlePlaySub = (surawaliName: string) => {
+    play({
+      id: `mock_${surawaliName}`,
+      title: surawaliName,
+      artist: "Krishna Sanjeevani Therapeutic",
+      subtitle: "Subscribed Surāwali session",
+      duration: 558,
+      category: "secular",
+      playlistKey: "",
+      art: "/govinda-bhakta-pr-seminars-mukund.mp3"
+    } as any);
+  };
+
   return (
     <AppShell>
       <div className="animate-rise mt-2 flex items-center gap-4 rounded-card border border-border bg-surface p-5 shadow-soft">
@@ -102,6 +158,79 @@ function Profile() {
           <Row icon={Sparkles} label="Listening path" value={cat.name} to="/category" />
         </div>
       </Section>
+
+      {/* Surawali Subscriptions Section */}
+      {user && (
+        <Section title="My Therapeutic Surāwalis">
+          {subsLoading ? (
+            <div className="rounded-card border border-border bg-surface p-6 flex justify-center shadow-soft">
+              <Loader2 className="h-5 w-5 animate-spin text-cat" />
+            </div>
+          ) : surawaliSubs.length === 0 ? (
+            <div className="rounded-card border border-dashed border-border/80 p-8 text-center bg-surface shadow-soft space-y-2">
+              <p className="text-sm font-semibold text-foreground">No subscribed Surāwalis</p>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto">Explore clinical disorders and subscribe to specific Vedic sound formulas.</p>
+              <Link
+                to="/discover"
+                className="press inline-flex min-h-9 items-center rounded-btn bg-cat px-4 text-xs font-bold text-cat-foreground hover:brightness-105 mt-2"
+              >
+                Go to Discovery
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {surawaliSubs.map((sub) => {
+                const isActive = sub.status === "active" && sub.endDate > Date.now();
+                return (
+                  <div
+                    key={sub.id}
+                    className="rounded-card border border-border bg-surface p-4 shadow-soft flex justify-between items-center gap-4"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-sm text-foreground">{sub.surawaliName}</h4>
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          isActive 
+                            ? "bg-green-500/10 text-green-600" 
+                            : "bg-amber-500/10 text-amber-600"
+                        }`}>
+                          {isActive ? "Active" : "Cancelled"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {isActive 
+                          ? `Valid until: ${new Date(sub.endDate).toLocaleDateString()}` 
+                          : `Access ended: ${new Date(sub.endDate).toLocaleDateString()}`
+                        }
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePlaySub(sub.surawaliName)}
+                        className="press h-8 px-4 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1"
+                      >
+                        <Play className="h-3 w-3 fill-current" />
+                        <span>Play</span>
+                      </button>
+                      {isActive && (
+                        <button
+                          onClick={() => handleCancelSub(sub.id, sub.surawaliName)}
+                          className="press h-8 px-3 rounded-btn bg-destructive/10 text-destructive text-xs font-bold hover:bg-destructive/20 flex items-center justify-center gap-1"
+                          title="Cancel Subscription"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          <span>Cancel</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Section>
+      )}
 
       <Section title="Preferences">
         <div className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft">
@@ -136,3 +265,4 @@ function Profile() {
     </AppShell>
   );
 }
+

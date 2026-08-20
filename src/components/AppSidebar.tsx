@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Heart,
   House,
@@ -9,15 +9,18 @@ import {
   LayoutGrid,
   Search,
   Sprout,
+  Compass,
+  Waves,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/app-state";
 import { tracks, programs } from "@/lib/content";
 import logoWithoutText from "@/assets/logo-without-text.png";
+import { api } from "@/lib/api";
 
 export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
-  const { favorites, savedPrograms, current, playing, play } = useApp();
-  const [filter, setFilter] = useState<"All" | "Playlists" | "Programs">("All");
+  const { favorites, savedPrograms, current, playing, play, user } = useApp();
+  const [filter, setFilter] = useState<"All" | "Playlists" | "Programs" | "Surāwalis">("All");
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Map favorites IDs to full tracks
@@ -32,6 +35,24 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
 
   // Use a subset of tracks as recently played placeholder
   const recentTracks = tracks.slice(0, 3);
+
+  // Fetch active subscribed Surawalis
+  const [surawaliSubs, setSurawaliSubs] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      api.discover.listSubscriptions()
+        .then((res) => {
+          if (res.success) {
+            const active = res.data.filter((s: any) => s.status === "active" && s.endDate > Date.now());
+            setSurawaliSubs(active);
+          }
+        })
+        .catch((err) => console.error("Failed to load sidebar subscriptions", err));
+    } else {
+      setSurawaliSubs([]);
+    }
+  }, [user]);
 
   const getLinkClass = (to: string) => {
     const active = pathname === to;
@@ -84,6 +105,12 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
               </Link>
             </li>
             <li>
+              <Link to="/discover" onClick={onNavigate} className={getLinkClass("/discover")}>
+                <Compass className="h-[18px] w-[18px] shrink-0" />
+                <span className="truncate">Discover</span>
+              </Link>
+            </li>
+            <li>
               <Link to="/journey" onClick={onNavigate} className={getLinkClass("/journey")}>
                 <Sprout className="h-[18px] w-[18px] shrink-0" />
                 <span className="truncate">Pregnancy</span>
@@ -119,7 +146,7 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
 
         {/* Filter Pills */}
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 shrink-0">
-          {(["All", "Playlists", "Programs"] as const).map((tab) => (
+          {(["All", "Playlists", "Programs", "Surāwalis"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
@@ -159,6 +186,44 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
                 </p>
               </div>
             </Link>
+          )}
+
+          {/* Subscribed Surāwalis */}
+          {(filter === "All" || filter === "Surāwalis") && (
+            surawaliSubs.map((sub) => {
+              const surawaliName = sub.surawaliName;
+              return (
+                <button
+                  key={sub.id}
+                  onClick={() => {
+                    play({
+                      id: `mock_${surawaliName}`,
+                      title: surawaliName,
+                      artist: "Krishna Sanjeevani Therapeutic",
+                      subtitle: "Subscribed Surāwali session",
+                      duration: 558,
+                      category: "secular",
+                      playlistKey: "",
+                      art: "/govinda-bhakta-pr-seminars-mukund.mp3"
+                    } as any);
+                    if (onNavigate) onNavigate();
+                  }}
+                  className="press flex items-center gap-3 p-2 w-full text-left rounded-btn hover:bg-secondary/60 transition-all group"
+                >
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cat-light text-cat shadow-sm">
+                    <Waves className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-semibold truncate group-hover:text-cat transition-colors">
+                      {surawaliName}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Surāwali · Active
+                    </p>
+                  </div>
+                </button>
+              );
+            })
           )}
 
           {/* Saved Programs */}
