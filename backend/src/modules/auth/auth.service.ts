@@ -356,11 +356,32 @@ export class AuthService {
         const verification = await jwtVerify(idToken, JWKS, {
           audience: targetClientId,
           issuer: ["https://accounts.google.com", "accounts.google.com"],
+          clockTolerance: "5m", // 5 minutes clock skew tolerance
         });
         payload = verification.payload;
       } catch (err: any) {
-        logger.error("Google ID token verification failed", { error: err.message });
-        throw new UnauthorizedError("Invalid Google ID token");
+        logger.warn("Local Google ID token verification failed, trying Google tokeninfo API...", { error: err.message });
+        try {
+          // Fallback to Google's tokeninfo endpoint
+          const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+          if (!response.ok) {
+            const errBody = await response.text();
+            logger.error("Google tokeninfo API validation failed", { status: response.status, body: errBody });
+            throw new Error(`Google tokeninfo returned status ${response.status}: ${errBody}`);
+          }
+          const tokenInfo = await response.json() as any;
+          
+          // Verify audience matches targetClientId
+          if (tokenInfo.aud !== targetClientId && tokenInfo.azp !== targetClientId) {
+            logger.error("Audience mismatch in tokeninfo", { aud: tokenInfo.aud, expected: targetClientId });
+            throw new Error(`Audience mismatch: expected ${targetClientId}, got ${tokenInfo.aud}`);
+          }
+          
+          payload = tokenInfo;
+        } catch (fallbackErr: any) {
+          logger.error("All Google ID token verification methods failed", { error: fallbackErr.message });
+          throw new UnauthorizedError(`Invalid Google ID token: ${fallbackErr.message} (primary: ${err.message})`);
+        }
       }
     }
 
