@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useVerseAudio } from "@/lib/use-verse-audio";
 import { OpeningExperience } from "@/components/home/OpeningExperience";
@@ -14,6 +14,8 @@ import { FeaturePillars } from "@/components/home/FeaturePillars";
 import { SpiritualVerseSection } from "@/components/home/SpiritualVerseSection";
 import { BeginningPreview } from "@/components/home/BeginningPreview";
 import { HomeFooter } from "@/components/home/HomeFooter";
+import { useApp } from "@/lib/app-state";
+import { Sparkles, Compass } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,6 +40,7 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const audio = useVerseAudio();
   const [openingFinished, setOpeningFinished] = useState(false);
+  const { user } = useApp();
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-cat-light selection:text-cat flex flex-col">
@@ -61,6 +64,43 @@ function HomePage() {
       {/* 5. Main Hero Carousel */}
       <main id="main-content" className="flex-1">
         <HomeHeroCarousel />
+
+        {/* Personalized Sound Healing Recommendation Banner */}
+        {user && (
+          <section className="bg-gradient-to-br from-amber-500/5 via-cat-light/10 to-transparent border-y border-border/40 py-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="rounded-card border border-cat-accent/20 bg-surface/85 backdrop-blur-md p-6 sm:p-8 shadow-soft flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="space-y-2.5 max-w-2xl text-left">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-cat-light px-3 py-1 text-xs font-bold text-cat uppercase tracking-wider">
+                    <Sparkles className="h-3 w-3" />
+                    <span>Personalized Sound Healing</span>
+                  </div>
+                  <h3 className="font-display font-bold text-2xl sm:text-3xl text-foreground">
+                    Welcome back, {user.name}! Ready to discover your Surāwali?
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Search from our catalogue of disorders, pregnancy months, and corporate wellness weekdays to subscribe to your personalized therapeutic classical raga frequency plan.
+                  </p>
+                </div>
+                <div className="shrink-0 w-full md:w-auto flex flex-col sm:flex-row gap-3">
+                  <Link
+                    to="/discover"
+                    className="press rounded-btn bg-cat text-cat-foreground px-6 py-3 text-sm font-bold shadow-lift hover:brightness-105 transition-all text-center flex items-center justify-center gap-2"
+                  >
+                    <Compass className="h-4 w-4" />
+                    <span>Explore Discover Catalog</span>
+                  </Link>
+                  <Link
+                    to="/profile"
+                    className="press rounded-btn bg-secondary border border-border text-foreground px-6 py-3 text-sm font-bold hover:bg-secondary-hover transition-all text-center"
+                  >
+                    <span>My Subscriptions</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* 6. Introduction to Krishna Sanjeevani */}
         <HomeIntro />
