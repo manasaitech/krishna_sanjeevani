@@ -72,7 +72,7 @@ function RegisterScreen() {
     script.onload = () => {
       if ((window as any).google) {
         (window as any).google.accounts.id.initialize({
-          client_id: "29791277131-vmuvo1qjeurjbmh58kk4ue50r2epfi0k.apps.googleusercontent.com",
+          client_id: "29791277131-umh14qed3e0k4n3kotqum64r7br67dh9.apps.googleusercontent.com",
           callback: handleGoogleCredentialResponse,
         });
         (window as any).google.accounts.id.renderButton(

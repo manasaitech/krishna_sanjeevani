@@ -341,7 +341,7 @@ export class AuthService {
     logger.info("Google login attempt");
 
     // 1. Verify Google ID token
-    const targetClientId = clientId || "29791277131-vmuvo1qjeurjbmh58kk4ue50r2epfi0k.apps.googleusercontent.com";
+    const targetClientId = clientId || "29791277131-umh14qed3e0k4n3kotqum64r7br67dh9.apps.googleusercontent.com";
     
     let payload: any;
     if (idToken === "mock_google_id_token") {

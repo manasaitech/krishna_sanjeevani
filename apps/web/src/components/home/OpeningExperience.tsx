@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import { KULASEKHARA_VERSE } from "@/lib/home-data";
-import { Volume2, Sparkles, ArrowRight } from "lucide-react";
+import bgImg from "@/assets/flash-bg.png";
+import kulashekaraHeroImg from "@/assets/kulashekara-cutout.png";
+import logoWithoutText from "@/assets/logo-without-text.png";
 import type { VerseAudioState } from "@/lib/use-verse-audio";
 
 interface OpeningExperienceProps {
@@ -9,154 +10,232 @@ interface OpeningExperienceProps {
 }
 
 export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps) {
-  const [stage, setStage] = useState<0 | 1 | 2 | 3 | 4>(1);
+  const [animateStage, setAnimateStage] = useState<0 | 1 | 2>(0);
+  const [isInteracted, setIsInteracted] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+  
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
+  // Dynamically load elegant classic serif fonts
   useEffect(() => {
-    // Automatically trigger audio playback immediately on mount
-    audio.play();
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap";
+    document.head.appendChild(link);
 
-    // 5-second automatic progression sequence
-    const t2 = setTimeout(() => setStage(2), 1200);
-    const t3 = setTimeout(() => setStage(3), 2400);
-    const t4 = setTimeout(() => {
-      setStage(4);
-      setTimeout(() => {
-        setIsDismissed(true);
-        onCompleteRef.current();
-      }, 700);
-    }, 5000); // Exactly 5 seconds total
+    // Entrance Animation Sequence
+    // 1. Mount immediately shows the background landscape.
+    // 2. At 450ms, King Kulasekhara's transparent PNG pops in.
+    const t1 = setTimeout(() => {
+      setAnimateStage(1);
+    }, 450);
+
+    // 3. At 1250ms, the headers, titles, dividers, button, and footer fade in.
+    const t2 = setTimeout(() => {
+      setAnimateStage(2);
+    }, 1250);
 
     return () => {
+      document.head.removeChild(link);
+      clearTimeout(t1);
       clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
     };
-  }, []); // Run once on mount
+  }, []);
 
-  const handleManualSkip = () => {
-    audio.play();
-    setStage(4);
+  const handleInteraction = () => {
+    if (isFadingOut || isInteracted) return;
+
+    // Directly trigger audio playback within the user interaction context (browser unlock)
+    try {
+      audio.play();
+    } catch (err) {
+      console.warn("Audio playback initialization failed:", err);
+    }
+
+    // Set dismissed state in session storage so it is not shown again in this session
+    sessionStorage.setItem("opening_experience_dismissed", "true");
+
+    // Trigger visual interaction animations
+    setIsInteracted(true);
+
+    // Wait a brief moment for the button illumination / glow expansion, then fade out
+    setTimeout(() => {
+      setIsFadingOut(true);
+    }, 200);
+
+    // Completely unmount after visual transition completes
     setTimeout(() => {
       setIsDismissed(true);
       onCompleteRef.current();
-    }, 500);
+    }, 1150); // 200ms delay + 950ms fade out transition
   };
 
   if (isDismissed) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] bg-[#F5F1EB] text-foreground select-none ${
-        stage === 4
-          ? "pointer-events-none opacity-0 scale-50 translate-x-[40vw] translate-y-[40vh]"
-          : "opacity-100 scale-100 translate-x-0 translate-y-0"
+      onClick={handleInteraction}
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-between py-10 px-6 overflow-hidden select-none cursor-pointer transition-all duration-[950ms] ease-in-out ${
+        isFadingOut
+          ? "opacity-0 scale-[1.015] pointer-events-none"
+          : "opacity-100 scale-100"
       }`}
-      role="region"
-      aria-label="Opening Spiritual Invocation"
+      role="button"
+      aria-label="Enter Krishna Sanjeevani Application"
     >
-      {/* Warm ambient manuscript glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(#c9a84c_1px,transparent_1px)] [background-size:24px_24px] opacity-15 pointer-events-none" />
-      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-amber-500/10 rounded-full blur-3xl pointer-events-none animate-breathe" />
+      {/* Styles for breathing animations and fonts */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes breathing {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
+            border-color: rgba(197, 160, 89, 0.45);
+          }
+          50% {
+            transform: scale(1.03);
+            box-shadow: 0 0 25px rgba(197, 160, 89, 0.5);
+            border-color: rgba(197, 160, 89, 0.75);
+          }
+        }
+        .font-cinzel {
+          font-family: 'Cinzel', Georgia, serif;
+        }
+        .font-lora {
+          font-family: 'Lora', Georgia, serif;
+        }
+      `}} />
 
-      {/* Skip / Enter Action */}
-      <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
-        <button
-          onClick={handleManualSkip}
-          className="flex items-center gap-1.5 rounded-full bg-surface border border-border px-4 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-all shadow-soft cursor-pointer"
-        >
-          <span>Enter Website</span>
-          <ArrowRight className="h-3.5 w-3.5 text-cat" />
-        </button>
+      {/* 1. Full Bleed Background Landscape (Always Visible) */}
+      <div
+        className="absolute inset-0 bg-cover bg-center z-0"
+        style={{ backgroundImage: `url(${bgImg})` }}
+      />
+
+      {/* 2. Top Gold Lotus Logo and Header */}
+      <div
+        className={`flex flex-col items-center gap-1.5 z-10 pointer-events-none mt-4 transition-all duration-[1000ms] ${
+          animateStage >= 2
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 -translate-y-4"
+        }`}
+      >
+        {/* Actual platform logo */}
+        <img
+          src={logoWithoutText}
+          alt="Krishna Sanjeevani Logo"
+          className="h-8 sm:h-10 object-contain drop-shadow-sm select-none pointer-events-none"
+        />
+        
+        {/* Title with Gold Lines and Dots */}
+        <div className="flex items-center gap-3 sm:gap-4 text-[#C5A059] mt-1.5">
+          <div className="flex items-center">
+            <div className="h-[3px] w-[3px] rounded-full bg-[#C5A059]" />
+            <div className="h-[0.5px] w-6 sm:w-12 bg-[#C5A059]/60" />
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.3em] uppercase text-[#4D0F1B] font-sans">
+            Krishna Sanjeevani
+          </span>
+          <div className="flex items-center">
+            <div className="h-[0.5px] w-6 sm:w-12 bg-[#C5A059]/60" />
+            <div className="h-[3px] w-[3px] rounded-full bg-[#C5A059]" />
+          </div>
+        </div>
       </div>
 
-      {/* Main Center Composition */}
-      <div className="relative z-10 max-w-2xl mx-auto px-6 py-10 text-center flex flex-col items-center">
-        {/* Top Decorative Emblem */}
+      {/* 3. Central Character Placement overlaying background sun/mandala */}
+      <div className="relative flex flex-col items-center justify-center flex-1 w-full max-h-[48vh] mt-2 mb-2 z-10">
+        
+        {/* Dynamic expanding aura ring on interaction */}
         <div
-          className={`flex items-center gap-2 transition-all duration-700 ${
-            stage >= 1 ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+          className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(201,168,76,0.18)_0%,transparent_70%)] blur-md pointer-events-none z-0 transition-all duration-[900ms] ${
+            isInteracted ? "scale-[1.55] opacity-0" : "scale-100 opacity-100"
+          }`}
+          style={{ width: "300px", height: "300px" }}
+        />
+
+        {/* Character Portrait (Pops in at Stage 1) */}
+        <div
+          className={`relative z-10 transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${
+            animateStage >= 1
+              ? "opacity-100 scale-100 translate-y-0"
+              : "opacity-0 scale-95 translate-y-6"
           }`}
         >
-          <span className="h-px w-10 bg-cat/40" />
-          <span className="text-[11px] font-bold tracking-[0.3em] uppercase text-cat font-sans flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-cat animate-pulse" />
-            Divine Invocation
+          <img
+            src={kulashekaraHeroImg}
+            alt="King Kulasekhara Alvar"
+            className="h-[34vh] sm:h-[42vh] max-h-[360px] object-contain drop-shadow-[0_12px_24px_rgba(77,15,27,0.1)]"
+          />
+        </div>
+      </div>
+
+      {/* 4. Text, Divider and CTA Section (at the bottom half) */}
+      <div className="flex flex-col items-center w-full max-w-lg text-center gap-6 z-10">
+        
+        {/* Main Text Content (Fades in at Stage 2) */}
+        <div
+          className={`flex flex-col items-center text-center gap-1 sm:gap-1.5 px-4 pointer-events-none transition-all duration-[1000ms] ${
+            animateStage >= 2
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4"
+          }`}
+        >
+          <span className="text-sm sm:text-base font-lora italic text-[#4D0F1B] tracking-wide">
+            Immerse into the world of
           </span>
-          <span className="h-px w-10 bg-cat/40" />
-        </div>
+          <h1 className="text-xl sm:text-2xl md:text-[28px] font-cinzel font-bold text-[#4D0F1B] tracking-wider uppercase leading-tight">
+            Divine Therapeutic Music
+          </h1>
 
-        {/* King Kulasekhara Alvar Portrait */}
-        <div
-          className={`relative mt-6 mb-5 transition-all duration-1000 ${
-            stage >= 1 ? "opacity-100 scale-100" : "opacity-0 scale-90"
-          }`}
-        >
-          <div className="absolute -inset-2 rounded-full bg-cat-light/60 blur-md" />
-          <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-2 border-cat/40 shadow-lift bg-surface flex items-center justify-center">
-            <img
-              src={KULASEKHARA_VERSE.image}
-              alt="King Kulasekhara Alvar"
-              className="h-full w-full object-cover object-top"
-            />
-          </div>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-surface border border-border rounded-full px-3 py-0.5 shadow-sm">
-            <span className="text-[10px] tracking-wider uppercase font-semibold text-cat">
-              9th Century
-            </span>
+          {/* Decorative Gold Diamond Divider */}
+          <div className="flex items-center justify-center text-[#C5A059] mt-2 opacity-70">
+            <div className="h-[0.5px] w-6 bg-[#C5A059]" />
+            <svg viewBox="0 0 100 100" className="w-3 h-3 mx-1.5 fill-current">
+              <path d="M50 20 C45 35 30 45 10 50 C30 55 45 65 50 80 C55 65 70 55 90 50 C70 45 55 35 50 20 Z" />
+            </svg>
+            <div className="h-[0.5px] w-6 bg-[#C5A059]" />
           </div>
         </div>
 
-        {/* Author Name */}
-        <h2
-          className={`text-xl sm:text-2xl font-bold tracking-tight text-foreground transition-all duration-700 delay-100 ${
-            stage >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-          }`}
-        >
-          {KULASEKHARA_VERSE.author}
-        </h2>
-        <p
-          className={`text-xs uppercase tracking-[0.2em] text-cat font-semibold mt-0.5 transition-all duration-700 delay-150 ${
-            stage >= 1 ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {KULASEKHARA_VERSE.title}
-        </p>
-
-        {/* Sanskrit Verse in Devanagari */}
+        {/* CTA Button and Footer texts (Fades in at Stage 2) */}
         <div
-          className={`mt-6 max-w-xl transition-all duration-1000 ${
-            stage >= 2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          className={`flex flex-col items-center gap-4.5 w-full max-w-xs mb-4 transition-all duration-[1000ms] ${
+            animateStage >= 2
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4"
           }`}
         >
-          <div className="relative rounded-2xl bg-surface border border-border p-5 sm:p-6 shadow-lift">
-            <p className="text-base sm:text-lg md:text-xl font-serif leading-relaxed text-foreground whitespace-pre-line font-medium">
-              {KULASEKHARA_VERSE.sanskrit}
+          <button
+            className={`px-12 py-3 rounded-full bg-[#4D0F1B] text-[#FAF8F4] font-cinzel tracking-widest text-[11px] uppercase font-semibold border border-[#C5A059]/80 shadow-md transition-all duration-300 ${
+              isInteracted
+                ? "bg-[#6B1B29] border-[#faf8f4] scale-95 shadow-[0_0_20px_rgba(250,248,244,0.5)] brightness-110"
+                : "hover:scale-[1.025]"
+            }`}
+            style={{ animation: isInteracted ? "none" : "breathing 3.5s ease-in-out infinite" }}
+            onClick={(e) => {
+              // Let click bubble to container context for immediate audio release
+              e.stopPropagation();
+              handleInteraction();
+            }}
+          >
+            Click Here
+          </button>
+          
+          <div className="text-center flex flex-col items-center gap-1.5 mt-1">
+            <p className="text-[10px] sm:text-[11px] text-[#7C7A85] font-lora italic tracking-wide">
+              Tap anywhere to begin your sacred journey
             </p>
-
-            {/* Translation & Core Exhortation */}
-            <div
-              className={`mt-4 pt-3 border-t border-border/60 transition-all duration-700 ${
-                stage >= 3 ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <p className="text-xs sm:text-sm font-serif italic text-muted-foreground">
-                "{KULASEKHARA_VERSE.transliteration}"
-              </p>
-              <p className="text-xs sm:text-sm font-serif font-bold text-cat mt-1.5">
-                {KULASEKHARA_VERSE.meaning}
-              </p>
+            
+            {/* Subtle gold decoration divider */}
+            <div className="flex items-center justify-center text-[#C5A059] opacity-55 mt-0.5">
+              <div className="h-[0.5px] w-4 bg-[#C5A059]" />
+              <svg viewBox="0 0 4 4" className="w-1 h-1 text-[#C5A059] mx-1.5 fill-current">
+                <circle cx="2" cy="2" r="1.5" />
+              </svg>
+              <div className="h-[0.5px] w-4 bg-[#C5A059]" />
             </div>
-          </div>
-        </div>
-
-        {/* Dynamic Audio Status Indicator */}
-        <div className="mt-6 transition-all duration-500">
-          <div className="inline-flex items-center gap-2 rounded-full bg-cat-light px-3.5 py-1 text-[11px] font-semibold text-cat shadow-sm animate-pulse">
-            <Volume2 className="h-3.5 w-3.5" />
-            <span>Sacred verse soundscape playing...</span>
           </div>
         </div>
       </div>

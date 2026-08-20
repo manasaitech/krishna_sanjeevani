@@ -22,7 +22,7 @@ function initGoogleSDK() {
       GoogleSigninStatusCodes = googleSigninModule.statusCodes;
       if (GoogleSignin) {
         GoogleSignin.configure({
-          webClientId: "29791277131-vmuvo1qjeurjbmh58kk4ue50r2epfi0k.apps.googleusercontent.com",
+          webClientId: "29791277131-umh14qed3e0k4n3kotqum64r7br67dh9.apps.googleusercontent.com",
           offlineAccess: true,
         });
         googleSDKInitialized = true;
@@ -44,7 +44,7 @@ export async function signInWithGoogle(): Promise<{ success: boolean; idToken?: 
       const redirectUri = Linking.createURL("redirect");
 
       // Google OAuth Endpoint Configuration
-      const clientId = "29791277131-vmuvo1qjeurjbmh58kk4ue50r2epfi0k.apps.googleusercontent.com";
+      const clientId = "29791277131-umh14qed3e0k4n3kotqum64r7br67dh9.apps.googleusercontent.com";
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${encodeURIComponent(clientId)}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +

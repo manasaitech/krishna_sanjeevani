@@ -2,7 +2,7 @@ import krishnaFluteImg from "@/assets/cbabb2a5-2787-4997-986f-daf7b88017ff.jpeg"
 import kulasekharaImg from "@/assets/57d4ebea-a77c-4f30-88ad-87e99aac7c1f.jpeg";
 import kulashekaraHeroImg from "@/assets/kulashekara.png";
 import chaitanyaImg from "@/assets/18fc75d6-df05-469c-9855-d79c4931636d.jpeg";
-import prabhupadaImg from "@/assets/3f99cd1e-9061-4ee5-a720-ba4041cfae9d.jpeg";
+import prabhupadaImg from "@/assets/prabhupada-new.jpg";
 import ragaMusiciansImg from "@/assets/2978e827-6b28-45f0-bbce-575e6023a705.jpeg";
 import templeSunriseImg from "@/assets/8269a526-98ab-49a2-bcce-928814d51baa.jpeg";
 import manuscriptImg from "@/assets/89e81ba6-b688-4575-9b1f-964ace72a456.jpeg";
@@ -61,7 +61,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     title: "The Divine Medicine of Sri Krishna",
     subtitle: "Piba Manaḥ Śrī-Kṛṣṇa-Divyauṣadham",
     description:
-      "Rooted in the 9th-century Mukundamālā Stotra of King Kulasekhara Alvar, recognizing the Holy Name and classical swaras as the ultimate life-saving elixir for existential wellbeing.",
+      "Inspired by the 9th-century Mukundamālā Stotra of King Kulasekhara Alvar, recognizing the Holy Name and classical swaras as the ultimate life-saving elixir for existential wellbeing.",
     primaryCtaText: "Explore the Verses",
     primaryCtaLink: "/inspiration",
     secondaryCtaText: "Learn About Kulasekhara",
@@ -278,6 +278,7 @@ export const EXPLORE_CARDS = [
     link: "/inspiration",
     tag: "Sacred Heritage",
     image: prabhupadaImg,
+    imagePosition: "object-top",
   },
   {
     title: "A Landmark Beginning",

@@ -35,9 +35,19 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
+// Module-scoped variable to track if the opening experience was completed during this JS application session.
+// This allows the flash screen to show on page refreshes (for testing) but prevents it from showing
+// when navigating back and forth between pages/routes within the single page application.
+let globalOpeningFinished = false;
+
 function HomePage() {
   const audio = useVerseAudio();
-  const [openingFinished, setOpeningFinished] = useState(false);
+  const [openingFinished, setOpeningFinished] = useState(globalOpeningFinished);
+
+  const handleOpeningComplete = () => {
+    globalOpeningFinished = true;
+    setOpeningFinished(true);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-cat-light selection:text-cat flex flex-col">
@@ -45,7 +55,7 @@ function HomePage() {
       {!openingFinished && (
         <OpeningExperience
           audio={audio}
-          onComplete={() => setOpeningFinished(true)}
+          onComplete={handleOpeningComplete}
         />
       )}
 

@@ -16,7 +16,7 @@ export function MusicMantraStory() {
       icon: Sparkles,
     },
     {
-      title: "Consciousness (Ceto)",
+      title: "Consciousness (Chetna)",
       subtitle: "Awakening Sattva",
       desc: "Diffusing cooling moonlight that subdues agitation and fear.",
       icon: Flame,

@@ -35,7 +35,9 @@ export function ExploreCardsGrid() {
                 <img
                   src={card.image}
                   alt={card.title}
-                  className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-700 filter brightness-[0.98] contrast-[1.03]"
+                  className={`h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 filter brightness-[0.98] contrast-[1.03] ${
+                    card.imagePosition || "object-center"
+                  }`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
 

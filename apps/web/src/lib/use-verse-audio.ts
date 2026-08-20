@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { KULASEKHARA_VERSE } from "./home-data";
 
 export interface VerseAudioState {
@@ -20,204 +20,192 @@ export interface VerseAudioState {
   setIsMiniPlayerVisible: (visible: boolean) => void;
 }
 
+// Shared Global Audio instance and state
+let globalAudio: HTMLAudioElement | null = null;
+let globalIsPlaying = false;
+let globalCurrentTime = 0;
+let globalDuration = 168; // ~2:48 default verse duration
+let globalVolume = 0.85;
+let globalIsMuted = false;
+let globalAutoplayBlocked = false;
+let globalIsModalOpen = false;
+let globalIsMiniPlayerVisible = true;
+let globalIsLoaded = false;
+let globalIsSimulated = false;
+
+// Active hook listeners to trigger re-renders
+const listeners = new Set<() => void>();
+
+function emitUpdate() {
+  listeners.forEach((l) => l());
+}
+
+function initGlobalAudio() {
+  if (typeof window === "undefined" || globalAudio) return;
+
+  const audio = new Audio();
+  audio.src = KULASEKHARA_VERSE.audioPath;
+  audio.preload = "auto";
+  audio.volume = globalVolume;
+  audio.loop = false;
+  globalAudio = audio;
+
+  const onCanPlay = () => {
+    globalIsLoaded = true;
+    emitUpdate();
+  };
+
+  const onLoadedMetadata = () => {
+    if (audio.duration && !isNaN(audio.duration)) {
+      globalDuration = audio.duration;
+      globalIsSimulated = false;
+      globalIsLoaded = true;
+      emitUpdate();
+    }
+  };
+
+  const onTimeUpdate = () => {
+    if (!globalIsSimulated) {
+      globalCurrentTime = audio.currentTime;
+      emitUpdate();
+    }
+  };
+
+  const onEnded = () => {
+    globalIsPlaying = false;
+    globalCurrentTime = 0;
+    emitUpdate();
+  };
+
+  const onError = () => {
+    globalIsSimulated = true;
+    globalIsLoaded = true;
+    emitUpdate();
+  };
+
+  audio.addEventListener("canplay", onCanPlay);
+  audio.addEventListener("loadedmetadata", onLoadedMetadata);
+  audio.addEventListener("timeupdate", onTimeUpdate);
+  audio.addEventListener("ended", onEnded);
+  audio.addEventListener("error", onError);
+  
+  audio.load();
+}
+
 export function useVerseAudio(): VerseAudioState {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(168); // ~2:48 default verse duration
-  const [volume, setVolumeState] = useState(0.85);
-  const [isMuted, setIsMuted] = useState(false);
-  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMiniPlayerVisible, setIsMiniPlayerVisible] = useState(true);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [, forceUpdate] = useState({});
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const isSimulatedRef = useRef(false);
-  const timerRef = useRef<number | null>(null);
-
-  // Initialize Audio
   useEffect(() => {
-    const audio = new Audio();
-    audio.src = KULASEKHARA_VERSE.audioPath;
-    audio.preload = "auto";
-    audio.volume = volume;
-    audio.loop = false;
-    audioRef.current = audio;
+    initGlobalAudio();
 
-    // Trigger load and play immediately on mount
-    audio.load();
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          setIsPlaying(true);
-          setAutoplayBlocked(false);
-          removeUnlockListeners();
-        })
-        .catch(() => {
-          setAutoplayBlocked(true);
-        });
-    }
+    const listener = () => forceUpdate({});
+    listeners.add(listener);
 
-    const onCanPlay = () => {
-      setIsLoaded(true);
-    };
-
-    const onLoadedMetadata = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
-        setDuration(audio.duration);
-        isSimulatedRef.current = false;
-        setIsLoaded(true);
-      }
-    };
-
-    const onTimeUpdate = () => {
-      if (!isSimulatedRef.current) {
-        setCurrentTime(audio.currentTime);
-      }
-    };
-
-    const onEnded = () => {
-      setIsPlaying(false);
-      setCurrentTime(0);
-    };
-
-    const onError = () => {
-      isSimulatedRef.current = true;
-      setIsLoaded(true);
-    };
-
-    audio.addEventListener("canplay", onCanPlay);
-    audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("ended", onEnded);
-    audio.addEventListener("error", onError);
-
-    // Bypassing autoplay blocks with user gesture unlock listeners
-    const unlockAutoplay = () => {
-      audio.play()
-        .then(() => {
-          setIsPlaying(true);
-          setAutoplayBlocked(false);
-          removeUnlockListeners();
-        })
-        .catch(err => console.log("Autoplay unlock failed", err));
-    };
-
-    const removeUnlockListeners = () => {
-      window.removeEventListener("click", unlockAutoplay);
-      window.removeEventListener("touchstart", unlockAutoplay);
-      window.removeEventListener("keydown", unlockAutoplay);
-    };
-
-    window.addEventListener("click", unlockAutoplay);
-    window.addEventListener("touchstart", unlockAutoplay);
-    window.addEventListener("keydown", unlockAutoplay);
-
-    return () => {
-      audio.removeEventListener("canplay", onCanPlay);
-      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("ended", onEnded);
-      audio.removeEventListener("error", onError);
-      removeUnlockListeners();
-      audio.pause();
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  // Simulated timer for fallback audio
-  useEffect(() => {
-    if (isPlaying && isSimulatedRef.current) {
-      timerRef.current = window.setInterval(() => {
-        setCurrentTime((prev) => {
-          if (prev >= duration) {
-            setIsPlaying(false);
-            return 0;
-          }
-          return prev + 1;
-        });
+    // Simulated timer for fallback audio if media element errors out
+    let timerId: number | null = null;
+    if (globalIsPlaying && globalIsSimulated) {
+      timerId = window.setInterval(() => {
+        globalCurrentTime += 1;
+        if (globalCurrentTime >= globalDuration) {
+          globalIsPlaying = false;
+          globalCurrentTime = 0;
+        }
+        emitUpdate();
       }, 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
     }
+
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      listeners.delete(listener);
+      if (timerId) clearInterval(timerId);
     };
-  }, [isPlaying, duration]);
+  }, [globalIsPlaying]);
 
   const play = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    initGlobalAudio();
+    if (!globalAudio) return;
 
-    if (!isSimulatedRef.current) {
-      const playPromise = audio.play();
+    if (!globalIsSimulated) {
+      const playPromise = globalAudio.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            setIsPlaying(true);
-            setAutoplayBlocked(false);
+            globalIsPlaying = true;
+            globalAutoplayBlocked = false;
+            emitUpdate();
           })
           .catch((err) => {
             if (err.name === "NotAllowedError") {
-              setAutoplayBlocked(true);
+              globalAutoplayBlocked = true;
+              emitUpdate();
             } else {
-              isSimulatedRef.current = true;
-              setIsPlaying(true);
-              setAutoplayBlocked(false);
+              globalIsSimulated = true;
+              globalIsPlaying = true;
+              globalAutoplayBlocked = false;
+              emitUpdate();
             }
           });
       }
     } else {
-      setIsPlaying(true);
-      setAutoplayBlocked(false);
+      globalIsPlaying = true;
+      globalAutoplayBlocked = false;
+      emitUpdate();
     }
   }, []);
 
   const pause = useCallback(() => {
-    if (audioRef.current && !isSimulatedRef.current) {
-      audioRef.current.pause();
+    if (globalAudio && !globalIsSimulated) {
+      globalAudio.pause();
     }
-    setIsPlaying(false);
+    globalIsPlaying = false;
+    emitUpdate();
   }, []);
 
   const togglePlay = useCallback(() => {
-    if (isPlaying) {
+    if (globalIsPlaying) {
       pause();
     } else {
       play();
     }
-  }, [isPlaying, play, pause]);
+  }, [play, pause]);
 
   const seek = useCallback((time: number) => {
-    if (audioRef.current && !isSimulatedRef.current) {
-      audioRef.current.currentTime = time;
+    if (globalAudio && !globalIsSimulated) {
+      globalAudio.currentTime = time;
     }
-    setCurrentTime(time);
+    globalCurrentTime = time;
+    emitUpdate();
   }, []);
 
   const setVolume = useCallback((val: number) => {
     const clamped = Math.max(0, Math.min(1, val));
-    if (audioRef.current) {
-      audioRef.current.volume = clamped;
+    if (globalAudio) {
+      globalAudio.volume = clamped;
     }
-    setVolumeState(clamped);
-    setIsMuted(clamped === 0);
+    globalVolume = clamped;
+    globalIsMuted = clamped === 0;
+    emitUpdate();
+  }, []);
+
+  const setIsModalOpen = useCallback((open: boolean) => {
+    globalIsModalOpen = open;
+    emitUpdate();
+  }, []);
+
+  const setIsMiniPlayerVisible = useCallback((visible: boolean) => {
+    globalIsMiniPlayerVisible = visible;
+    emitUpdate();
   }, []);
 
   return {
-    isPlaying,
-    currentTime,
-    duration,
-    volume,
-    isMuted,
-    autoplayBlocked,
-    isModalOpen,
-    isMiniPlayerVisible,
-    isLoaded,
+    isPlaying: globalIsPlaying,
+    currentTime: globalCurrentTime,
+    duration: globalDuration,
+    volume: globalVolume,
+    isMuted: globalIsMuted,
+    autoplayBlocked: globalAutoplayBlocked,
+    isModalOpen: globalIsModalOpen,
+    isMiniPlayerVisible: globalIsMiniPlayerVisible,
+    isLoaded: globalIsLoaded,
     togglePlay,
     play,
     pause,

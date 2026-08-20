@@ -137,6 +137,7 @@ export class AuthController {
 
   static async serveGoogleMobilePage(c: Context<{ Bindings: Env }>) {
     const redirectUri = c.req.query("redirect_uri") || "krishna-sanjeevani://redirect";
+    const googleClientId = c.env.GOOGLE_CLIENT_ID || "29791277131-umh14qed3e0k4n3kotqum64r7br67dh9.apps.googleusercontent.com";
     const html = `
 <!DOCTYPE html>
 <html>
@@ -179,7 +180,7 @@ export class AuthController {
     <p>Sign in with your Google account to tune into your listening path.</p>
     <div class="btn-wrap">
       <div id="g_id_onload"
-           data-client_id="29791277131-vmuvo1qjeurjbmh58kk4ue50r2epfi0k.apps.googleusercontent.com"
+           data-client_id="${googleClientId}"
            data-callback="handleCredentialResponse"
            data-auto_prompt="false">
       </div>
