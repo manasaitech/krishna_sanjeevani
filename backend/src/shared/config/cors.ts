@@ -18,7 +18,10 @@ export const corsMiddleware = cors({
     if (
       origin.endsWith(".workers.dev") ||
       origin.endsWith(".pages.dev") ||
-      origin === "https://krishna-sanjeevni-web.astrosutraai.workers.dev"
+      origin === "https://krishna-sanjeevni-web.astrosutraai.workers.dev" ||
+      origin === "https://krishnasanjeevani.com" ||
+      origin === "https://www.krishnasanjeevani.com" ||
+      origin.endsWith(".krishnasanjeevani.com")
     ) {
       return origin;
     }
