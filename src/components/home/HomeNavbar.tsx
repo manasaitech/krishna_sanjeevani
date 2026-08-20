@@ -20,7 +20,7 @@ export function HomeNavbar() {
 
   const navLinks = [
     { label: "Home", to: "/" },
-    { label: "Discover", to: "/discover" },
+    ...(user ? [{ label: "Discover", to: "/discover" }] : []),
     { label: "Inspiration", to: "/inspiration" },
     { label: "Vedic Science", to: "/vedic-science" },
     { label: "The Beginning", to: "/the-beginning" },
