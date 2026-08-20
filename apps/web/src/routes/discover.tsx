@@ -25,6 +25,12 @@ import { toast } from "sonner";
 import { MockPaymentModal } from "@/components/discover/MockPaymentModal";
 
 export const Route = createFileRoute("/discover")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      search: (search.search as string) || undefined,
+      tab: (search.tab as "ailments" | "pregnancy" | "corporate") || undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Surāwali Discovery — Krishna Sanjeevani" },
@@ -113,8 +119,9 @@ interface ActiveSub {
 function DiscoverPage() {
   const { user, play, tracks } = useApp();
   const navigate = useNavigate();
+  const { search, tab } = Route.useSearch();
 
-  const [activeTab, setActiveTab] = useState<"ailments" | "pregnancy" | "corporate">("ailments");
+  const [activeTab, setActiveTab] = useState<"ailments" | "pregnancy" | "corporate">(tab || "ailments");
   const [loading, setLoading] = useState(true);
   
   // Data Catalog State
@@ -131,10 +138,19 @@ function DiscoverPage() {
   const [subscriptions, setSubscriptions] = useState<ActiveSub[]>([]);
 
   // Therapeutic Ailments Filters State
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(search || "");
   const [selectedAilmentId, setSelectedAilmentId] = useState("");
   const [selectedSurawaliId, setSelectedSurawaliId] = useState("");
   const [selectedTimingId, setSelectedTimingId] = useState("");
+
+  useEffect(() => {
+    if (search !== undefined) {
+      setSearchQuery(search);
+    }
+    if (tab !== undefined) {
+      setActiveTab(tab);
+    }
+  }, [search, tab]);
 
   // Pregnancy Care Filters State
   const [selectedMonth, setSelectedMonth] = useState<number>(1);
@@ -205,7 +221,15 @@ function DiscoverPage() {
       list = list.filter(a => {
         const matchesName = a.name.toLowerCase().includes(q);
         const matchesAlias = alias ? a.name.toLowerCase().includes(alias.toLowerCase()) : false;
-        return matchesName || matchesAlias;
+        
+        // Also match if any recommended Surāwali for this ailment matches the search query
+        const hasMatchingSurawali = catalog.ailmentSurawalis.some(m => {
+          if (m.ailmentId !== a.id) return false;
+          const sName = getSurawaliName(m.surawaliId);
+          return sName.toLowerCase().includes(q);
+        });
+
+        return matchesName || matchesAlias || hasMatchingSurawali;
       });
     }
 

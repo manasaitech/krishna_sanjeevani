@@ -248,6 +248,59 @@ function Home() {
             </div>
           </Section>
 
+          {/* Explore by Surāwalis */}
+          <Section title="Explore by Surāwalis" hint="Vedic acoustic frequencies for target healing">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+              {[
+                {
+                  name: "Kalyani Surāwali",
+                  description: "For Anxiety relief, Hypertension, and focus.",
+                  searchKey: "Kalyani",
+                  image: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=80&w=400"
+                },
+                {
+                  name: "Bhairavi Surāwali",
+                  description: "For Insomnia, deep sleep, and meditation.",
+                  searchKey: "Bhairavi",
+                  image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&q=80&w=400"
+                },
+                {
+                  name: "Yaman Surāwali",
+                  description: "For stress relief and evening relaxation.",
+                  searchKey: "Yaman",
+                  image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=400"
+                },
+                {
+                  name: "Todi Surāwali",
+                  description: "For focus, concentration, and morning energy.",
+                  searchKey: "Todi",
+                  image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=400"
+                }
+              ].map((s) => (
+                <Link
+                  key={s.name}
+                  to="/discover"
+                  search={{ search: s.searchKey }}
+                  className="press group relative overflow-hidden rounded-card text-left shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift cursor-pointer bg-surface border border-border/40"
+                >
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    className="h-28 w-full object-cover transition-transform duration-[250ms] group-hover:scale-[1.04]"
+                  />
+                  <div className="p-4 space-y-1">
+                    <span className="block font-display text-[15px] font-semibold text-foreground group-hover:text-cat transition-colors">
+                      {s.name}
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground leading-normal">
+                      {s.description}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Section>
+
           {/* Recommended / Sessions Grid (from Browse Page) */}
           <div id="recommended-sessions" className="scroll-mt-20">
             <div className="no-scrollbar -mx-5 mt-12 flex gap-2.5 overflow-x-auto px-5 md:-mx-8 md:px-8">
