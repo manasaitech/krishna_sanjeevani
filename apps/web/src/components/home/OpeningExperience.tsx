@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { KULASEKHARA_VERSE } from "@/lib/home-data";
-import { Volume2, VolumeX, Sparkles, ArrowRight } from "lucide-react";
+import { Volume2, Sparkles, ArrowRight } from "lucide-react";
 import type { VerseAudioState } from "@/lib/use-verse-audio";
 
 interface OpeningExperienceProps {
@@ -9,37 +9,39 @@ interface OpeningExperienceProps {
 }
 
 export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps) {
-  const [stage, setStage] = useState<0 | 1 | 2 | 3 | 4>(0);
+  const [stage, setStage] = useState<0 | 1 | 2 | 3 | 4>(1);
   const [isDismissed, setIsDismissed] = useState(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
+    // Automatically trigger audio playback immediately on mount
     audio.play();
 
-    const t1 = setTimeout(() => setStage(1), 100);
-    const t2 = setTimeout(() => setStage(2), 1000);
-    const t3 = setTimeout(() => setStage(3), 2000);
+    // 5-second automatic progression sequence
+    const t2 = setTimeout(() => setStage(2), 1200);
+    const t3 = setTimeout(() => setStage(3), 2400);
     const t4 = setTimeout(() => {
       setStage(4);
       setTimeout(() => {
         setIsDismissed(true);
-        onComplete();
+        onCompleteRef.current();
       }, 700);
-    }, 3200);
+    }, 5000); // Exactly 5 seconds total
 
     return () => {
-      clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
       clearTimeout(t4);
     };
-  }, []);
+  }, []); // Run once on mount
 
   const handleManualSkip = () => {
     audio.play();
     setStage(4);
     setTimeout(() => {
       setIsDismissed(true);
-      onComplete();
+      onCompleteRef.current();
     }, 500);
   };
 
@@ -47,7 +49,7 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] bg-[#F5F1EB] text-foreground ${
+      className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] bg-[#F5F1EB] text-foreground select-none ${
         stage === 4
           ? "pointer-events-none opacity-0 scale-50 translate-x-[40vw] translate-y-[40vh]"
           : "opacity-100 scale-100 translate-x-0 translate-y-0"
@@ -61,18 +63,9 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
 
       {/* Skip / Enter Action */}
       <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
-        {audio.autoplayBlocked && (
-          <button
-            onClick={() => audio.play()}
-            className="flex items-center gap-2 rounded-full bg-cat-light border border-cat/30 px-3.5 py-1.5 text-xs font-medium text-cat shadow-sm hover:bg-cat/20 transition-colors"
-          >
-            <VolumeX className="h-3.5 w-3.5 text-cat animate-pulse" />
-            Tap to Hear Sacred Verse
-          </button>
-        )}
         <button
           onClick={handleManualSkip}
-          className="flex items-center gap-1.5 rounded-full bg-surface border border-border px-4 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-all shadow-soft"
+          className="flex items-center gap-1.5 rounded-full bg-surface border border-border px-4 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-all shadow-soft cursor-pointer"
         >
           <span>Enter Website</span>
           <ArrowRight className="h-3.5 w-3.5 text-cat" />
@@ -159,15 +152,11 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
           </div>
         </div>
 
-        {/* Transforming Hint */}
-        <div
-          className={`mt-6 transition-all duration-500 ${
-            stage === 3 ? "opacity-100 scale-100" : "opacity-0 scale-95"
-          }`}
-        >
-          <div className="inline-flex items-center gap-2 rounded-full bg-cat-light px-3.5 py-1 text-[11px] font-semibold text-cat">
-            <Volume2 className="h-3 w-3 animate-pulse" />
-            <span>Harmonizing soundscape starting...</span>
+        {/* Dynamic Audio Status Indicator */}
+        <div className="mt-6 transition-all duration-500">
+          <div className="inline-flex items-center gap-2 rounded-full bg-cat-light px-3.5 py-1 text-[11px] font-semibold text-cat shadow-sm animate-pulse">
+            <Volume2 className="h-3.5 w-3.5" />
+            <span>Sacred verse soundscape playing...</span>
           </div>
         </div>
       </div>

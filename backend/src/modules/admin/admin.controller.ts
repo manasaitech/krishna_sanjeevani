@@ -169,6 +169,25 @@ export class AdminController {
     }
   }
 
+  static async changeUserSubscriptionTier(c: Context) {
+    const db = getDB(c.env);
+    const service = new AdminService(db);
+    const userId = c.req.param("id");
+    if (!userId) {
+      return c.json({ success: false, message: "User ID is required" }, 400);
+    }
+    try {
+      const body = await c.req.json();
+      const planId = String(body.planId || "free");
+      const durationDays = Number(body.durationDays || 30);
+
+      const result = await service.changeUserSubscriptionTier(userId, planId, durationDays);
+      return c.json({ success: true, message: `User subscription updated to ${planId}`, data: result });
+    } catch (err: any) {
+      return c.json({ success: false, message: err.message || "Failed to update user subscription tier" }, 400);
+    }
+  }
+
   static async listPlans(c: Context) {
     const db = getDB(c.env);
     const service = new AdminService(db);

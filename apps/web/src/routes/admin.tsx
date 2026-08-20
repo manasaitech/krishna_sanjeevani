@@ -295,6 +295,49 @@ function Admin() {
   const [showExtendConfirm, setShowExtendConfirm] = useState(false);
   const [extensionDays, setExtensionDays] = useState(30);
 
+  // Upgrade/Downgrade Subscription Tier Modal State
+  const [subChangeModalOpen, setSubChangeModalOpen] = useState(false);
+  const [targetSubUser, setTargetSubUser] = useState<{ id: string; email: string; fullName?: string; currentPlanId?: string } | null>(null);
+  const [selectedPlanTier, setSelectedPlanTier] = useState<string>("monthly_premium");
+  const [subDurationDays, setSubDurationDays] = useState<number>(30);
+  const [savingSubTier, setSavingSubTier] = useState(false);
+
+  const handleOpenChangeSubModal = (userItem: any) => {
+    setTargetSubUser({
+      id: userItem.id || userItem.userId,
+      email: userItem.email || userItem.subscriberEmail || "",
+      fullName: userItem.fullName || userItem.subscriberName || "User",
+      currentPlanId: userItem.planId || userItem.planName || "free",
+    });
+    setSelectedPlanTier(userItem.planId || "monthly_premium");
+    setSubDurationDays(30);
+    setSubChangeModalOpen(true);
+  };
+
+  const handleApplySubscriptionChange = async () => {
+    if (!targetSubUser) return;
+    setSavingSubTier(true);
+    try {
+      const res = await api.admin.users.changeSubscription(
+        targetSubUser.id,
+        selectedPlanTier,
+        subDurationDays
+      );
+      if (res.success) {
+        toast.success(res.message || "User subscription tier updated successfully!");
+        setSubChangeModalOpen(false);
+        fetchUsersList();
+        fetchSubscriptionsList();
+      } else {
+        toast.error(res.message || "Failed to update user subscription tier.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update user subscription tier.");
+    } finally {
+      setSavingSubTier(false);
+    }
+  };
+
   // Analytics state variables
   const [analyticsPeriod, setAnalyticsPeriod] = useState<"7d" | "30d" | "90d" | "this_year">("7d");
   const [analyticsData, setAnalyticsData] = useState<any>(null);
@@ -2952,6 +2995,14 @@ function Admin() {
                                   </button>
                                   {u.role !== "super_admin" && (
                                     <>
+                                      <button
+                                        onClick={() => handleOpenChangeSubModal(u)}
+                                        className="press min-h-8 rounded-btn border border-cat/20 bg-cat/10 px-2.5 text-[11px] font-bold text-cat hover:bg-cat/20 flex items-center gap-1"
+                                        title="Upgrade or Downgrade User Subscription Tier"
+                                      >
+                                        <Sparkles className="h-3.5 w-3.5" />
+                                        <span>Change Tier</span>
+                                      </button>
                                       {u.status === "active" ? (
                                         <button
                                           onClick={() => handleDeactivate(u)}
@@ -3206,6 +3257,14 @@ function Admin() {
                                       title="View billing audit details"
                                     >
                                       <Eye className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleOpenChangeSubModal(s)}
+                                      className="press min-h-8 rounded-btn border border-cat/20 bg-cat/10 px-2.5 text-[11px] font-bold text-cat hover:bg-cat/20 flex items-center gap-1"
+                                      title="Upgrade or Downgrade Subscription Tier"
+                                    >
+                                      <Sparkles className="h-3.5 w-3.5" />
+                                      <span>Change Tier</span>
                                     </button>
                                     {s.status === "active" && (
                                       <>
@@ -6298,6 +6357,100 @@ function Admin() {
                   className="press min-h-10 rounded-btn bg-success px-4.5 text-xs font-bold text-success-foreground hover:bg-success-hover"
                 >
                   Extend Period
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── MODAL: UPGRADE / DOWNGRADE SUBSCRIPTION TIER ── */}
+        {subChangeModalOpen && targetSubUser && (
+          <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-xs select-none animate-in fade-in duration-200 p-4">
+            <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl space-y-5 mx-4 text-foreground">
+              <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="grid h-9 w-9 place-items-center rounded-full bg-cat/10 text-cat font-bold">
+                    <Sparkles className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">Upgrade / Downgrade Subscription</h3>
+                    <p className="text-xs text-muted-foreground">Modify tier access for user</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSubChangeModalOpen(false)}
+                  className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                <div className="rounded-xl border border-border/80 bg-muted/30 p-3.5 flex flex-col gap-1">
+                  <span className="font-bold text-foreground text-sm">{targetSubUser.fullName || "Subscriber"}</span>
+                  <span className="font-mono text-muted-foreground text-[11px]">{targetSubUser.email}</span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-muted-foreground mb-1.5">
+                    Select Target Subscription Plan Tier:
+                  </label>
+                  <select
+                    value={selectedPlanTier}
+                    onChange={(e) => setSelectedPlanTier(e.target.value)}
+                    className="w-full rounded-btn border border-border bg-background px-3 py-2.5 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-cat"
+                  >
+                    <option value="free">Free Tier (Downgrade User / Revoke Premium Access)</option>
+                    <option value="monthly_premium">Monthly Premium (Standard Paid Tier)</option>
+                    <option value="yearly_premium">Yearly Premium (Annual Paid Tier)</option>
+                    {plansList.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} (₹{Math.round(p.price / 100)} / {p.interval})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedPlanTier !== "free" && selectedPlanTier !== "canceled" && (
+                  <div>
+                    <label className="block font-bold text-muted-foreground mb-1.5">
+                      Access Duration (Days):
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[30, 90, 180, 365].map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setSubDurationDays(d)}
+                          className={cn(
+                            "rounded-btn border py-2 text-xs font-bold transition-all cursor-pointer",
+                            subDurationDays === d
+                              ? "bg-cat border-cat text-cat-foreground shadow-sm"
+                              : "bg-background border-border text-muted-foreground hover:border-cat"
+                          )}
+                        >
+                          {d} Days
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 border-t border-border/60 pt-4">
+                <button
+                  onClick={() => setSubChangeModalOpen(false)}
+                  className="rounded-btn border border-border px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-muted cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApplySubscriptionChange}
+                  disabled={savingSubTier}
+                  className="flex items-center gap-2 rounded-btn bg-cat px-5 py-2 text-xs font-bold text-cat-foreground shadow-lift hover:bg-cat/90 disabled:opacity-50 cursor-pointer"
+                >
+                  {savingSubTier && <Loader2 className="h-4 w-4 animate-spin" />}
+                  <span>{selectedPlanTier === "free" ? "Downgrade User to Free" : "Apply Subscription"}</span>
                 </button>
               </div>
             </div>

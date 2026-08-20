@@ -10,6 +10,7 @@ export interface VerseAudioState {
   autoplayBlocked: boolean;
   isModalOpen: boolean;
   isMiniPlayerVisible: boolean;
+  isLoaded: boolean;
   togglePlay: () => void;
   play: () => void;
   pause: () => void;
@@ -28,6 +29,7 @@ export function useVerseAudio(): VerseAudioState {
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMiniPlayerVisible, setIsMiniPlayerVisible] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isSimulatedRef = useRef(false);
@@ -39,12 +41,33 @@ export function useVerseAudio(): VerseAudioState {
     audio.src = KULASEKHARA_VERSE.audioPath;
     audio.preload = "auto";
     audio.volume = volume;
+    audio.loop = false;
     audioRef.current = audio;
+
+    // Trigger load and play immediately on mount
+    audio.load();
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+          setAutoplayBlocked(false);
+          removeUnlockListeners();
+        })
+        .catch(() => {
+          setAutoplayBlocked(true);
+        });
+    }
+
+    const onCanPlay = () => {
+      setIsLoaded(true);
+    };
 
     const onLoadedMetadata = () => {
       if (audio.duration && !isNaN(audio.duration)) {
         setDuration(audio.duration);
         isSimulatedRef.current = false;
+        setIsLoaded(true);
       }
     };
 
@@ -60,20 +83,44 @@ export function useVerseAudio(): VerseAudioState {
     };
 
     const onError = () => {
-      // Graceful fallback for missing / mock audio file
       isSimulatedRef.current = true;
+      setIsLoaded(true);
     };
 
+    audio.addEventListener("canplay", onCanPlay);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("ended", onEnded);
     audio.addEventListener("error", onError);
 
+    // Bypassing autoplay blocks with user gesture unlock listeners
+    const unlockAutoplay = () => {
+      audio.play()
+        .then(() => {
+          setIsPlaying(true);
+          setAutoplayBlocked(false);
+          removeUnlockListeners();
+        })
+        .catch(err => console.log("Autoplay unlock failed", err));
+    };
+
+    const removeUnlockListeners = () => {
+      window.removeEventListener("click", unlockAutoplay);
+      window.removeEventListener("touchstart", unlockAutoplay);
+      window.removeEventListener("keydown", unlockAutoplay);
+    };
+
+    window.addEventListener("click", unlockAutoplay);
+    window.addEventListener("touchstart", unlockAutoplay);
+    window.addEventListener("keydown", unlockAutoplay);
+
     return () => {
+      audio.removeEventListener("canplay", onCanPlay);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("error", onError);
+      removeUnlockListeners();
       audio.pause();
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -118,7 +165,6 @@ export function useVerseAudio(): VerseAudioState {
             if (err.name === "NotAllowedError") {
               setAutoplayBlocked(true);
             } else {
-              // Resource not found / decoding error -> gracefully switch to simulation
               isSimulatedRef.current = true;
               setIsPlaying(true);
               setAutoplayBlocked(false);
@@ -171,6 +217,7 @@ export function useVerseAudio(): VerseAudioState {
     autoplayBlocked,
     isModalOpen,
     isMiniPlayerVisible,
+    isLoaded,
     togglePlay,
     play,
     pause,

@@ -7,6 +7,7 @@ import { VersePlayerModal } from "@/components/home/VersePlayerModal";
 import { HomeNavbar } from "@/components/home/HomeNavbar";
 import { HomeHeroCarousel } from "@/components/home/HomeHeroCarousel";
 import { HomeIntro } from "@/components/home/HomeIntro";
+import { ImmerseMusicSection } from "@/components/home/ImmerseMusicSection";
 import { MusicMantraStory } from "@/components/home/MusicMantraStory";
 import { ExploreCardsGrid } from "@/components/home/ExploreCardsGrid";
 import { FeaturePillars } from "@/components/home/FeaturePillars";
@@ -63,6 +64,9 @@ function HomePage() {
 
         {/* 6. Introduction to Krishna Sanjeevani */}
         <HomeIntro />
+
+        {/* 6b. Immerse into Divine Music Callout (Routes to Login/Register) */}
+        <ImmerseMusicSection />
 
         {/* 7. Music + Mantra + Consciousness + Wellbeing Story */}
         <MusicMantraStory />

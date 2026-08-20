@@ -127,6 +127,43 @@ export class AdminService {
     await this.repo.extendSubscription(subId, days);
   }
 
+  async changeUserSubscriptionTier(userId: string, planId: string, durationDays: number = 30) {
+    const userDetails = await this.repo.findUserDetails(userId);
+    if (!userDetails) {
+      throw new Error("User not found");
+    }
+
+    if (userDetails.user.role === "super_admin") {
+      throw new Error("Cannot change subscription tier for super administrator");
+    }
+
+    const now = Date.now();
+
+    if (planId === "free" || planId === "canceled" || planId === "none") {
+      await this.repo.cancelUserSubscriptions(userId);
+      return { status: "canceled", planId: "free" };
+    }
+
+    // Cancel existing active subscriptions first
+    await this.repo.cancelUserSubscriptions(userId);
+
+    const periodEnd = now + (durationDays || 30) * 24 * 60 * 60 * 1000;
+    const subId = crypto.randomUUID();
+
+    await this.repo.createUserSubscription({
+      id: subId,
+      userId,
+      planId,
+      status: "active",
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return { subId, status: "active", planId, periodEnd };
+  }
+
   async listPlansAdmin() {
     return await this.repo.findAllPlans();
   }

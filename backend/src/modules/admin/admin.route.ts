@@ -13,6 +13,7 @@ adminRoute.get("/users/stats", requireRole("admin", "super_admin"), AdminControl
 adminRoute.get("/users/:id", requireRole("admin", "super_admin"), AdminController.getUserDetails);
 adminRoute.post("/users/:id/deactivate", requireRole("admin", "super_admin"), AdminController.deactivateUser);
 adminRoute.post("/users/:id/reactivate", requireRole("admin", "super_admin"), AdminController.reactivateUser);
+adminRoute.post("/users/:id/subscription", requireRole("admin", "super_admin"), AdminController.changeUserSubscriptionTier);
 
 // Subscriptions & Billing Admin Endpoints
 adminRoute.get("/subscriptions", requireRole("admin", "super_admin"), AdminController.listSubscriptions);

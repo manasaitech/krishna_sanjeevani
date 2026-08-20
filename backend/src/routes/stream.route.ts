@@ -6,7 +6,7 @@ import { streamSessions } from "../shared/db/schema/stream";
 import { subscriptions } from "../shared/db/schema/subscription";
 import { users } from "../shared/db/schema/user";
 import { StorageService } from "../modules/storage/storage.service";
-import { requireAuth } from "../modules/auth/auth.middleware";
+import { requireAuth, optionalAuth } from "../modules/auth/auth.middleware";
 import { UnauthorizedError, ForbiddenError, NotFoundError, ValidationError } from "../shared/errors";
 import { ApiResponse } from "../shared/responses";
 import { Env } from "../shared/config/env";
@@ -144,7 +144,7 @@ async function verifyTrackAccess(c: any, trackId: string, userRole: string) {
   if (isPremiumTrack) {
     if (!["admin", "super_admin"].includes(userRole)) {
       const userId = c.get("userId");
-      if (!userId) {
+      if (!userId || userId === "anonymous-guest-id") {
         throw new ForbiddenError("Authentication required to access premium tracks");
       }
       const activeSub = await db
@@ -168,14 +168,14 @@ async function verifyTrackAccess(c: any, trackId: string, userRole: string) {
   return track;
 }
 
-// ── POST Create Playback Session (Bearer Auth) ──────────
-stream.post("/:trackId/ticket", requireAuth(), async (c) => {
+// ── POST Create Playback Session (Bearer Auth / Optional Guest) ──────────
+stream.post("/:trackId/ticket", optionalAuth(), async (c) => {
   const trackId = c.req.param("trackId");
   if (!trackId) {
     throw new ValidationError("Track ID is required");
   }
-  const userId = c.get("userId" as never) as string;
-  const userRole = c.get("userRole" as never) as string;
+  const userId = (c.get("userId" as never) as string) || "anonymous-guest-id";
+  const userRole = (c.get("userRole" as never) as string) || "guest";
 
   logger.info("Creating stream session for playback", { trackId, userId });
 

@@ -348,6 +348,8 @@ export const api = {
       getDetails: (id: string) => http.get(`/admin/users/${id}`),
       deactivate: (id: string) => http.post(`/admin/users/${id}/deactivate`),
       reactivate: (id: string) => http.post(`/admin/users/${id}/reactivate`),
+      changeSubscription: (id: string, planId: string, durationDays: number = 30) =>
+        http.post(`/admin/users/${id}/subscription`, { planId, durationDays }),
     },
     subscriptions: {
       list: (params?: any) => {

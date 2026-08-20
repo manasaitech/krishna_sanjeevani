@@ -915,6 +915,17 @@ export class AdminRepository {
     };
   }
 
+  async cancelUserSubscriptions(userId: string) {
+    await this.db
+      .update(subscriptions)
+      .set({ status: "canceled", updatedAt: Date.now() })
+      .where(eq(subscriptions.userId, userId));
+  }
+
+  async createUserSubscription(data: typeof subscriptions.$inferInsert) {
+    await this.db.insert(subscriptions).values(data);
+  }
+
   async checkDatabaseHealth(): Promise<boolean> {
     try {
       await this.db.run(sql`SELECT 1`);

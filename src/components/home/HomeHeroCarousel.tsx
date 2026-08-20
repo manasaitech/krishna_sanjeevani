@@ -17,7 +17,7 @@ export function HomeHeroCarousel() {
 
   useEffect(() => {
     if (isPaused) return;
-    const timer = setInterval(nextSlide, 3000);
+    const timer = setInterval(nextSlide, 6500);
     return () => clearInterval(timer);
   }, [isPaused, nextSlide]);
 
@@ -27,8 +27,6 @@ export function HomeHeroCarousel() {
     <section
       id="top"
       className="relative h-[560px] sm:h-[620px] lg:h-[680px] w-full flex items-center justify-center overflow-hidden bg-stone-950 text-white"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
       role="banner"
       aria-label="Hero Carousel"
     >
@@ -48,7 +46,8 @@ export function HomeHeroCarousel() {
             <img
               src={slide.image}
               alt={slide.title}
-              className="h-full w-full object-cover object-center filter brightness-[0.93] contrast-[1.04] saturate-[1.03]"
+              className="h-full w-full object-cover filter brightness-[0.93] contrast-[1.04] saturate-[1.03]"
+              style={{ objectPosition: slide.objectPosition || "center" }}
             />
             {/* Gentle Light Scrim to Preserve Rich Artwork Visibility While Maintaining Text Legibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/35" />
@@ -102,7 +101,11 @@ export function HomeHeroCarousel() {
         </div>
 
         {/* Slide Indicators & Controls */}
-        <div className="mt-8 sm:mt-10 flex items-center gap-4 z-30">
+        <div
+          className="mt-8 sm:mt-10 flex items-center gap-4 z-30"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           <button
             onClick={prevSlide}
             className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-black/50 backdrop-blur-md border border-white/25 flex items-center justify-center text-white hover:bg-black/70 hover:border-white/40 transition-all shadow-lift"
