@@ -146,7 +146,7 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
 
         {/* Filter Pills */}
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 shrink-0">
-          {(["All", "Playlists", "Programs", "Surāwalis"] as const).map((tab) => (
+          {(["All", "Surāwalis", "Playlists", "Programs"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
