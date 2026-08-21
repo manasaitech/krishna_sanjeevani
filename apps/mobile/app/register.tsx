@@ -5,33 +5,27 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   ActivityIndicator,
   Alert,
   Image,
+  Dimensions,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Lock, Mail, User, Check, X } from "lucide-react-native";
+import { Lock, Mail, User, UserPlus } from "lucide-react-native";
 import { useApp } from "@/lib/app-state";
 import { categories, type CategoryId } from "@/lib/content";
-import { categoryThemes } from "@/lib/app-state";
-import { Flower, Briefcase, Baby } from "lucide-react-native";
-
-const icons: Record<CategoryId, typeof Flower> = {
-  devotional: Flower,
-  secular: Briefcase,
-  pregnancy: Baby,
-};
-
-const prabhupadaImg = require("../assets/images/prabhupada.png");
-
 import { signInWithGoogle } from "@/lib/google-auth";
 
+const bgImg = require("../assets/images/krishna-onboarding-bg.jpg");
+const medallionImg = require("../assets/images/krishna-medallion.jpg");
+const prabhupadaImg = require("../assets/images/prabhupada.png");
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 export default function RegisterScreen() {
-  const { register, loginWithGoogle, theme, setCategory } = useApp();
+  const { register, loginWithGoogle, setCategory } = useApp();
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -75,7 +69,6 @@ export default function RegisterScreen() {
     }
   };
 
-  // Password rules
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
@@ -106,10 +99,7 @@ export default function RegisterScreen() {
       if (res.success) {
         setShowDedication(true);
       } else {
-        const errorMsg = res.errors && res.errors.length > 0
-          ? res.errors.map((e: any) => e.message).join("\n")
-          : res.message;
-        Alert.alert("Registration Failed", errorMsg);
+        Alert.alert("Registration Failed", res.message);
       }
     } catch {
       Alert.alert("Error", "An unexpected error occurred. Please try again.");
@@ -117,21 +107,6 @@ export default function RegisterScreen() {
       setLoading(false);
     }
   };
-
-  function PasswordRule({ met, text }: { met: boolean; text: string }) {
-    return (
-      <View style={styles.rule}>
-        {met ? (
-          <Check size={12} color="#10B981" />
-        ) : (
-          <X size={12} color="#D1D5DB" />
-        )}
-        <Text style={[styles.ruleText, met && { color: "#10B981" }]}>
-          {text}
-        </Text>
-      </View>
-    );
-  }
 
   if (showDedication) {
     return (
@@ -150,14 +125,8 @@ export default function RegisterScreen() {
             <Text style={styles.founderText}>
               Founder-Acharya of the International Society for Krishna Consciousness
             </Text>
-            <View style={styles.lineDivider} />
-            <Text style={styles.researchText}>
-              Krishna Sanjeevani Music Healing Research
-            </Text>
-          </View>
-
-          <View style={styles.loaderWrap}>
-            <ActivityIndicator size="small" color="#C9A84C" />
+            <View style={styles.goldLineDivider} />
+            <Text style={styles.researchLabel}>KRISHNA SANJEEVANI MUSIC HEALING RESEARCH</Text>
           </View>
         </View>
       </View>
@@ -165,143 +134,117 @@ export default function RegisterScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Back button */}
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <ArrowLeft size={20} color="#1A1A1A" />
-          </Pressable>
+    <View style={styles.container}>
+      <Image source={bgImg} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
 
-          {/* Header */}
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+
+          {/* Header with mini medallion */}
           <View style={styles.header}>
-            <Text style={styles.heading}>Create account</Text>
-            <Text style={styles.subtitle}>
-              Begin your therapeutic raga listening journey.
-            </Text>
+            <View style={styles.medallionSm}>
+              <Image source={medallionImg} style={styles.medallionImg} resizeMode="cover" />
+            </View>
+            <View>
+              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.subtitle}>Begin your healing journey</Text>
+            </View>
+          </View>
+
+          <View style={styles.dividerLine}>
+            <View style={styles.dividerRule} />
+            <Text style={styles.dividerLotus}>🪷</Text>
+            <View style={styles.dividerRule} />
           </View>
 
           {/* Form */}
           <View style={styles.form}>
             {/* Full Name */}
-            <View style={styles.fieldGroup}>
+            <View style={styles.field}>
               <Text style={styles.label}>FULL NAME</Text>
               <View style={styles.inputWrap}>
-                <User size={16} color="#7C7A85" style={styles.inputIcon} />
+                <User size={13} color="#8a7455" strokeWidth={2} style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
-                  placeholder="Your name"
-                  placeholderTextColor="#7C7A8580"
                   value={fullName}
                   onChangeText={setFullName}
+                  placeholder="Ananya Rao"
+                  placeholderTextColor="rgba(90, 74, 48, 0.45)"
+                  style={styles.input}
                   autoCapitalize="words"
-                  autoComplete="name"
                 />
               </View>
             </View>
 
             {/* Email */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>EMAIL ADDRESS</Text>
+            <View style={styles.field}>
+              <Text style={styles.label}>EMAIL</Text>
               <View style={styles.inputWrap}>
-                <Mail size={16} color="#7C7A85" style={styles.inputIcon} />
+                <Mail size={13} color="#8a7455" strokeWidth={2} style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
-                  placeholder="you@example.com"
-                  placeholderTextColor="#7C7A8580"
                   value={email}
                   onChangeText={setEmail}
+                  placeholder="ananya@example.com"
+                  placeholderTextColor="rgba(90, 74, 48, 0.45)"
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
+                  style={styles.input}
                 />
               </View>
             </View>
 
             {/* Password */}
-            <View style={styles.fieldGroup}>
+            <View style={styles.field}>
               <Text style={styles.label}>PASSWORD</Text>
               <View style={styles.inputWrap}>
-                <Lock size={16} color="#7C7A85" style={styles.inputIcon} />
+                <Lock size={13} color="#8a7455" strokeWidth={2} style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
-                  placeholder="••••••••"
-                  placeholderTextColor="#7C7A8580"
                   value={password}
                   onChangeText={setPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor="rgba(90, 74, 48, 0.45)"
                   secureTextEntry
-                  autoCapitalize="none"
-                  autoComplete="password-new"
+                  style={styles.input}
                 />
               </View>
-              {password.length > 0 && (
-                <View style={styles.rules}>
-                  <PasswordRule met={hasMinLength} text="At least 8 characters" />
-                  <PasswordRule met={hasUppercase} text="One uppercase letter" />
-                  <PasswordRule met={hasLowercase} text="One lowercase letter" />
-                  <PasswordRule met={hasNumber} text="One number" />
-                </View>
-              )}
+              {/* Password chips */}
+              <View style={styles.rulesRow}>
+                {[
+                  [hasMinLength, "8+ chars"],
+                  [hasUppercase, "Uppercase"],
+                  [hasLowercase, "Lowercase"],
+                  [hasNumber, "Number"],
+                ].map(([ok, text]) => (
+                  <View key={text as string} style={styles.chip}>
+                    <View style={[styles.chipDot, ok && styles.chipDotOk]} />
+                    <Text style={[styles.chipText, ok && styles.chipTextOk]}>{text as string}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
 
-            {/* Category Selector */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>YOUR PATH</Text>
-              <View style={styles.categoryCards}>
-                {categories.map((c) => {
-                  const Icon = icons[c.id];
-                  const active = selectedCategory === c.id;
-                  const cardTheme = categoryThemes[c.id];
-
-                  return (
-                    <Pressable
-                      key={c.id}
-                      onPress={() => setSelectedCategory(c.id)}
+            {/* Category Picker */}
+            <View style={styles.field}>
+              <Text style={styles.label}>CHOOSE YOUR PATH</Text>
+              <View style={styles.catsRow}>
+                {categories.map((cat) => (
+                  <Pressable
+                    key={cat.id}
+                    onPress={() => setSelectedCategory(cat.id)}
+                    style={[
+                      styles.catBtn,
+                      selectedCategory === cat.id && styles.catBtnActive,
+                    ]}
+                  >
+                    <Text
                       style={[
-                        styles.categoryCard,
-                        active && {
-                          borderColor: cardTheme.cat,
-                          borderWidth: 2,
-                          backgroundColor: cardTheme.catLight,
-                        },
+                        styles.catText,
+                        selectedCategory === cat.id && styles.catTextActive,
                       ]}
                     >
-                      <View
-                        style={[
-                          styles.categoryIcon,
-                          {
-                            backgroundColor: active
-                              ? cardTheme.cat
-                              : cardTheme.catLight,
-                          },
-                        ]}
-                      >
-                        <Icon
-                          size={18}
-                          color={
-                            active ? cardTheme.catForeground : cardTheme.cat
-                          }
-                        />
-                      </View>
-                      <Text
-                        style={[
-                          styles.categoryName,
-                          active && { color: cardTheme.cat, fontWeight: "700" },
-                        ]}
-                      >
-                        {c.name}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                      {cat.name}
+                    </Text>
+                  </Pressable>
+                ))}
               </View>
             </View>
 
@@ -309,251 +252,279 @@ export default function RegisterScreen() {
             <Pressable
               onPress={handleSubmit}
               disabled={loading}
-              style={[
+              style={({ pressed }) => [
                 styles.submitBtn,
-                { backgroundColor: "#264653" },
-                loading && { opacity: 0.7 },
+                pressed && styles.pressed,
               ]}
             >
               {loading ? (
-                <ActivityIndicator color="#FAF8F4" />
+                <ActivityIndicator color="#F2EDE0" size="small" />
               ) : (
-                <Text style={styles.submitBtnText}>Create Account</Text>
+                <>
+                  <UserPlus size={15} color="#D4A84B" strokeWidth={2} />
+                  <Text style={styles.submitText}>Create Account</Text>
+                </>
               )}
             </Pressable>
+          </View>
 
-            {/* Divider */}
-            <View style={styles.dividerWrap}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
+          {/* Flute divider */}
+          <View style={styles.fluteDivider}>
+            <View style={styles.dividerRule} />
+            <Text style={styles.fluteEmoji}>🪈🦚</Text>
+            <View style={styles.dividerRule} />
+          </View>
+
+          {/* Social */}
+          <Pressable
+            onPress={handleGoogleRegister}
+            disabled={loading}
+            style={({ pressed }) => [
+              styles.socialBtn,
+              pressed && styles.pressed,
+            ]}
+          >
+            <View style={styles.googleIconCircle}>
+              <Text style={styles.googleG}>G</Text>
             </View>
+            <Text style={styles.socialBtnText}>Continue with Google</Text>
+          </Pressable>
 
-            {/* Google Button */}
-            <Pressable
-              onPress={handleGoogleRegister}
-              disabled={loading}
-              style={[styles.googleBtn, loading && { opacity: 0.7 }]}
-            >
-              <View style={styles.googleBtnContent}>
-                <View style={styles.googleIconCircle}>
-                  <Text style={styles.googleIconLetter}>G</Text>
-                </View>
-                <Text style={styles.googleBtnText}>Continue with Google</Text>
-              </View>
-            </Pressable>
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <Pressable onPress={() => router.replace("/login")}>
-              <Text style={[styles.footerLink, { color: theme.cat }]}>
-                Sign in
-              </Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          {/* Sign in link */}
+          <Text style={styles.legal}>
+            Already have an account?{" "}
+            <Text style={styles.legalLink} onPress={() => router.push("/login")}>
+              Sign in
+            </Text>
+          </Text>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F1EB",
+    backgroundColor: "#F5EAD8",
   },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    flexGrow: 1,
+  safeArea: {
+    flex: 1,
   },
-  backBtn: {
-    marginTop: 8,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E8E4DC",
+  content: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    paddingHorizontal: 20,
+    maxWidth: 400,
+    alignSelf: "center",
+    width: "100%",
   },
   header: {
-    marginTop: 32,
-  },
-  heading: {
-    fontSize: 30,
-    fontWeight: "600",
-    color: "#1A1A1A",
-    fontFamily: "DMSans",
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 14,
-    color: "#7C7A85",
-    lineHeight: 20,
-  },
-  form: {
-    marginTop: 32,
-    gap: 20,
-  },
-  fieldGroup: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1.5,
-    color: "#7C7A85",
-  },
-  inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    height: 48,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#E8E4DC",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 16,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    color: "#1A1A1A",
-  },
-  rules: {
-    marginTop: 4,
-    gap: 4,
-  },
-  rule: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  ruleText: {
-    fontSize: 12,
-    color: "#9CA3AF",
-  },
-  categoryCards: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  categoryCard: {
-    flex: 1,
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#E8E4DC",
-    backgroundColor: "#FFFFFF",
-  },
-  categoryIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  categoryName: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#1A1A1A",
-    textAlign: "center",
-  },
-  submitBtn: {
-    marginTop: 8,
-    height: 52,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  submitBtnText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#FAF8F4",
-  },
-  footer: {
-    marginTop: 32,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 14,
-    color: "#7C7A85",
-  },
-  footerLink: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  dividerWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#E8E4DC",
-  },
-  dividerText: {
-    marginHorizontal: 12,
-    fontSize: 14,
-    color: "#7C7A85",
-  },
-  googleBtn: {
-    height: 52,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#E8E4DC",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  googleBtnContent: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    width: "100%",
+    marginBottom: 4,
+  },
+  medallionSm: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    borderColor: "rgba(201, 168, 76, 0.6)",
+    overflow: "hidden",
+  },
+  medallionImg: {
+    width: "100%",
+    height: "100%",
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#1A3323",
+    fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
+  },
+  subtitle: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: "#8B6914",
+    fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
+  },
+  dividerLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    marginVertical: 6,
+  },
+  dividerRule: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(201, 168, 76, 0.45)",
+  },
+  dividerLotus: {
+    fontSize: 11,
+    marginHorizontal: 6,
+  },
+  form: {
+    width: "100%",
+    gap: 8,
+  },
+  field: {
+    gap: 2,
+  },
+  label: {
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1,
+    color: "#5A4A30",
+  },
+  inputWrap: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  inputIcon: {
+    position: "absolute",
+    left: 10,
+    zIndex: 1,
+  },
+  input: {
+    width: "100%",
+    height: 38,
+    paddingLeft: 30,
+    paddingRight: 10,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "rgba(201, 168, 76, 0.45)",
+    backgroundColor: "rgba(252, 250, 244, 0.78)",
+    fontSize: 13,
+    color: "#261E0E",
+  },
+  rulesRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 3,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+  },
+  chipDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: "rgba(90, 74, 48, 0.3)",
+  },
+  chipDotOk: {
+    backgroundColor: "#2D7A3A",
+  },
+  chipText: {
+    fontSize: 10,
+    color: "rgba(58, 44, 24, 0.55)",
+  },
+  chipTextOk: {
+    color: "#2D7A3A",
+  },
+  catsRow: {
+    flexDirection: "row",
+    gap: 6,
+    marginTop: 2,
+  },
+  catBtn: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "rgba(201, 168, 76, 0.4)",
+    backgroundColor: "rgba(250, 248, 242, 0.65)",
+  },
+  catBtnActive: {
+    backgroundColor: "rgba(26, 51, 35, 0.88)",
+    borderColor: "rgba(201, 168, 76, 0.7)",
+  },
+  catText: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#3A2C18",
+    textTransform: "capitalize",
+  },
+  catTextActive: {
+    color: "#F2EDE0",
+    fontWeight: "600",
+  },
+  submitBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    width: "100%",
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#1A3323",
+    borderWidth: 1.5,
+    borderColor: "rgba(201, 168, 76, 0.45)",
+    marginTop: 4,
+  },
+  submitText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#F2EDE0",
+  },
+  fluteDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    marginVertical: 6,
+  },
+  fluteEmoji: {
+    fontSize: 13,
+    marginHorizontal: 6,
+  },
+  socialBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    width: "100%",
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(250, 248, 242, 0.85)",
+    borderWidth: 1.5,
+    borderColor: "rgba(201, 168, 76, 0.42)",
+  },
+  socialBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#1A1208",
   },
   googleIconCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#EA4335",
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#4285F4",
     alignItems: "center",
     justifyContent: "center",
   },
-  googleIconLetter: {
+  googleG: {
     color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "700",
+    fontSize: 10,
   },
-  googleBtnText: {
-    fontSize: 15,
+  legal: {
+    fontSize: 11,
+    color: "rgba(58, 44, 24, 0.65)",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  legalLink: {
+    color: "#1A3323",
     fontWeight: "600",
-    color: "#1A1A1A",
+    textDecorationLine: "underline",
+  },
+  pressed: {
+    opacity: 0.88,
+    transform: [{ scale: 0.98 }],
   },
   dedicationContainer: {
     flex: 1,
@@ -564,35 +535,27 @@ const styles = StyleSheet.create({
   },
   dedicationContent: {
     alignItems: "center",
-    maxWidth: 320,
   },
   glowOuter: {
-    shadowColor: "#C9A84C",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 25,
-    elevation: 8,
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: "rgba(201, 168, 76, 0.1)",
   },
   imageBorderFrame: {
-    height: 280,
-    width: 196,
-    borderRadius: 24,
+    width: 180,
+    height: 240,
+    borderRadius: 16,
     borderWidth: 2,
     borderColor: "rgba(201, 168, 76, 0.3)",
-    backgroundColor: "#FFFFFF",
-    padding: 4,
     overflow: "hidden",
   },
   prabhupadaImg: {
-    height: "100%",
     width: "100%",
-    borderRadius: 18,
-    resizeMode: "cover",
+    height: "100%",
   },
   textBlock: {
-    marginTop: 24,
     alignItems: "center",
-    gap: 8,
+    marginTop: 20,
   },
   dedicationLabel: {
     fontSize: 10,
@@ -604,39 +567,33 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "600",
     color: "#3A3125",
-    fontFamily: "DMSans",
     marginTop: 4,
   },
   prabhupadaName: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "700",
     color: "#261E14",
-    textAlign: "center",
     marginTop: 2,
+    textAlign: "center",
   },
   founderText: {
     fontSize: 12,
-    color: "#5C5040",
     fontStyle: "italic",
+    color: "#5C5040",
+    marginTop: 6,
     textAlign: "center",
-    lineHeight: 18,
-    marginTop: 4,
+    maxWidth: 260,
   },
-  lineDivider: {
+  goldLineDivider: {
     height: 1,
-    width: 96,
+    width: 90,
     backgroundColor: "rgba(201, 168, 76, 0.4)",
-    marginVertical: 12,
+    marginVertical: 14,
   },
-  researchText: {
+  researchLabel: {
     fontSize: 9,
     fontWeight: "600",
-    letterSpacing: 1.2,
+    letterSpacing: 1.5,
     color: "#8A7963",
-    textTransform: "uppercase",
-    textAlign: "center",
-  },
-  loaderWrap: {
-    marginTop: 24,
   },
 });
