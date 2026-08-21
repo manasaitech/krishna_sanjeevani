@@ -78,7 +78,9 @@ export default function ListeningHistory() {
   };
 
   return (
-    <AppShell title="Listening History" subtitle="Your wellness and meditation path" back>
+    <AppShell bare>
+      <Text style={styles.heading}>History</Text>
+      <Text style={styles.meta}>Your wellness and meditation path</Text>
       {loading ? (
         <View style={{ marginTop: 24 }}>
           <CardsLoading count={4} />
@@ -222,6 +224,20 @@ export default function ListeningHistory() {
 }
 
 const styles = StyleSheet.create({
+  heading: {
+    marginTop: 8,
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#4D0F1B",
+    fontFamily: "DMSans",
+  },
+  meta: {
+    fontSize: 12,
+    color: "#8A7963",
+    fontFamily: "DMSans",
+    marginTop: 4,
+    marginBottom: 8,
+  },
   groupLabel: {
     fontSize: 11,
     fontWeight: "600",

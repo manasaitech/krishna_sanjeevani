@@ -211,7 +211,7 @@ export default function Profile() {
             icon={Clock}
             label="Listening history"
             value="View all played tracks"
-            onPress={() => router.push("/history")}
+            onPress={() => router.push("/(tabs)/history")}
           />
         </View>
       </Section>

@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { House, Search, Heart, User, Sparkles } from "lucide-react-native";
+import { House, Compass, Heart, User, Sparkles, Clock } from "lucide-react-native";
 import { useApp } from "@/lib/app-state";
 
 export default function TabLayout() {
@@ -34,10 +34,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="therapy"
         options={{
-          title: "Search",
-          tabBarIcon: ({ color }) => <Search size={22} color={color} />,
+          title: "Therapy",
+          tabBarIcon: ({ color }) => <Compass size={22} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -49,10 +49,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="favorites"
+        name="history"
         options={{
-          title: "Saved",
-          tabBarIcon: ({ color }) => <Heart size={22} color={color} />,
+          title: "History",
+          tabBarIcon: ({ color }) => <Clock size={22} color={color} />,
         }}
       />
       <Tabs.Screen

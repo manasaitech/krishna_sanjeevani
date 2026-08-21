@@ -48,7 +48,6 @@ export default function RootLayout() {
           <Stack.Screen name="subscription" />
           <Stack.Screen name="program/[programId]" />
           <Stack.Screen name="programs" />
-          <Stack.Screen name="history" />
         </Stack>
       </ErrorBoundary>
     </AppProvider>

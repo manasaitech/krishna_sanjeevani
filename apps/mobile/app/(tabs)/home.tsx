@@ -7,7 +7,7 @@ import { Chip, Rail, Section } from "@/components/layout-bits";
 import { ContinueCard, ProgramCard, TrackCard, TrackRow } from "@/components/cards";
 import { CardsLoading, EmptyState } from "@/components/States";
 import { useApp } from "@/lib/app-state";
-import { purposes } from "@/lib/content";
+import { purposes, categories } from "@/lib/content";
 import { resolveImageSource } from "@/lib/utils";
 
 function greeting() {
@@ -20,6 +20,7 @@ function greeting() {
 export default function Home() {
   const {
     category,
+    setCategory,
     current,
     theme,
     user,
@@ -149,9 +150,9 @@ export default function Home() {
       </View>
 
       {/* Search bar */}
-      <Pressable onPress={() => router.push("/(tabs)/search")} style={styles.searchBar}>
+      <Pressable onPress={() => router.push("/(tabs)/therapy")} style={styles.searchBar}>
         <SearchIcon size={18} color="#7C7A85" />
-        <Text style={styles.searchText}>Search ragas, purposes, programs</Text>
+        <Text style={styles.searchText}>Search therapeutic surāwalis...</Text>
       </Pressable>
 
       {/* Purpose chips */}
@@ -202,6 +203,91 @@ export default function Home() {
         </Rail>
       </Section>
 
+      {/* Explore by Theme */}
+      <Section title="Explore by Theme" hint="Category-adaptive soundscapes">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+        >
+          {categories.map((c) => {
+            const isActive = category === c.id;
+            return (
+              <Pressable
+                key={c.id}
+                onPress={() => setCategory(c.id)}
+                style={[
+                  styles.categoryCard,
+                  isActive && { borderColor: theme.cat, borderWidth: 2 }
+                ]}
+              >
+                <Image source={resolveImageSource(null, c.id)} style={styles.categoryCardImage} />
+                <View style={styles.categoryCardOverlay} />
+                <View style={styles.categoryCardContent}>
+                  <Text style={styles.categoryCardName}>{c.name}</Text>
+                  <Text style={styles.categoryCardDesc} numberOfLines={2}>
+                    {c.description}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </Section>
+
+      {/* Explore by Surāwalis */}
+      <Section title="Explore by Surāwalis" hint="Vedic acoustic frequencies">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+        >
+          {[
+            {
+              name: "Kalyani Surāwali",
+              description: "For Anxiety relief, Hypertension, and focus.",
+              searchKey: "Kalyani",
+              image: { uri: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=80&w=400" }
+            },
+            {
+              name: "Bhairavi Surāwali",
+              description: "For Insomnia, deep sleep, and meditation.",
+              searchKey: "Bhairavi",
+              image: { uri: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&q=80&w=400" }
+            },
+            {
+              name: "Yaman Surāwali",
+              description: "For stress relief and evening relaxation.",
+              searchKey: "Yaman",
+              image: { uri: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=400" }
+            },
+            {
+              name: "Todi Surāwali",
+              description: "For focus, concentration, and morning energy.",
+              searchKey: "Todi",
+              image: { uri: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=400" }
+            }
+          ].map((s) => (
+            <Pressable
+              key={s.name}
+              onPress={() => {
+                router.push({
+                  pathname: "/(tabs)/therapy",
+                  params: { q: s.searchKey }
+                });
+              }}
+              style={styles.surawaliCard}
+            >
+              <Image source={s.image} style={styles.surawaliCardImage} />
+              <View style={styles.surawaliCardContent}>
+                <Text style={styles.surawaliCardName} numberOfLines={1}>{s.name}</Text>
+                <Text style={styles.surawaliCardDesc} numberOfLines={2}>{s.description}</Text>
+              </View>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </Section>
+
       {/* Recommended */}
       <Section
         title={purpose ? `Recommended for ${purpose.toLowerCase()}` : "Recommended for you"}
@@ -222,7 +308,7 @@ export default function Home() {
       </Section>
 
       {/* Recently played */}
-      <Section title="Recently played" hint="See all" onPressHint={() => router.push("/history")}>
+      <Section title="Recently played" hint="See all" onPressHint={() => router.push("/(tabs)/history")}>
         {historyList.length ? (
           <View style={{ gap: 12 }}>
             {historyList.slice(0, 3).map((item) => (
@@ -616,5 +702,87 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 13,
     color: "rgba(245,241,235,0.85)",
+  },
+  scrollContainer: {
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  categoryCard: {
+    width: 220,
+    height: 130,
+    borderRadius: 16,
+    overflow: "hidden",
+    position: "relative",
+    borderWidth: 1,
+    borderColor: "#E8E4DC",
+  },
+  categoryCardImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: "100%",
+    height: "100%",
+  },
+  categoryCardOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
+  },
+  categoryCardContent: {
+    position: "absolute",
+    bottom: 12,
+    left: 16,
+    right: 16,
+  },
+  categoryCardName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#FAF8F4",
+    fontFamily: "DMSans",
+  },
+  categoryCardDesc: {
+    fontSize: 10,
+    color: "#FAF8F4CC",
+    marginTop: 2,
+    fontFamily: "DMSans",
+    lineHeight: 14,
+  },
+  surawaliCard: {
+    width: 180,
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#E8E4DC",
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  surawaliCardImage: {
+    height: 90,
+    width: "100%",
+  },
+  surawaliCardContent: {
+    padding: 10,
+    gap: 2,
+  },
+  surawaliCardName: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1A1A1A",
+    fontFamily: "DMSans",
+  },
+  surawaliCardDesc: {
+    fontSize: 10,
+    color: "#7C7A85",
+    fontFamily: "DMSans",
+    lineHeight: 14,
   },
 });

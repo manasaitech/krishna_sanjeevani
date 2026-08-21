@@ -24,10 +24,22 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
+    "splash": {
+      "image": "./assets/logo-without-text.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAF5EC"
+    },
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FAF5EC",
+          "image": "./assets/logo-without-text.png",
+          "imageWidth": 150
+        }
+      ],
       [
         "@react-native-google-signin/google-signin",
         {

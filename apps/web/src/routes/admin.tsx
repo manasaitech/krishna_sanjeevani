@@ -89,6 +89,25 @@ const fieldCls =
   "min-h-11 w-full rounded-field border border-border bg-background px-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-cat focus:outline-none";
 const cardCls = "rounded-card border border-border bg-surface shadow-soft";
 
+const formatDate = (val: any, options?: Intl.DateTimeFormatOptions) => {
+  if (val === undefined || val === null || val === "" || val === 0) return "N/A";
+  try {
+    let num = Number(val);
+    if (!Number.isNaN(num)) {
+      if (num < 10000000000) {
+        num = num * 1000;
+      }
+      const d = new Date(num);
+      return d.toLocaleDateString(undefined, options);
+    }
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return "N/A";
+    return d.toLocaleDateString(undefined, options);
+  } catch {
+    return "N/A";
+  }
+};
+
 function Admin() {
   const { user, isAuthenticated, authLoading, current: playingTrack, playing: isAudioPlaying, play: playHlsTrack, toggle: toggleHlsPlayback } = useApp();
   const [section, setSection] = useState<Section>("overview");
@@ -2982,7 +3001,7 @@ function Admin() {
                                 </span>
                               </td>
                               <td className="px-5 py-4 text-muted-foreground font-mono">
-                                {new Date(u.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                                {formatDate(u.createdAt, { month: "short", day: "numeric", year: "numeric" })}
                               </td>
                               <td className="px-5 py-4 text-right">
                                 <div className="flex items-center justify-end gap-1.5">
@@ -3244,10 +3263,10 @@ function Admin() {
                                   </span>
                                 </td>
                                 <td className="px-5 py-4 text-muted-foreground font-mono">
-                                  {new Date(s.currentPeriodStart).toLocaleDateString()}
+                                  {formatDate(s.currentPeriodStart)}
                                 </td>
                                 <td className="px-5 py-4 text-muted-foreground font-mono">
-                                  {new Date(s.currentPeriodEnd).toLocaleDateString()}
+                                  {formatDate(s.currentPeriodEnd)}
                                 </td>
                                 <td className="px-5 py-4 text-right">
                                   <div className="flex items-center justify-end gap-1.5">
@@ -5833,11 +5852,11 @@ function Admin() {
                             </div>
                             <div className="flex justify-between items-center text-[11px] font-mono">
                               <span className="font-semibold text-muted-foreground font-sans">Start Date</span>
-                              <span>{new Date(selectedUser.subscription.currentPeriodStart).toLocaleDateString()}</span>
+                              <span>{formatDate(selectedUser.subscription.currentPeriodStart)}</span>
                             </div>
                             <div className="flex justify-between items-center text-[11px] font-mono">
                               <span className="font-semibold text-muted-foreground font-sans">Renewal / Expiry</span>
-                              <span>{new Date(selectedUser.subscription.currentPeriodEnd).toLocaleDateString()}</span>
+                              <span>{formatDate(selectedUser.subscription.currentPeriodEnd)}</span>
                             </div>
                           </>
                         )}
@@ -5873,7 +5892,7 @@ function Admin() {
                           <div className="flex justify-between items-center">
                             <span className="font-semibold text-muted-foreground">Estimated Due Date (EDD)</span>
                             <span className="font-bold text-foreground font-mono">
-                              {new Date(selectedUser.user.pregnancyEdd).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                              {formatDate(selectedUser.user.pregnancyEdd, { dateStyle: "medium" })}
                             </span>
                           </div>
                           {(() => {
@@ -5911,7 +5930,7 @@ function Admin() {
                             <div className="text-right ml-4 shrink-0 font-mono text-[10px] text-muted-foreground">
                               <p className="font-semibold">{formatDuration(h.durationListened)} listened</p>
                               <p className="mt-0.5 text-[9px] font-medium text-muted-foreground/80">
-                                {new Date(h.createdAt).toLocaleDateString()}
+                                {formatDate(h.createdAt)}
                               </p>
                             </div>
                           </div>
