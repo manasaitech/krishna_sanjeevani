@@ -421,7 +421,7 @@ function DiscoverPage() {
             }`}
           >
             <Calendar className="h-4 w-4" />
-            <span>Pregnancy Care</span>
+            <span>Garv Sanjeevani</span>
           </button>
           <button
             onClick={() => setActiveTab("corporate")}
@@ -432,7 +432,7 @@ function DiscoverPage() {
             }`}
           >
             <Sparkles className="h-4 w-4" />
-            <span>Corporate Wellness</span>
+            <span>Arogya Sanjeevani</span>
           </button>
         </div>
 
@@ -722,7 +722,7 @@ function DiscoverPage() {
                 
                 {/* Day Selector */}
                 <div className="rounded-card border border-border/60 bg-surface p-6 shadow-soft space-y-4">
-                  <h4 className="font-semibold text-foreground text-sm">Select Corporate Weekday</h4>
+                  <h4 className="font-semibold text-foreground text-sm">Select Arogya Sanjeevani Weekday</h4>
                   <div className="flex flex-wrap gap-2">
                     {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
                       <button

@@ -15,6 +15,7 @@ import { Alert } from "react-native";
 import { playerService } from "./player-service";
 import { AVPlaybackStatus } from "expo-av";
 import { router } from "expo-router";
+import { signOutGoogle } from "./google-auth";
 
 /** Category-specific color palettes (hex values for RN) */
 export const categoryThemes: Record<
@@ -512,11 +513,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       await api.auth.logout();
     } catch {
-      // Continue locally on error
-    } finally {
-      await clearTokens();
-      setUser(null);
+      // Continue locally on backend error
     }
+    // Clear Google Credential Manager session so the next sign-in
+    // correctly presents the account selector instead of auto-selecting.
+    await signOutGoogle();
+    await clearTokens();
+    setUser(null);
   }, []);
 
   const updateProfile = useCallback(async (fullName?: string, language?: string) => {

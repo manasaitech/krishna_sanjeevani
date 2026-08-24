@@ -14,7 +14,7 @@ import { logger } from "../shared/logger";
 
 const stream = new Hono<{ Bindings: Env }>();
 
-const SESSION_LIFETIME_MS = 5 * 60 * 1000; // 5 minutes
+const SESSION_LIFETIME_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 /**
  * Verifies a streaming session ticket and extends its expiration (sliding window).

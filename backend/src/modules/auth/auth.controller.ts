@@ -108,10 +108,10 @@ export class AuthController {
   static async updateProfile(c: Context<{ Bindings: Env }>) {
     const userId = c.get("userId" as never) as string;
     const body = await c.req.json().catch(() => ({}));
-    const { fullName, language } = body;
+    const { fullName, language, category } = body;
 
-    if (!fullName && !language) {
-      throw new ValidationError("At least one field (fullName or language) is required to update");
+    if (!fullName && !language && !category) {
+      throw new ValidationError("At least one field (fullName, language, or category) is required to update");
     }
 
     const db = getDB(c.env);
@@ -122,6 +122,7 @@ export class AuthController {
       .set({
         ...(fullName && { fullName }),
         ...(language && { language }),
+        ...(category && { category }),
         updatedAt: now,
       })
       .where(eq(userProfiles.userId, userId));

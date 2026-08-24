@@ -10,10 +10,12 @@ import {
   Image,
   Dimensions,
   Platform,
+  ScrollView,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Lock, Mail, User, UserPlus } from "lucide-react-native";
+import { Lock, Mail, User, UserPlus, Eye, EyeOff } from "lucide-react-native";
 import { useApp } from "@/lib/app-state";
 import { categories, type CategoryId } from "@/lib/content";
 import { signInWithGoogle } from "@/lib/google-auth";
@@ -27,11 +29,14 @@ const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 export default function RegisterScreen() {
   const { register, loginWithGoogle, setCategory } = useApp();
   const router = useRouter();
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>("devotional");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [showDedication, setShowDedication] = useState(false);
 
   useEffect(() => {
@@ -44,14 +49,20 @@ export default function RegisterScreen() {
   }, [showDedication]);
 
   const handleGoogleRegister = async () => {
-    setLoading(true);
+    if (googleLoading || loading) return;
+    setGoogleLoading(true);
     try {
       const authRes = await signInWithGoogle();
-      if (!authRes.success || !authRes.idToken) {
-        if (authRes.error && authRes.error !== "Sign-in cancelled by user") {
-          Alert.alert("Google Login Error", authRes.error);
+
+      if (!authRes.success) {
+        if (authRes.cancelled) {
+          setGoogleLoading(false);
+          return;
         }
-        setLoading(false);
+        if (authRes.error) {
+          Alert.alert("Google Sign-In Error", authRes.error);
+        }
+        setGoogleLoading(false);
         return;
       }
 
@@ -60,12 +71,12 @@ export default function RegisterScreen() {
       if (res.success) {
         setShowDedication(true);
       } else {
-        Alert.alert("Google Login Failed", res.message);
+        Alert.alert("Google Login Failed", res.message || "Backend authentication failed. Please try again.");
       }
     } catch {
-      Alert.alert("Error", "Google authentication failed. Please try again.");
+      Alert.alert("Error", "Google authentication failed. Please check your internet connection and try again.");
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -77,12 +88,12 @@ export default function RegisterScreen() {
 
   const handleSubmit = async () => {
     if (!fullName.trim() || !email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert("Required Fields", "Please fill in all fields to create your account.");
       return;
     }
 
     if (!passwordValid) {
-      Alert.alert("Error", "Password does not meet the requirements");
+      Alert.alert("Password Requirements", "Please make sure your password satisfies all security criteria.");
       return;
     }
 
@@ -138,166 +149,202 @@ export default function RegisterScreen() {
       <Image source={bgImg} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
-
-          {/* Header with mini medallion */}
-          <View style={styles.header}>
-            <View style={styles.medallionSm}>
-              <Image source={medallionImg} style={styles.medallionImg} resizeMode="cover" />
-            </View>
-            <View>
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Begin your healing journey</Text>
-            </View>
-          </View>
-
-          <View style={styles.dividerLine}>
-            <View style={styles.dividerRule} />
-            <Text style={styles.dividerLotus}>🪷</Text>
-            <View style={styles.dividerRule} />
-          </View>
-
-          {/* Form */}
-          <View style={styles.form}>
-            {/* Full Name */}
-            <View style={styles.field}>
-              <Text style={styles.label}>FULL NAME</Text>
-              <View style={styles.inputWrap}>
-                <User size={13} color="#8a7455" strokeWidth={2} style={styles.inputIcon} />
-                <TextInput
-                  value={fullName}
-                  onChangeText={setFullName}
-                  placeholder="Ananya Rao"
-                  placeholderTextColor="rgba(90, 74, 48, 0.45)"
-                  style={styles.input}
-                  autoCapitalize="words"
-                />
-              </View>
-            </View>
-
-            {/* Email */}
-            <View style={styles.field}>
-              <Text style={styles.label}>EMAIL</Text>
-              <View style={styles.inputWrap}>
-                <Mail size={13} color="#8a7455" strokeWidth={2} style={styles.inputIcon} />
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="ananya@example.com"
-                  placeholderTextColor="rgba(90, 74, 48, 0.45)"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  style={styles.input}
-                />
-              </View>
-            </View>
-
-            {/* Password */}
-            <View style={styles.field}>
-              <Text style={styles.label}>PASSWORD</Text>
-              <View style={styles.inputWrap}>
-                <Lock size={13} color="#8a7455" strokeWidth={2} style={styles.inputIcon} />
-                <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="••••••••"
-                  placeholderTextColor="rgba(90, 74, 48, 0.45)"
-                  secureTextEntry
-                  style={styles.input}
-                />
-              </View>
-              {/* Password chips */}
-              <View style={styles.rulesRow}>
-                {[
-                  [hasMinLength, "8+ chars"],
-                  [hasUppercase, "Uppercase"],
-                  [hasLowercase, "Lowercase"],
-                  [hasNumber, "Number"],
-                ].map(([ok, text]) => (
-                  <View key={text as string} style={styles.chip}>
-                    <View style={[styles.chipDot, ok && styles.chipDotOk]} />
-                    <Text style={[styles.chipText, ok && styles.chipTextOk]}>{text as string}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            {/* Category Picker */}
-            <View style={styles.field}>
-              <Text style={styles.label}>CHOOSE YOUR PATH</Text>
-              <View style={styles.catsRow}>
-                {categories.map((cat) => (
-                  <Pressable
-                    key={cat.id}
-                    onPress={() => setSelectedCategory(cat.id)}
-                    style={[
-                      styles.catBtn,
-                      selectedCategory === cat.id && styles.catBtnActive,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.catText,
-                        selectedCategory === cat.id && styles.catTextActive,
-                      ]}
-                    >
-                      {cat.name}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-
-            {/* Submit */}
-            <Pressable
-              onPress={handleSubmit}
-              disabled={loading}
-              style={({ pressed }) => [
-                styles.submitBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              {loading ? (
-                <ActivityIndicator color="#F2EDE0" size="small" />
-              ) : (
-                <>
-                  <UserPlus size={15} color="#D4A84B" strokeWidth={2} />
-                  <Text style={styles.submitText}>Create Account</Text>
-                </>
-              )}
-            </Pressable>
-          </View>
-
-          {/* Flute divider */}
-          <View style={styles.fluteDivider}>
-            <View style={styles.dividerRule} />
-            <Text style={styles.fluteEmoji}>🪈🦚</Text>
-            <View style={styles.dividerRule} />
-          </View>
-
-          {/* Social */}
-          <Pressable
-            onPress={handleGoogleRegister}
-            disabled={loading}
-            style={({ pressed }) => [
-              styles.socialBtn,
-              pressed && styles.pressed,
-            ]}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.googleIconCircle}>
-              <Text style={styles.googleG}>G</Text>
-            </View>
-            <Text style={styles.socialBtnText}>Continue with Google</Text>
-          </Pressable>
+            {/* Opaque Warm Card Container */}
+            <View style={styles.card}>
 
-          {/* Sign in link */}
-          <Text style={styles.legal}>
-            Already have an account?{" "}
-            <Text style={styles.legalLink} onPress={() => router.push("/login")}>
-              Sign in
-            </Text>
-          </Text>
-        </View>
+              {/* Header */}
+              <View style={styles.header}>
+                <View style={styles.medallionWrap}>
+                  <Image source={medallionImg} style={styles.medallionImg} resizeMode="cover" />
+                </View>
+                <View style={styles.headerTextWrap}>
+                  <Text style={styles.brandTitle}>Krishna Sanjeevni</Text>
+                  <Text style={styles.title}>Create Account</Text>
+                  <Text style={styles.subtitle}>Begin your sacred healing path</Text>
+                </View>
+              </View>
+
+              <View style={styles.dividerLine}>
+                <View style={styles.dividerRule} />
+                <Text style={styles.dividerLotus}>🪷</Text>
+                <View style={styles.dividerRule} />
+              </View>
+
+              {/* Form */}
+              <View style={styles.form}>
+                {/* Full Name */}
+                <View style={styles.field}>
+                  <Text style={styles.label}>FULL NAME</Text>
+                  <View style={styles.inputWrap}>
+                    <User size={16} color="#8A7455" strokeWidth={2} style={styles.inputIcon} />
+                    <TextInput
+                      value={fullName}
+                      onChangeText={setFullName}
+                      placeholder="Ananya Rao"
+                      placeholderTextColor="rgba(90, 74, 48, 0.45)"
+                      style={styles.input}
+                      autoCapitalize="words"
+                    />
+                  </View>
+                </View>
+
+                {/* Email */}
+                <View style={styles.field}>
+                  <Text style={styles.label}>EMAIL ADDRESS</Text>
+                  <View style={styles.inputWrap}>
+                    <Mail size={16} color="#8A7455" strokeWidth={2} style={styles.inputIcon} />
+                    <TextInput
+                      value={email}
+                      onChangeText={setEmail}
+                      placeholder="ananya@example.com"
+                      placeholderTextColor="rgba(90, 74, 48, 0.45)"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      style={styles.input}
+                    />
+                  </View>
+                </View>
+
+                {/* Password */}
+                <View style={styles.field}>
+                  <Text style={styles.label}>PASSWORD</Text>
+                  <View style={styles.inputWrap}>
+                    <Lock size={16} color="#8A7455" strokeWidth={2} style={styles.inputIcon} />
+                    <TextInput
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholder="••••••••"
+                      placeholderTextColor="rgba(90, 74, 48, 0.45)"
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      style={styles.input}
+                    />
+                    <Pressable
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.eyeIconWrap}
+                      hitSlop={10}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={18} color="#8A7455" strokeWidth={2} />
+                      ) : (
+                        <Eye size={18} color="#8A7455" strokeWidth={2} />
+                      )}
+                    </Pressable>
+                  </View>
+                  {/* Password chips */}
+                  <View style={styles.rulesRow}>
+                    {[
+                      [hasMinLength, "8+ chars"],
+                      [hasUppercase, "Uppercase"],
+                      [hasLowercase, "Lowercase"],
+                      [hasNumber, "Number"],
+                    ].map(([ok, text]) => (
+                      <View key={text as string} style={styles.chip}>
+                        <View style={[styles.chipDot, ok && styles.chipDotOk]} />
+                        <Text style={[styles.chipText, ok && styles.chipTextOk]}>{text as string}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Category Picker */}
+                <View style={styles.field}>
+                  <Text style={styles.label}>CHOOSE YOUR PATH</Text>
+                  <View style={styles.catsRow}>
+                    {categories.map((cat) => (
+                      <Pressable
+                        key={cat.id}
+                        onPress={() => setSelectedCategory(cat.id)}
+                        style={[
+                          styles.catBtn,
+                          selectedCategory === cat.id && styles.catBtnActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.catText,
+                            selectedCategory === cat.id && styles.catTextActive,
+                          ]}
+                        >
+                          {cat.name}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Submit */}
+                <Pressable
+                  onPress={handleSubmit}
+                  disabled={loading || googleLoading}
+                  style={({ pressed }) => [
+                    styles.submitBtn,
+                    (pressed || loading) && styles.pressed,
+                    loading && styles.btnDisabled,
+                  ]}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#F2EDE0" size="small" />
+                  ) : (
+                    <>
+                      <UserPlus size={18} color="#D4A84B" strokeWidth={2} />
+                      <Text style={styles.submitText}>Create Account</Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+
+              {/* Flute divider */}
+              <View style={styles.fluteDivider}>
+                <View style={styles.dividerRule} />
+                <Text style={styles.fluteEmoji}>🪈🦚</Text>
+                <View style={styles.dividerRule} />
+              </View>
+
+              {/* Social */}
+              <View style={styles.socialGroup}>
+                <Pressable
+                  onPress={handleGoogleRegister}
+                  disabled={googleLoading || loading}
+                  style={({ pressed }) => [
+                    styles.socialBtn,
+                    (pressed || googleLoading) && styles.pressed,
+                    googleLoading && styles.btnDisabled,
+                  ]}
+                >
+                  {googleLoading ? (
+                    <ActivityIndicator size="small" color="#4285F4" />
+                  ) : (
+                    <View style={styles.googleIconCircle}>
+                      <Text style={styles.googleG}>G</Text>
+                    </View>
+                  )}
+                  <Text style={styles.socialBtnText}>
+                    {googleLoading ? "Signing in…" : "Continue with Google"}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Sign in link */}
+              <View style={styles.footerWrap}>
+                <Text style={styles.footerText}>Already have an account? </Text>
+                <Pressable onPress={() => router.push("/login")}>
+                  <Text style={styles.footerLink}>Sign In</Text>
+                </Pressable>
+              </View>
+
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -311,51 +358,77 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  content: {
+  keyboardView: {
     flex: 1,
-    alignItems: "center",
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
-    paddingHorizontal: 20,
-    maxWidth: 400,
-    alignSelf: "center",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 24,
+  },
+  card: {
     width: "100%",
+    maxWidth: 390,
+    backgroundColor: "rgba(255, 253, 247, 0.95)",
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "rgba(201, 168, 76, 0.5)",
+    paddingHorizontal: 22,
+    paddingVertical: 22,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    width: "100%",
-    marginBottom: 4,
+    gap: 14,
+    marginBottom: 2,
   },
-  medallionSm: {
+  medallionWrap: {
     width: 52,
     height: 52,
     borderRadius: 26,
     borderWidth: 2,
-    borderColor: "rgba(201, 168, 76, 0.6)",
+    borderColor: "rgba(201, 168, 76, 0.7)",
     overflow: "hidden",
+    backgroundColor: "#FAF4E6",
   },
   medallionImg: {
     width: "100%",
     height: "100%",
   },
+  headerTextWrap: {
+    flex: 1,
+  },
+  brandTitle: {
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 2,
+    color: "#8B6914",
+    textTransform: "uppercase",
+  },
   title: {
     fontSize: 22,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#1A3323",
     fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
+    marginTop: 1,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontStyle: "italic",
-    color: "#8B6914",
+    color: "#6B5A3E",
     fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
   },
   dividerLine: {
     flexDirection: "row",
     alignItems: "center",
-    width: "100%",
-    marginVertical: 6,
+    marginVertical: 10,
   },
   dividerRule: {
     flex: 1,
@@ -368,10 +441,10 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "100%",
-    gap: 8,
+    gap: 10,
   },
   field: {
-    gap: 2,
+    gap: 4,
   },
   label: {
     fontSize: 10,
@@ -385,25 +458,31 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     position: "absolute",
-    left: 10,
+    left: 12,
     zIndex: 1,
+  },
+  eyeIconWrap: {
+    position: "absolute",
+    right: 12,
+    zIndex: 1,
+    padding: 6,
   },
   input: {
     width: "100%",
-    height: 38,
-    paddingLeft: 30,
-    paddingRight: 10,
-    borderRadius: 10,
+    height: 44,
+    paddingLeft: 38,
+    paddingRight: 42,
+    borderRadius: 12,
     borderWidth: 1.5,
     borderColor: "rgba(201, 168, 76, 0.45)",
-    backgroundColor: "rgba(252, 250, 244, 0.78)",
+    backgroundColor: "#FAF8F4",
     fontSize: 13,
-    color: "#261E0E",
+    color: "#1A1208",
   },
   rulesRow: {
     flexDirection: "row",
     gap: 8,
-    marginTop: 3,
+    marginTop: 2,
   },
   chip: {
     flexDirection: "row",
@@ -428,19 +507,19 @@ const styles = StyleSheet.create({
   },
   catsRow: {
     flexDirection: "row",
-    gap: 6,
+    gap: 5,
     marginTop: 2,
   },
   catBtn: {
     paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 16,
+    paddingHorizontal: 9,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: "rgba(201, 168, 76, 0.4)",
-    backgroundColor: "rgba(250, 248, 242, 0.65)",
+    backgroundColor: "rgba(250, 248, 242, 0.8)",
   },
   catBtnActive: {
-    backgroundColor: "rgba(26, 51, 35, 0.88)",
+    backgroundColor: "#1A3323",
     borderColor: "rgba(201, 168, 76, 0.7)",
   },
   catText: {
@@ -457,74 +536,85 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    gap: 7,
     width: "100%",
-    height: 42,
-    borderRadius: 21,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: "#1A3323",
     borderWidth: 1.5,
-    borderColor: "rgba(201, 168, 76, 0.45)",
+    borderColor: "rgba(201, 168, 76, 0.5)",
     marginTop: 4,
   },
   submitText: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
     color: "#F2EDE0",
+    letterSpacing: 0.3,
   },
   fluteDivider: {
     flexDirection: "row",
     alignItems: "center",
-    width: "100%",
-    marginVertical: 6,
+    marginVertical: 12,
   },
   fluteEmoji: {
     fontSize: 13,
     marginHorizontal: 6,
   },
+  socialGroup: {
+    width: "100%",
+  },
   socialBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: 10,
     width: "100%",
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(250, 248, 242, 0.85)",
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
-    borderColor: "rgba(201, 168, 76, 0.42)",
+    borderColor: "rgba(201, 168, 76, 0.45)",
   },
   socialBtnText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
     color: "#1A1208",
   },
   googleIconCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: "#4285F4",
     alignItems: "center",
     justifyContent: "center",
   },
   googleG: {
     color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 10,
+    fontWeight: "800",
+    fontSize: 12,
   },
-  legal: {
-    fontSize: 11,
-    color: "rgba(58, 44, 24, 0.65)",
-    textAlign: "center",
-    marginTop: 8,
+  footerWrap: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 14,
   },
-  legalLink: {
+  footerText: {
+    fontSize: 13,
+    color: "#5A4A30",
+  },
+  footerLink: {
+    fontSize: 13,
     color: "#1A3323",
-    fontWeight: "600",
+    fontWeight: "700",
     textDecorationLine: "underline",
   },
   pressed: {
     opacity: 0.88,
     transform: [{ scale: 0.98 }],
+  },
+  btnDisabled: {
+    opacity: 0.65,
   },
   dedicationContainer: {
     flex: 1,

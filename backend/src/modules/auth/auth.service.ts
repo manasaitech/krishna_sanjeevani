@@ -140,7 +140,17 @@ export class AuthService {
     logger.info("Registration successful", { userId });
 
     return {
-      user: { id: userId, email: input.email, role: "user" },
+      user: {
+        id: userId,
+        email: input.email,
+        role: "user",
+        profile: {
+          fullName: input.fullName,
+          category: input.category,
+          language: input.language || "hi",
+          profileImage: null,
+        },
+      },
       tokens,
     };
   }
@@ -186,10 +196,23 @@ export class AuthService {
       createdAt: Date.now(),
     });
 
+    const profile = await this.repo.findProfileByUserId(user.id);
     logger.info("Login successful", { userId: user.id });
 
     return {
-      user: { id: user.id, email: user.email, role: resolvedRole },
+      user: {
+        id: user.id,
+        email: user.email,
+        role: resolvedRole,
+        profile: profile
+          ? {
+              fullName: profile.fullName,
+              category: profile.category,
+              language: profile.language,
+              profileImage: profile.profileImage,
+            }
+          : null,
+      },
       tokens,
     };
   }

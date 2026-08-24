@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkles, Music, ArrowRight, UserPlus, LogIn } from "lucide-react";
-import krishnaFluteImg from "@/assets/krishna-flute-banner.jpg";
+import krishnaLaunchImg from "@/assets/krishna-sanjeevani-launch.jpg";
 
 export function ImmerseMusicSection() {
   return (
@@ -57,12 +57,12 @@ export function ImmerseMusicSection() {
             </div>
           </div>
 
-          {/* Right Banner Image: Sri Krishna Playing Flute */}
+          {/* Right Banner Image: Krishna Sanjeevani Launch Event */}
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-2xl overflow-hidden border-2 border-cat/30 shadow-lift group">
               <img
-                src={krishnaFluteImg}
-                alt="Lord Krishna playing the divine bansuri flute"
+                src={krishnaLaunchImg}
+                alt="Krishna Sanjeevani Launch Event"
                 className="w-full h-auto max-h-[420px] object-cover object-center group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 pointer-events-none" />

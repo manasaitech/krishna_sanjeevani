@@ -1,0 +1,522 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/asset_constants.dart';
+import '../providers/auth_provider.dart';
+
+class LoginScreen extends ConsumerStatefulWidget {
+  final VoidCallback? onNavigateToRegister;
+
+  const LoginScreen({
+    super.key,
+    this.onNavigateToRegister,
+  });
+
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  late final AnimationController _equalizerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _equalizerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _equalizerController.dispose();
+    super.dispose();
+  }
+
+  void _submitLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final success = await ref.read(authProvider.notifier).login(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+
+    if (success && mounted) {
+      context.go('/home');
+    } else if (!success && mounted) {
+      final errorMsg = ref.read(authProvider).error ?? 'Login failed';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: const Color(0xFFB00020),
+        ),
+      );
+    }
+  }
+
+  void _submitGoogleLogin() async {
+    final success = await ref.read(authProvider.notifier).loginWithGoogle();
+    if (success && mounted) {
+      context.go('/home');
+    } else if (!success && mounted) {
+      final errorMsg = ref.read(authProvider).error;
+      if (errorMsg != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: const Color(0xFFB00020),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Fullscreen background artwork
+          Positioned.fill(
+            child: Image.asset(
+              AssetConstants.onboardingBg,
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 380),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 10),
+
+                        // Hero Medallion with Concentric Rings
+                        Center(
+                          child: SizedBox(
+                            width: 110,
+                            height: 110,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 106,
+                                  height: 106,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0x2EC9A84C), width: 1),
+                                  ),
+                                ),
+                                Container(
+                                  width: 96,
+                                  height: 96,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0x59C9A84C), width: 1),
+                                  ),
+                                ),
+                                Container(
+                                  width: 86,
+                                  height: 86,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0xB3C9A84C), width: 1.5),
+                                  ),
+                                ),
+                                ClipOval(
+                                  child: Image.asset(
+                                    AssetConstants.logoWithoutText,
+                                    width: 78,
+                                    height: 78,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Animated Equalizer Wave
+                        AnimatedBuilder(
+                          animation: _equalizerController,
+                          builder: (context, child) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(9, (index) {
+                                final heights = [8.0, 14.0, 20.0, 22.0, 16.0, 12.0, 22.0, 18.0, 10.0];
+                                final factor = (index % 2 == 0)
+                                    ? _equalizerController.value
+                                    : (1.0 - _equalizerController.value);
+                                return Container(
+                                  width: 2.5,
+                                  height: heights[index] * (0.5 + factor * 0.5),
+                                  margin: const EdgeInsets.symmetric(horizontal: 1.2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF8B6914).withValues(alpha: 0.65),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                );
+                              }),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Title
+                        const Text(
+                          'KRISHNA SANJEEVANI',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A3323),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // Tagline
+                        const Text(
+                          'Healing Through Divine Sound',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Color(0xFF8B6914),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Glassmorphic Card
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              padding: const EdgeInsets.all(24.0),
+                              decoration: BoxDecoration(
+                                color: const Color(0xE6FAF8F2),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: const Color(0x73C9A84C), width: 1.5),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                    'Welcome Back',
+                                    style: TextStyle(
+                                      fontFamily: 'serif',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A3323),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Sign in to access your sound therapy sessions.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF6B5A3E),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // Email
+                                  const Text(
+                                    'Email Address',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1A3323),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextFormField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    style: const TextStyle(fontSize: 14),
+                                    decoration: InputDecoration(
+                                      hintText: 'user@example.com',
+                                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                                      prefixIcon: const Icon(Icons.mail_outline, size: 18, color: Color(0xFF6B5A3E)),
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                                      filled: true,
+                                      fillColor: Colors.white.withValues(alpha: 0.6),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0x33C9A84C)),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0x33C9A84C)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0xFFC9A84C), width: 1.5),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.trim().isEmpty) {
+                                        return 'Please enter your email';
+                                      }
+                                      if (!value.contains('@')) {
+                                        return 'Enter a valid email address';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Password
+                                  const Text(
+                                    'Password',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1A3323),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: _obscurePassword,
+                                    style: const TextStyle(fontSize: 14),
+                                    decoration: InputDecoration(
+                                      hintText: '••••••••',
+                                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                                      prefixIcon: const Icon(Icons.lock_outline, size: 18, color: Color(0xFF6B5A3E)),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                          size: 18,
+                                          color: const Color(0xFF6B5A3E),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword = !_obscurePassword;
+                                          });
+                                        },
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                                      filled: true,
+                                      fillColor: Colors.white.withValues(alpha: 0.6),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0x33C9A84C)),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0x33C9A84C)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0xFFC9A84C), width: 1.5),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your password';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 24),
+
+                                  // Sign In Button
+                                  SizedBox(
+                                    height: 46,
+                                    child: ElevatedButton(
+                                      onPressed: authState.authLoading ? null : _submitLogin,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF1A3323),
+                                        foregroundColor: const Color(0xFFF2EDE0),
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(23),
+                                          side: const BorderSide(color: Color(0x73C9A84C), width: 1.5),
+                                        ),
+                                      ),
+                                      child: authState.authLoading
+                                          ? const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                              ),
+                                            )
+                                          : const Text(
+                                              'Sign In',
+                                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                                            ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Flute & Peacock Divider
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(width: 60, height: 1, color: const Color(0x73C9A84C)),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 6.0),
+                              child: Text('🪈🦚', style: TextStyle(fontSize: 12)),
+                            ),
+                            Container(width: 60, height: 1, color: const Color(0x73C9A84C)),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Continue with Google
+                        SizedBox(
+                          height: 44,
+                          child: OutlinedButton(
+                            onPressed: authState.authLoading ? null : _submitGoogleLogin,
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: const Color(0xD9FAF8F2),
+                              side: const BorderSide(color: Color(0x6BC9A84C), width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.g_mobiledata, size: 24, color: Color(0xFF4285F4)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Continue with Google',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1A1208),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Continue with Apple
+                        SizedBox(
+                          height: 44,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Apple Sign-In coming soon.')),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: const Color(0xD9FAF8F2),
+                              side: const BorderSide(color: Color(0x6BC9A84C), width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.apple, size: 18, color: Color(0xFF1A1208)),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Continue with Apple',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1A1208),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Toggle Navigation Button styled like Outlined Welcome Screen row
+                        SizedBox(
+                          height: 42,
+                          child: OutlinedButton(
+                            onPressed: widget.onNavigateToRegister,
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: const Color(0xC0FAF8F2),
+                              side: const BorderSide(color: Color(0x7BC9A84C), width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(21),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.person_add_outlined, size: 14, color: Color(0xFF6B5A3E)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Create account',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF261E0E),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Legal Footer
+                        const Text(
+                          'By continuing you agree to our Terms and Privacy Policy.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0x993A2C18),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

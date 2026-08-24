@@ -100,12 +100,111 @@ function Home() {
         </div>
       </AppShell>
     );
-  }
-
   return (
     <AppShell>
-      {/* Hero Section */}
-      {featured ? (
+      {/* Hero Section: Pregnancy Specific vs. General */}
+      {category === "pregnancy" ? (
+        <div className="space-y-6">
+          {/* Welcome Banner */}
+          <div className="relative overflow-hidden rounded-card bg-gradient-to-r from-rose-100 via-rose-50 to-amber-50 p-6 md:p-8 border border-rose-200/50 shadow-soft">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="space-y-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-rose-200/60 px-3 py-1 text-[10px] font-semibold tracking-wider text-rose-800 uppercase">
+                  <Sparkles className="h-3 w-3" /> Gestational Stage
+                </span>
+                <h1 className="font-serif text-3xl font-bold text-stone-900 md:text-4xl">
+                  Welcome, {user?.profile?.fullName || "Vasudha"}
+                </h1>
+                <p className="font-serif italic text-rose-700 text-base font-semibold">
+                  Gestational Week 24, Day 3
+                </p>
+                <p className="text-xs sm:text-sm text-stone-600 max-w-xl leading-relaxed pt-1">
+                  Healthy womb development through circadian acoustic frequencies. Today is an ideal day to balance your Doshas with Bhairavi and Yaman Surāvalis.
+                </p>
+              </div>
+
+              {/* Daily Progress Card */}
+              <div className="w-full md:w-80 rounded-2xl bg-white/80 backdrop-blur-md p-5 border border-rose-200/40 shadow-sm flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold text-stone-700">
+                    <span>Daily Progress</span>
+                    <span className="text-rose-700 font-mono">15 min / 30 min completed</span>
+                  </div>
+                  {/* Progress Bar */}
+                  <div className="h-2 w-full rounded-full bg-stone-100 overflow-hidden">
+                    <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-rose-400 to-rose-600 transition-all duration-500" />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between text-[11px] text-stone-500">
+                  <span>Target: 30m</span>
+                  <span className="flex items-center gap-1 font-medium text-rose-700">
+                    <Waves className="h-3 w-3 animate-pulse" /> Circadian wave active
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recommended Streams Grid */}
+          <Section title="Recommended Womb Care Streams" hint="Circadian-aligned auditory paths">
+            <div className="grid gap-6 sm:grid-cols-2">
+              {[
+                {
+                  title: "Midnight Ragas",
+                  description: "Circadian calming waves to soothe maternal sleep cycles and optimize gestational rest.",
+                  ragaList: "Raga Yaman, Bhairavi",
+                  purpose: "Deep Rest & Calm",
+                  trackId: tracks.find(t => t.category === 'pregnancy' && (t.raga?.includes('Yaman') || t.title.includes('Yaman')))?.id || tracks.find(t => t.category === 'pregnancy')?.id || tracks[0]?.id
+                },
+                {
+                  title: "Evening Suravali",
+                  description: "Circadian transition frequencies designed to pacify Pitta and bring emotional stability.",
+                  ragaList: "Raga Kalyani, Bhairav",
+                  purpose: "Dosha Balancing",
+                  trackId: tracks.find(t => t.category === 'pregnancy' && (t.raga?.includes('Kalyani') || t.title.includes('Kalyani')))?.id || tracks.find(t => t.category === 'pregnancy')?.id || tracks[0]?.id
+                }
+              ].map((stream) => {
+                const tr = tracks.find(t => t.id === stream.trackId) || featured;
+                return (
+                  <div
+                    key={stream.title}
+                    className="group relative overflow-hidden rounded-card bg-surface border border-border p-5 shadow-soft hover:shadow-lift transition-all flex flex-col justify-between"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex rounded-full bg-rose-50 border border-rose-100 px-2.5 py-0.5 text-[9px] font-bold text-rose-800 uppercase">
+                          {stream.purpose}
+                        </span>
+                        <span className="text-[10px] font-mono text-muted-foreground">
+                          {stream.ragaList}
+                        </span>
+                      </div>
+                      <h3 className="font-serif text-lg font-bold text-stone-900 group-hover:text-rose-800 transition-colors">
+                        {stream.title}
+                      </h3>
+                      <p className="text-xs text-stone-500 leading-relaxed">
+                        {stream.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-5 pt-3 border-t border-border/50 flex items-center justify-between">
+                      <span className="text-[10px] text-muted-foreground italic">
+                        Circadian aligned
+                      </span>
+                      <button
+                        onClick={() => tr && play(tr)}
+                        className="press inline-flex h-9 items-center gap-1.5 rounded-lg bg-rose-800 text-white px-4 text-xs font-semibold hover:bg-rose-900 cursor-pointer"
+                      >
+                        <Play className="h-3 w-3" fill="currentColor" /> Play stream
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Section>
+        </div>
+      ) : featured ? (
         <section className="animate-rise grid gap-6 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
           <div className="relative overflow-hidden rounded-card shadow-lift">
             <img
@@ -160,6 +259,7 @@ function Home() {
                 </div>
               ))}
             </div>
+
             <div className="mt-6 rounded-2xl bg-cat-light p-4">
               <p className="text-[11px] font-semibold tracking-wider text-cat uppercase">
                 Now in your queue

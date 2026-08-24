@@ -22,14 +22,14 @@ export const categories: Category[] = [
   },
   {
     id: "secular",
-    name: "Secular & Corporate",
+    name: "Arogya Sanjeevani",
     tagline: "Elegant teal · clear mind",
     description: "Stress reduction, productivity, emotional wellness.",
     art: artSecular,
   },
   {
     id: "pregnancy",
-    name: "Pregnancy",
+    name: "Garv Sanjeevani",
     tagline: "Soft rose · gentle care",
     description: "Month-wise pregnancy wellness journey.",
     art: artPregnancy,

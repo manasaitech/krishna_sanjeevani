@@ -12,6 +12,9 @@ import {
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Music, Headphones, User, UserPlus } from "lucide-react-native";
+import { ActivityIndicator, Alert } from "react-native";
+import { useApp } from "@/lib/app-state";
+import { signInWithGoogle } from "@/lib/google-auth";
 
 const bgImg = require("../assets/images/krishna-onboarding-bg.jpg");
 const medallionImg = require("../assets/images/krishna-medallion.jpg");
@@ -65,6 +68,38 @@ const waveHeights = [0.35, 0.6, 0.9, 1, 0.75, 0.55, 1, 0.85, 0.45];
 
 export default function Welcome() {
   const router = useRouter();
+  const { loginWithGoogle } = useApp();
+  const [googleLoading, setGoogleLoading] = React.useState(false);
+
+  const handleGoogleLogin = async () => {
+    if (googleLoading) return;
+    setGoogleLoading(true);
+    try {
+      const authRes = await signInWithGoogle();
+      if (!authRes.success) {
+        if (authRes.cancelled) {
+          setGoogleLoading(false);
+          return;
+        }
+        if (authRes.error) {
+          Alert.alert("Google Sign-In Failed", authRes.error);
+        }
+        setGoogleLoading(false);
+        return;
+      }
+
+      const res = await loginWithGoogle(authRes.idToken);
+      if (res.success) {
+        router.replace("/(tabs)/home");
+      } else {
+        Alert.alert("Login Failed", res.message || "Backend authentication failed.");
+      }
+    } catch {
+      Alert.alert("Error", "Google authentication failed. Please try again.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -159,26 +194,32 @@ export default function Welcome() {
           {/* Social login buttons */}
           <View style={styles.socialGroup}>
             <Pressable
-              onPress={() => router.push("/login")}
+              onPress={handleGoogleLogin}
+              disabled={googleLoading}
               style={({ pressed }) => [
                 styles.socialBtn,
-                pressed && styles.pressed,
+                (pressed || googleLoading) && styles.pressed,
               ]}
             >
-              <View style={styles.googleIconCircle}>
-                <Text style={styles.googleG}>G</Text>
-              </View>
-              <Text style={styles.socialBtnText}>Continue with Google</Text>
+              {googleLoading ? (
+                <ActivityIndicator size="small" color="#4285F4" />
+              ) : (
+                <View style={styles.googleIconCircle}>
+                  <Text style={styles.googleG}>G</Text>
+                </View>
+              )}
+              <Text style={styles.socialBtnText}>
+                {googleLoading ? "Signing in…" : "Continue with Google"}
+              </Text>
             </Pressable>
 
             <Pressable
-              onPress={() => router.push("/login")}
+              onPress={() => Alert.alert("Apple Sign-In", "Coming soon.")}
               style={({ pressed }) => [
                 styles.socialBtn,
                 pressed && styles.pressed,
               ]}
             >
-              <Text style={styles.appleIcon}></Text>
               <Text style={styles.socialBtnText}>Continue with Apple</Text>
             </Pressable>
           </View>

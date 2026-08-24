@@ -2,16 +2,20 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
+  TextInput,
   Pressable,
   StyleSheet,
+  ActivityIndicator,
+  Alert,
   Image,
   Dimensions,
   Platform,
-  Alert,
+  ScrollView,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Music, Headphones, User, UserPlus } from "lucide-react-native";
+import { Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react-native";
 import { useApp } from "@/lib/app-state";
 import { signInWithGoogle } from "@/lib/google-auth";
 
@@ -22,9 +26,14 @@ const prabhupadaImg = require("../assets/images/prabhupada.png");
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function LoginScreen() {
-  const { loginWithGoogle } = useApp();
+  const { login, loginWithGoogle } = useApp();
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [showDedication, setShowDedication] = useState(false);
 
   useEffect(() => {
@@ -36,15 +45,42 @@ export default function LoginScreen() {
     }
   }, [showDedication]);
 
-  const handleGoogleLogin = async () => {
+  const handleEmailLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Required Fields", "Please enter both your email and password.");
+      return;
+    }
+
     setLoading(true);
     try {
+      const res = await login(email.trim(), password.trim());
+      if (res.success) {
+        setShowDedication(true);
+      } else {
+        Alert.alert("Login Failed", res.message || "Invalid credentials. Please try again.");
+      }
+    } catch {
+      Alert.alert("Error", "An unexpected error occurred. Please check your internet connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    if (googleLoading || loading) return;
+    setGoogleLoading(true);
+    try {
       const authRes = await signInWithGoogle();
-      if (!authRes.success || !authRes.idToken) {
-        if (authRes.error && authRes.error !== "Sign-in cancelled by user") {
-          Alert.alert("Google Login Error", authRes.error);
+
+      if (!authRes.success) {
+        if (authRes.cancelled) {
+          setGoogleLoading(false);
+          return;
         }
-        setLoading(false);
+        if (authRes.error) {
+          Alert.alert("Google Sign-In Error", authRes.error);
+        }
+        setGoogleLoading(false);
         return;
       }
 
@@ -52,12 +88,12 @@ export default function LoginScreen() {
       if (res.success) {
         setShowDedication(true);
       } else {
-        Alert.alert("Login Failed", res.message);
+        Alert.alert("Login Failed", res.message || "Backend authentication failed.");
       }
     } catch {
       Alert.alert("Error", "Google authentication failed. Please try again.");
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -91,118 +127,147 @@ export default function LoginScreen() {
       <Image source={bgImg} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
-          {/* Hero medallion */}
-          <View style={styles.hero}>
-            <View style={styles.medallionWrap}>
-              <View style={[styles.ring, styles.ring3]} />
-              <View style={[styles.ring, styles.ring2]} />
-              <View style={[styles.ring, styles.ring1]} />
-              <View style={styles.medallionInner}>
-                <Image source={medallionImg} style={styles.medallionImg} resizeMode="cover" />
-              </View>
-              <View style={styles.headphoneBadge}>
-                <Headphones size={15} color="#6b5a3e" strokeWidth={1.8} />
-              </View>
-            </View>
-          </View>
-
-          {/* Brand section */}
-          <View style={styles.brand}>
-            <Text style={styles.title}>Krishna Sanjeevani</Text>
-            <Text style={styles.subtitle}>Healing Through Divine Sound</Text>
-            <View style={styles.dividerLine}>
-              <View style={styles.dividerRule} />
-              <Text style={styles.dividerLotus}>🪷</Text>
-              <View style={styles.dividerRule} />
-            </View>
-          </View>
-
-          {/* Description */}
-          <Text style={styles.description}>
-            Therapeutic ragas & surāvalis, sequenced by therapists for stress relief, sleep, focus,
-            and pregnancy wellbeing.
-          </Text>
-
-          {/* Primary CTA */}
-          <Pressable
-            onPress={() => router.push("/register")}
-            style={({ pressed }) => [
-              styles.primaryBtn,
-              pressed && styles.pressed,
-            ]}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <Music size={16} color="#D4A84B" strokeWidth={2} />
-            <Text style={styles.primaryBtnText}>Get Started</Text>
-          </Pressable>
+            {/* Opaque Warm Card Container */}
+            <View style={styles.card}>
 
-          {/* Secondary buttons */}
-          <View style={styles.btnRow}>
-            <Pressable
-              onPress={() => router.push("/login")}
-              style={({ pressed }) => [
-                styles.secondaryBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              <User size={13} color="#6b5a3e" strokeWidth={2} />
-              <Text style={styles.secondaryBtnText}>Sign in</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.push("/register")}
-              style={({ pressed }) => [
-                styles.secondaryBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              <UserPlus size={13} color="#6b5a3e" strokeWidth={2} />
-              <Text style={styles.secondaryBtnText}>Create account</Text>
-            </Pressable>
-          </View>
-
-          {/* Flute divider */}
-          <View style={styles.fluteDivider}>
-            <View style={styles.dividerRule} />
-            <Text style={styles.fluteEmoji}>🪈🦚</Text>
-            <View style={styles.dividerRule} />
-          </View>
-
-          {/* Social login buttons */}
-          <View style={styles.socialGroup}>
-            <Pressable
-              onPress={handleGoogleLogin}
-              disabled={loading}
-              style={({ pressed }) => [
-                styles.socialBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              <View style={styles.googleIconCircle}>
-                <Text style={styles.googleG}>G</Text>
+              {/* Top Header */}
+              <View style={styles.header}>
+                <View style={styles.medallionWrap}>
+                  <Image source={medallionImg} style={styles.medallionImg} resizeMode="cover" />
+                </View>
+                <View style={styles.headerTextWrap}>
+                  <Text style={styles.brandTitle}>Krishna Sanjeevni</Text>
+                  <Text style={styles.title}>Welcome Back</Text>
+                  <Text style={styles.subtitle}>Sign in to your listening path</Text>
+                </View>
               </View>
-              <Text style={styles.socialBtnText}>Continue with Google</Text>
-            </Pressable>
 
-            <Pressable
-              onPress={() => Alert.alert("Apple Sign-In", "Coming soon.")}
-              style={({ pressed }) => [
-                styles.socialBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={styles.appleIcon}></Text>
-              <Text style={styles.socialBtnText}>Continue with Apple</Text>
-            </Pressable>
-          </View>
+              <View style={styles.dividerLine}>
+                <View style={styles.dividerRule} />
+                <Text style={styles.dividerLotus}>🪷</Text>
+                <View style={styles.dividerRule} />
+              </View>
 
-          {/* Legal text */}
-          <Text style={styles.legal}>
-            By continuing you agree to our{" "}
-            <Text style={styles.legalLink}>Terms</Text> and{" "}
-            <Text style={styles.legalLink}>Privacy Policy</Text>.
-          </Text>
-        </View>
+              {/* Login Form */}
+              <View style={styles.form}>
+                {/* Email */}
+                <View style={styles.field}>
+                  <Text style={styles.label}>EMAIL ADDRESS</Text>
+                  <View style={styles.inputWrap}>
+                    <Mail size={16} color="#8A7455" strokeWidth={2} style={styles.inputIcon} />
+                    <TextInput
+                      value={email}
+                      onChangeText={setEmail}
+                      placeholder="your.email@example.com"
+                      placeholderTextColor="rgba(90, 74, 48, 0.45)"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      style={styles.input}
+                    />
+                  </View>
+                </View>
+
+                {/* Password */}
+                <View style={styles.field}>
+                  <Text style={styles.label}>PASSWORD</Text>
+                  <View style={styles.inputWrap}>
+                    <Lock size={16} color="#8A7455" strokeWidth={2} style={styles.inputIcon} />
+                    <TextInput
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholder="Enter your password"
+                      placeholderTextColor="rgba(90, 74, 48, 0.45)"
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      style={styles.input}
+                    />
+                    <Pressable
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.eyeIconWrap}
+                      hitSlop={10}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={18} color="#8A7455" strokeWidth={2} />
+                      ) : (
+                        <Eye size={18} color="#8A7455" strokeWidth={2} />
+                      )}
+                    </Pressable>
+                  </View>
+                </View>
+
+                {/* Submit Button */}
+                <Pressable
+                  onPress={handleEmailLogin}
+                  disabled={loading || googleLoading}
+                  style={({ pressed }) => [
+                    styles.submitBtn,
+                    (pressed || loading) && styles.pressed,
+                    loading && styles.btnDisabled,
+                  ]}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#F2EDE0" size="small" />
+                  ) : (
+                    <>
+                      <LogIn size={18} color="#D4A84B" strokeWidth={2} />
+                      <Text style={styles.submitText}>Sign In</Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+
+              {/* Flute divider */}
+              <View style={styles.fluteDivider}>
+                <View style={styles.dividerRule} />
+                <Text style={styles.fluteEmoji}>🪈🦚</Text>
+                <View style={styles.dividerRule} />
+              </View>
+
+              {/* Social login buttons */}
+              <View style={styles.socialGroup}>
+                <Pressable
+                  onPress={handleGoogleLogin}
+                  disabled={googleLoading || loading}
+                  style={({ pressed }) => [
+                    styles.socialBtn,
+                    (pressed || googleLoading) && styles.pressed,
+                    googleLoading && styles.btnDisabled,
+                  ]}
+                >
+                  {googleLoading ? (
+                    <ActivityIndicator size="small" color="#4285F4" />
+                  ) : (
+                    <View style={styles.googleIconCircle}>
+                      <Text style={styles.googleG}>G</Text>
+                    </View>
+                  )}
+                  <Text style={styles.socialBtnText}>
+                    {googleLoading ? "Signing in…" : "Continue with Google"}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Toggle to Register */}
+              <View style={styles.footerWrap}>
+                <Text style={styles.footerText}>Don't have an account? </Text>
+                <Pressable onPress={() => router.push("/register")}>
+                  <Text style={styles.footerLink}>Create Account</Text>
+                </Pressable>
+              </View>
+
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -216,92 +281,77 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  content: {
+  keyboardView: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    maxWidth: 400,
-    alignSelf: "center",
-    width: "100%",
   },
-  hero: {
-    alignItems: "center",
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 24,
+  },
+  card: {
+    width: "100%",
+    maxWidth: 390,
+    backgroundColor: "rgba(255, 253, 247, 0.92)",
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "rgba(201, 168, 76, 0.55)",
+    paddingHorizontal: 22,
+    paddingVertical: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 4,
   },
   medallionWrap: {
-    position: "relative",
-    width: SCREEN_HEIGHT < 680 ? 110 : 135,
-    height: SCREEN_HEIGHT < 680 ? 110 : 135,
-  },
-  ring: {
-    position: "absolute",
-    borderRadius: 999,
-  },
-  ring1: {
-    top: 0, left: 0, right: 0, bottom: 0,
-    borderWidth: 1.5,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 2,
     borderColor: "rgba(201, 168, 76, 0.7)",
-  },
-  ring2: {
-    top: -6, left: -6, right: -6, bottom: -6,
-    borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.35)",
-  },
-  ring3: {
-    top: -12, left: -12, right: -12, bottom: -12,
-    borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.18)",
-  },
-  medallionInner: {
-    position: "absolute",
-    top: 4, left: 4, right: 4, bottom: 4,
-    borderRadius: 999,
     overflow: "hidden",
-    backgroundColor: "#faf4e6",
+    backgroundColor: "#FAF4E6",
   },
   medallionImg: {
     width: "100%",
     height: "100%",
-    borderRadius: 999,
   },
-  headphoneBadge: {
-    position: "absolute",
-    top: -3,
-    right: -8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(250, 248, 244, 0.95)",
-    borderWidth: 1.5,
-    borderColor: "rgba(201, 168, 76, 0.55)",
-    alignItems: "center",
-    justifyContent: "center",
+  headerTextWrap: {
+    flex: 1,
   },
-  brand: {
-    alignItems: "center",
-    marginVertical: 4,
+  brandTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2,
+    color: "#8B6914",
+    textTransform: "uppercase",
   },
   title: {
-    fontSize: SCREEN_HEIGHT < 680 ? 22 : 26,
-    fontWeight: "600",
+    fontSize: 22,
+    fontWeight: "700",
     color: "#1A3323",
-    letterSpacing: 0.2,
-    textAlign: "center",
     fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
+    marginTop: 1,
   },
   subtitle: {
-    fontSize: SCREEN_HEIGHT < 680 ? 13 : 15,
+    fontSize: 13,
     fontStyle: "italic",
-    color: "#8B6914",
-    marginTop: 2,
-    marginBottom: 6,
+    color: "#6B5A3E",
     fontFamily: Platform.OS === "ios" ? "Georgia" : "serif",
   },
   dividerLine: {
     flexDirection: "row",
     alignItems: "center",
-    width: 180,
+    marginVertical: 14,
   },
   dividerRule: {
     flex: 1,
@@ -310,88 +360,90 @@ const styles = StyleSheet.create({
   },
   dividerLotus: {
     fontSize: 12,
-    marginHorizontal: 6,
+    marginHorizontal: 8,
   },
-  description: {
-    fontSize: SCREEN_HEIGHT < 680 ? 12 : 13,
-    lineHeight: 18,
-    color: "#3A2C18",
-    textAlign: "center",
-    maxWidth: 290,
-    marginVertical: 8,
-    opacity: 0.88,
-  },
-  primaryBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
+  form: {
     width: "100%",
-    maxWidth: 340,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: "#1A3323",
+    gap: 14,
+  },
+  field: {
+    gap: 6,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    color: "#5A4A30",
+  },
+  inputWrap: {
+    position: "relative",
+    justifyContent: "center",
+  },
+  inputIcon: {
+    position: "absolute",
+    left: 12,
+    zIndex: 1,
+  },
+  eyeIconWrap: {
+    position: "absolute",
+    right: 12,
+    zIndex: 1,
+    padding: 6,
+  },
+  input: {
+    width: "100%",
+    height: 48,
+    paddingLeft: 40,
+    paddingRight: 44,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: "rgba(201, 168, 76, 0.45)",
-    marginTop: 4,
+    backgroundColor: "#FAF8F4",
+    fontSize: 14,
+    color: "#1A1208",
   },
-  primaryBtnText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#F2EDE0",
-    letterSpacing: 0.2,
-  },
-  btnRow: {
-    flexDirection: "row",
-    gap: 9,
-    width: "100%",
-    maxWidth: 340,
-    marginTop: 8,
-  },
-  secondaryBtn: {
-    flex: 1,
+  submitBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 5,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "rgba(250, 248, 242, 0.75)",
+    gap: 8,
+    width: "100%",
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#1A3323",
     borderWidth: 1.5,
-    borderColor: "rgba(201, 168, 76, 0.48)",
+    borderColor: "rgba(201, 168, 76, 0.5)",
+    marginTop: 4,
   },
-  secondaryBtnText: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#261E0E",
+  submitText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#F2EDE0",
+    letterSpacing: 0.3,
   },
   fluteDivider: {
     flexDirection: "row",
     alignItems: "center",
-    width: "100%",
-    maxWidth: 340,
-    marginVertical: 8,
+    marginVertical: 16,
   },
   fluteEmoji: {
     fontSize: 14,
-    marginHorizontal: 6,
+    marginHorizontal: 8,
   },
   socialGroup: {
     width: "100%",
-    maxWidth: 340,
-    gap: 8,
   },
   socialBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 9,
+    gap: 10,
     width: "100%",
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(250, 248, 242, 0.85)",
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
-    borderColor: "rgba(201, 168, 76, 0.42)",
+    borderColor: "rgba(201, 168, 76, 0.45)",
   },
   socialBtnText: {
     fontSize: 14,
@@ -399,37 +451,40 @@ const styles = StyleSheet.create({
     color: "#1A1208",
   },
   googleIconCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: "#4285F4",
     alignItems: "center",
     justifyContent: "center",
   },
   googleG: {
     color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 12,
+  },
+  footerWrap: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 18,
+  },
+  footerText: {
+    fontSize: 13,
+    color: "#5A4A30",
+  },
+  footerLink: {
+    fontSize: 13,
+    color: "#1A3323",
     fontWeight: "700",
-    fontSize: 11,
-  },
-  appleIcon: {
-    fontSize: 18,
-    color: "#1A1208",
-  },
-  legal: {
-    fontSize: 11,
-    color: "rgba(58, 44, 24, 0.62)",
-    textAlign: "center",
-    marginTop: 10,
-    maxWidth: 270,
-  },
-  legalLink: {
-    fontWeight: "500",
-    color: "rgba(58, 44, 24, 0.85)",
     textDecorationLine: "underline",
   },
   pressed: {
     opacity: 0.88,
     transform: [{ scale: 0.98 }],
+  },
+  btnDisabled: {
+    opacity: 0.65,
   },
   dedicationContainer: {
     flex: 1,
