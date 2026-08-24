@@ -100,6 +100,7 @@ function Home() {
         </div>
       </AppShell>
     );
+  }
   return (
     <AppShell>
       {/* Hero Section: Pregnancy Specific vs. General */}
