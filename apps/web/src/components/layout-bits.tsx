@@ -39,11 +39,7 @@ export function Section({
             {hint ?? "See all"} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         ) : (
-          hint && (
-            <span className="shrink-0 text-xs font-medium text-muted-foreground">
-              {hint}
-            </span>
-          )
+          hint && <span className="shrink-0 text-xs font-medium text-muted-foreground">{hint}</span>
         )}
       </div>
       {children}
@@ -82,10 +78,7 @@ export function Panel({
 }) {
   return (
     <section
-      className={cn(
-        "rounded-card border border-border bg-surface p-6 shadow-soft",
-        className,
-      )}
+      className={cn("rounded-card border border-border bg-surface p-6 shadow-soft", className)}
     >
       {(title || action) && (
         <div className="mb-5 flex items-center justify-between gap-4">

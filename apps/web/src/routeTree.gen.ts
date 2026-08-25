@@ -21,6 +21,7 @@ import { Route as InspirationRouteImport } from './routes/inspiration'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as OriginRouteImport } from './routes/origin'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -94,6 +95,11 @@ const LoginRoute = LoginRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OriginRoute = OriginRouteImport.update({
+  id: '/origin',
+  path: '/origin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayerRoute = PlayerRouteImport.update({
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
+  '/origin': typeof OriginRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
+  '/origin': typeof OriginRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
+  '/origin': typeof OriginRoute
   '/player': typeof PlayerRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/journey'
     | '/login'
     | '/notifications'
+    | '/origin'
     | '/player'
     | '/privacy'
     | '/profile'
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/journey'
     | '/login'
     | '/notifications'
+    | '/origin'
     | '/player'
     | '/privacy'
     | '/profile'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/journey'
     | '/login'
     | '/notifications'
+    | '/origin'
     | '/player'
     | '/privacy'
     | '/profile'
@@ -352,6 +364,7 @@ export interface RootRouteChildren {
   JourneyRoute: typeof JourneyRoute
   LoginRoute: typeof LoginRoute
   NotificationsRoute: typeof NotificationsRoute
+  OriginRoute: typeof OriginRoute
   PlayerRoute: typeof PlayerRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/origin': {
+      id: '/origin'
+      path: '/origin'
+      fullPath: '/origin'
+      preLoaderRoute: typeof OriginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player': {
@@ -568,6 +588,7 @@ const rootRouteChildren: RootRouteChildren = {
   JourneyRoute: JourneyRoute,
   LoginRoute: LoginRoute,
   NotificationsRoute: NotificationsRoute,
+  OriginRoute: OriginRoute,
   PlayerRoute: PlayerRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,

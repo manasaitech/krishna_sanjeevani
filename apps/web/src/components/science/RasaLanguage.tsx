@@ -23,8 +23,9 @@ export function RasaLanguage() {
 
           <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans">
             In Nāṭyaśāstra and classical musicology, emotional experiences are transmuted into
-            relishable aesthetic essences (<span className="text-cat font-serif italic">Rasas</span>).
-            Ayurvedic therapy identifies five primary Rasas as directly applicable to therapeutic sound.
+            relishable aesthetic essences (<span className="text-cat font-serif italic">Rasas</span>
+            ). Ayurvedic therapy identifies five primary Rasas as directly applicable to therapeutic
+            sound.
           </p>
         </div>
 
@@ -64,7 +65,8 @@ export function RasaLanguage() {
               </div>
 
               <h3 className="text-2xl sm:text-4xl font-bold font-serif text-foreground mt-1">
-                {activeRasa.name} <span className="font-serif text-2xl text-cat">({activeRasa.sanskrit})</span>
+                {activeRasa.name}{" "}
+                <span className="font-serif text-2xl text-cat">({activeRasa.sanskrit})</span>
               </h3>
 
               <p className="text-sm sm:text-base font-serif italic text-muted-foreground mt-0.5">
@@ -74,7 +76,14 @@ export function RasaLanguage() {
 
             <div className="inline-flex items-center gap-1.5 rounded-full bg-cat-light px-4 py-1.5 text-xs font-semibold text-cat self-start md:self-auto">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Target: {activeRasa.id === "karuna" ? "Vāta / Pitta" : activeRasa.id === "kapha" ? "Kapha" : "Tridoṣa"}</span>
+              <span>
+                Target:{" "}
+                {activeRasa.id === "karuna"
+                  ? "Vāta / Pitta"
+                  : activeRasa.id === "kapha"
+                    ? "Kapha"
+                    : "Tridoṣa"}
+              </span>
             </div>
           </div>
 

@@ -93,7 +93,8 @@ export const THERAPEUTIC_RASAS: RasaDetail[] = [
     therapeuticEffect:
       "Quiets sensory turbulence, stabilizes neural oscillations, and dissolves psychological agitation into profound contemplative stillness.",
     doshaTarget: "Universally balancing for Tridoṣa aggravation; ideal for profound stress relief.",
-    musicalAttributes: "Even melodic contours, prolonged fundamental notes (Vādin), meditative tempo (Vilambit Laya).",
+    musicalAttributes:
+      "Even melodic contours, prolonged fundamental notes (Vādin), meditative tempo (Vilambit Laya).",
     note: "The primary foundational state for spiritual self-realization and restorative cellular recovery.",
   },
   {
@@ -104,8 +105,10 @@ export const THERAPEUTIC_RASAS: RasaDetail[] = [
     gunaProfile: "Sāttvic-Rājasic",
     therapeuticEffect:
       "Evokes delicate emotional warmth, sensory refinement, and gentle kinetic movement to dissolve stagnant emotional holding.",
-    doshaTarget: "Therapeutically appropriate for heavy, sluggish Kapha; less suited for inflamed Pitta.",
-    musicalAttributes: "Lyrical microtonal glides (Meend), ornamental swaras (Gamaka), uplifting morning/evening ragas.",
+    doshaTarget:
+      "Therapeutically appropriate for heavy, sluggish Kapha; less suited for inflamed Pitta.",
+    musicalAttributes:
+      "Lyrical microtonal glides (Meend), ornamental swaras (Gamaka), uplifting morning/evening ragas.",
     note: "Transmutes mundane desire into refined devotional affection and creative vitality.",
   },
   {
@@ -116,8 +119,10 @@ export const THERAPEUTIC_RASAS: RasaDetail[] = [
     gunaProfile: "Sāttvic-Tāmasic (Grounding Stillness)",
     therapeuticEffect:
       "Provides profound emotional grounding; draws excessive heat and frantic movement downward into peaceful acceptance.",
-    doshaTarget: "Highly recommended for aggravated Vāta (air) and Pitta (bile) to counteract heat and restlessness.",
-    musicalAttributes: "Flattened microtones (Komal Gandhar, Komal Dhaivat), evocative pauses, deep resonant acoustic decay.",
+    doshaTarget:
+      "Highly recommended for aggravated Vāta (air) and Pitta (bile) to counteract heat and restlessness.",
+    musicalAttributes:
+      "Flattened microtones (Komal Gandhar, Komal Dhaivat), evocative pauses, deep resonant acoustic decay.",
     note: "Fosters involuntary psycho-somatic release (tears, sigh of relief) that purifies pent-up emotional toxicity.",
   },
   {
@@ -128,8 +133,10 @@ export const THERAPEUTIC_RASAS: RasaDetail[] = [
     gunaProfile: "Pure Sāttvic",
     therapeuticEffect:
       "Expands cognitive horizons, interrupts repetitive anxiety loops, and attunes consciousness to the vastness of the Divine.",
-    doshaTarget: "Universally balancing across all three Doṣas, especially when mental fixedness is present.",
-    musicalAttributes: "Ascending phrases (Arohana) that leap octaves, unexpected harmonious transitions, luminous scale notes.",
+    doshaTarget:
+      "Universally balancing across all three Doṣas, especially when mental fixedness is present.",
+    musicalAttributes:
+      "Ascending phrases (Arohana) that leap octaves, unexpected harmonious transitions, luminous scale notes.",
     note: "Elevates ordinary perception into transcendental appreciation of cosmic order.",
   },
   {
@@ -141,7 +148,8 @@ export const THERAPEUTIC_RASAS: RasaDetail[] = [
     therapeuticEffect:
       "Infuses confidence, resilience, and righteous focus; eliminates lethargy, defeatism, and psycho-physical inertia.",
     doshaTarget: "Potently invigorates Kapha (sluggishness) and revives depleted mental strength.",
-    musicalAttributes: "Rhythmic precision (Drut Laya), prominent fifth (Pancham), assertive ascending sequences.",
+    musicalAttributes:
+      "Rhythmic precision (Drut Laya), prominent fifth (Pancham), assertive ascending sequences.",
     note: "Awakens the soul's dormant spiritual energy to overcome existential difficulties.",
   },
 ];
@@ -178,7 +186,8 @@ export const DOSHAS_DATA: DoshaDetail[] = [
     sanskrit: "वात",
     elements: "Air & Ether (Vāyu + Ākāśa)",
     inherentGunas: "Rājasic-Sāttvic (Mobile, Dry, Subtle, Cold)",
-    aggravationSigns: "Mental anxiety, erratic restlessness, insomnia, somatic tension, digestive variability.",
+    aggravationSigns:
+      "Mental anxiety, erratic restlessness, insomnia, somatic tension, digestive variability.",
     balancingPrinciple: "Opposites balance: Warm, grounding, slow, cohesive stillness.",
     recommendedRasas: ["Karuṇa (Pathos)", "Śānta (Peace)"],
     contraindicatedRasas: ["Śṛṅgāra (Erotic)", "Vīra (Heroic)"],
@@ -191,7 +200,8 @@ export const DOSHAS_DATA: DoshaDetail[] = [
     sanskrit: "पित्त",
     elements: "Fire & Water (Tejas + Jala)",
     inherentGunas: "Rājasic-Sāttvic (Hot, Sharp, Light, Intense)",
-    aggravationSigns: "Irritability, inflammatory stress, hyper-acidity, intense perfectionism, somatic heat.",
+    aggravationSigns:
+      "Irritability, inflammatory stress, hyper-acidity, intense perfectionism, somatic heat.",
     balancingPrinciple: "Opposites balance: Cooling, gentle, pacifying, non-combative harmonies.",
     recommendedRasas: ["Karuṇa (Compassion)", "Śānta (Tranquility)"],
     contraindicatedRasas: ["Vīra (Aggressive/Heroic)", "Raudra (Fury)"],
@@ -204,7 +214,8 @@ export const DOSHAS_DATA: DoshaDetail[] = [
     sanskrit: "कफ",
     elements: "Earth & Water (Pṛthvī + Jala)",
     inherentGunas: "Tāmasic-Sāttvic (Heavy, Slow, Cold, Dense)",
-    aggravationSigns: "Lethargy, depression, cognitive fog, lymphatic congestion, attachment, sluggishness.",
+    aggravationSigns:
+      "Lethargy, depression, cognitive fog, lymphatic congestion, attachment, sluggishness.",
     balancingPrinciple: "Opposites balance: Uplifting, dynamic, stimulating, rhythmic vibrancy.",
     recommendedRasas: ["Śṛṅgāra (Romantic/Joyful)", "Vīra (Heroic/Energizing)"],
     contraindicatedRasas: ["Deep Tāmasic drones without tempo", "Heavy mournful sorrow"],
@@ -231,12 +242,14 @@ export const GANDHARVA_MURCHANA_MODEL = {
     {
       step: "1. Somatic Assessment",
       label: "Identify Aggravated Doṣa",
-      detail: "Determining whether Vāta (kinetic), Pitta (thermal), or Kapha (inertial) requires pacification.",
+      detail:
+        "Determining whether Vāta (kinetic), Pitta (thermal), or Kapha (inertial) requires pacification.",
     },
     {
       step: "2. Guna Profiling",
       label: "Determine Opposing Guna",
-      detail: "Applying Sāmānya-Viśeṣa Siddhānta: selecting the quality profile that neutralizes the excess.",
+      detail:
+        "Applying Sāmānya-Viśeṣa Siddhānta: selecting the quality profile that neutralizes the excess.",
     },
     {
       step: "3. Rasa Selection",
@@ -246,12 +259,14 @@ export const GANDHARVA_MURCHANA_MODEL = {
     {
       step: "4. Mūrcchanā & Vādin",
       label: "Calibrate Raga & Scale",
-      detail: "Selecting a modal scale whose predominant note (Vādin) and microtonal intervals induce the targeted affective state.",
+      detail:
+        "Selecting a modal scale whose predominant note (Vādin) and microtonal intervals induce the targeted affective state.",
     },
     {
       step: "5. Realignment",
       label: "Conscious Equilibrium",
-      detail: "The listener actively experiences aesthetic relish, illuminating Sattva and restoring holistic balance.",
+      detail:
+        "The listener actively experiences aesthetic relish, illuminating Sattva and restoring holistic balance.",
     },
   ],
 };

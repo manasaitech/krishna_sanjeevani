@@ -6,9 +6,7 @@ export function StatusBar() {
 
   useEffect(() => {
     const tick = () =>
-      setTime(
-        new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-      );
+      setTime(new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
     tick();
     const id = window.setInterval(tick, 30_000);
     return () => window.clearInterval(id);

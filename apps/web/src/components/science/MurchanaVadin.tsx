@@ -27,8 +27,9 @@ export function MurchanaVadin() {
 
           <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans">
             Ancient Indian music therapy was based on structured modal systems (
-            <strong className="text-foreground">mūrcchanā</strong>) rather than isolated single-note renditions.
-            Each complete scale was defined by the predominance of a particular note (<strong className="text-foreground">vādin</strong>).
+            <strong className="text-foreground">mūrcchanā</strong>) rather than isolated single-note
+            renditions. Each complete scale was defined by the predominance of a particular note (
+            <strong className="text-foreground">vādin</strong>).
           </p>
         </div>
 
@@ -43,9 +44,10 @@ export function MurchanaVadin() {
                 Mūrcchanā & Vādin Predominance
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-sans">
-                Because each predominant note (Vādin) and its microtonal intervals embody a characteristic
-                composition of Sattva, Rajas, and Tamas, the choice of Mūrcchanā can be guided by the
-                Ayurvedic principle of opposites to counteract an aggravated bodily humor.
+                Because each predominant note (Vādin) and its microtonal intervals embody a
+                characteristic composition of Sattva, Rajas, and Tamas, the choice of Mūrcchanā can
+                be guided by the Ayurvedic principle of opposites to counteract an aggravated bodily
+                humor.
               </p>
 
               <div className="p-4 rounded-xl bg-background border border-border/80 text-xs font-serif italic text-cat">

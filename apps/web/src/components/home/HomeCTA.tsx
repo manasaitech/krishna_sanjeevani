@@ -25,8 +25,8 @@ export function HomeCTA() {
         </p>
 
         <p className="mt-4 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed font-sans">
-          Immerse yourself in authentic Indian classical ragas, devotional kīrtanas, and
-          Ayurvedic sound therapy designed to cultivate Sattva and inner stillness.
+          Immerse yourself in authentic Indian classical ragas, devotional kīrtanas, and Ayurvedic
+          sound therapy designed to cultivate Sattva and inner stillness.
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

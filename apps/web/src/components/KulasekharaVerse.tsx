@@ -11,21 +11,29 @@ interface Verse {
 const VERSES: Verse[] = [
   {
     verseNo: 24,
-    sanskrit: "व्यामोहप्रशमौषधं मुनिमनोवृत्तिप्रवृत्त्यौषधं\nदैत्येन्द्रार्तिकरौषधं त्रिजगतां सञ्जीवनैकौषधम् ।\nभक्ताभीष्टकरौषधं भवभयप्रध्वंसनैकौषधं\nश्रेयःप्राप्तिकरौषधं पिब मनः श्रीकृष्णदिव्यौषधम् ॥",
-    transliteration: "vyāmoha-praśamauṣadhaṁ muni-mano-vṛtti-pravṛtty-auṣadhaṁ\ndaityendrārtti-karauṣadhaṁ tri-jagatāṁ sañjīvanaikauṣadham |\nbhaktābhīṣṭa-karauṣadhaṁ bhava-bhaya-pradhvaṁsanaikauṣadhaṁ\nśreyaḥ-prāpti-karauṣadhaṁ piba manaḥ śrī-kṛṣṇa-divyauṣadham ||",
-    translation: "The medicine to cure delusion, the medicine to inspire the minds of sages, the life-giving medicine for the three worlds, the medicine that destroys worldly fear — O mind, drink the divine medicine of Sri Krishna!",
+    sanskrit:
+      "व्यामोहप्रशमौषधं मुनिमनोवृत्तिप्रवृत्त्यौषधं\nदैत्येन्द्रार्तिकरौषधं त्रिजगतां सञ्जीवनैकौषधम् ।\nभक्ताभीष्टकरौषधं भवभयप्रध्वंसनैकौषधं\nश्रेयःप्राप्तिकरौषधं पिब मनः श्रीकृष्णदिव्यौषधम् ॥",
+    transliteration:
+      "vyāmoha-praśamauṣadhaṁ muni-mano-vṛtti-pravṛtty-auṣadhaṁ\ndaityendrārtti-karauṣadhaṁ tri-jagatāṁ sañjīvanaikauṣadham |\nbhaktābhīṣṭa-karauṣadhaṁ bhava-bhaya-pradhvaṁsanaikauṣadhaṁ\nśreyaḥ-prāpti-karauṣadhaṁ piba manaḥ śrī-kṛṣṇa-divyauṣadham ||",
+    translation:
+      "The medicine to cure delusion, the medicine to inspire the minds of sages, the life-giving medicine for the three worlds, the medicine that destroys worldly fear — O mind, drink the divine medicine of Sri Krishna!",
   },
   {
     verseNo: 1,
     sanskrit: "घुष्यते यस्य नगरे रङ्गयात्रा दिने दिने ।\nतमहं शिरसा वन्दे राजानं कुलशेखरम् ॥",
-    transliteration: "ghuṣyate yasya nagare raṅga-yātrā dine dine |\ntam ahaṁ śirasā vande rājānaṁ kulaśekharam ||",
-    translation: "I bow my head to King Kulasekhara, in whose capital city the festival of the pilgrimage to Sri Ranga is proclaimed day after day.",
+    transliteration:
+      "ghuṣyate yasya nagare raṅga-yātrā dine dine |\ntam ahaṁ śirasā vande rājānaṁ kulaśekharam ||",
+    translation:
+      "I bow my head to King Kulasekhara, in whose capital city the festival of the pilgrimage to Sri Ranga is proclaimed day after day.",
   },
   {
     verseNo: 33,
-    sanskrit: "कृष्ण त्वदीयपदपङ्कजपञ्जरान्तम्\nअद्यैव मे विशतु मानसराजहंसः ।\nप्राणप्रयाणसमये कफवातपित्तैः\nकण्ठावरोधनविधौ स्मरणं कुतस्ते ॥",
-    transliteration: "kṛṣṇa tvadīya-pada-paṅkaja-pañjarāntam\nadyaiva me viśatu mānasa-rāja-haṁsaḥ |\nprāṇa-prayāṇa-samaye kapha-vāta-pittaiḥ\nkaṇṭhāvarodhana-vidhau smaraṇaṁ kutas te ||",
-    translation: "O Lord Krishna, let the royal swan of my mind enter today into the enclosure of Your lotus feet, lest at the time of death my throat is choked by bodily humors and I fail to remember You.",
+    sanskrit:
+      "कृष्ण त्वदीयपदपङ्कजपञ्जरान्तम्\nअद्यैव मे विशतु मानसराजहंसः ।\nप्राणप्रयाणसमये कफवातपित्तैः\nकण्ठावरोधनविधौ स्मरणं कुतस्ते ॥",
+    transliteration:
+      "kṛṣṇa tvadīya-pada-paṅkaja-pañjarāntam\nadyaiva me viśatu mānasa-rāja-haṁsaḥ |\nprāṇa-prayāṇa-samaye kapha-vāta-pittaiḥ\nkaṇṭhāvarodhana-vidhau smaraṇaṁ kutas te ||",
+    translation:
+      "O Lord Krishna, let the royal swan of my mind enter today into the enclosure of Your lotus feet, lest at the time of death my throat is choked by bodily humors and I fail to remember You.",
   },
 ];
 

@@ -25,10 +25,10 @@ import { toast } from "sonner";
 import { MockPaymentModal } from "@/components/discover/MockPaymentModal";
 
 export const Route = createFileRoute("/discover")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { search?: string | undefined; tab?: "ailments" | "pregnancy" | "corporate" | undefined } => {
     return {
-      search: (search.search as string) || undefined,
-      tab: (search.tab as "ailments" | "pregnancy" | "corporate") || undefined,
+      search: (search['search'] as string) || undefined,
+      tab: (search['tab'] as "ailments" | "pregnancy" | "corporate") || undefined,
     };
   },
   head: () => ({
@@ -173,7 +173,7 @@ function DiscoverPage() {
 
       if (user) {
         const subRes = await api.discover.listSubscriptions();
-        if (subRes.success) {
+        if (subRes.success && subRes.data) {
           setSubscriptions(subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now()));
         }
       }

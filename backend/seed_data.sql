@@ -40,7 +40,7 @@ INSERT INTO ailments (id, name, created_at, updated_at) VALUES ('ail_6327644f-04
 INSERT INTO ailments (id, name, created_at, updated_at) VALUES ('ail_ff2d7ec8-1021-5e31-8238-c0ebba2f8300', 'Lower back apin', 1787227689921, 1787227689921);
 INSERT INTO ailments (id, name, created_at, updated_at) VALUES ('ail_d31d90d1-5490-51ca-9e12-7c54df4b4fcd', 'Memory loss', 1787227689921, 1787227689921);
 INSERT INTO ailments (id, name, created_at, updated_at) VALUES ('ail_f379fe46-52ec-5e14-9af3-8dcfb4c33e2f', 'Migraine', 1787227689921, 1787227689921);
-INSERT INTO ailments (id, name, created_at, updated_at) VALUES ('ail_0b8127c7-6374-529d-bd07-ba4ca377f981', 'Name of Disorder', 1787227689921, 1787227689921);
+
 INSERT INTO ailments (id, name, created_at, updated_at) VALUES ('ail_536caaa7-7d81-5758-828c-e1a11462f5a9', 'Neck fixing', 1787227689921, 1787227689921);
 INSERT INTO ailments (id, name, created_at, updated_at) VALUES ('ail_fa294041-0b63-52b5-88ae-c0387168d121', 'Obesity', 1787227689921, 1787227689921);
 INSERT INTO ailments (id, name, created_at, updated_at) VALUES ('ail_d8434f15-564c-571a-89e1-4b107f4051ab', 'Paralysis', 1787227689921, 1787227689921);
@@ -70,7 +70,7 @@ INSERT INTO surawalis (id, name, created_at, updated_at) VALUES ('sur_d7c98509-a
 INSERT INTO surawalis (id, name, created_at, updated_at) VALUES ('sur_b5cd60d9-312a-5aa3-96ba-eb6f0217d7c0', 'Karnawati', 1787227689921, 1787227689921);
 INSERT INTO surawalis (id, name, created_at, updated_at) VALUES ('sur_94a123c7-161a-5293-9379-36f72f77495c', 'Madhuparna', 1787227689921, 1787227689921);
 INSERT INTO surawalis (id, name, created_at, updated_at) VALUES ('sur_9beaed13-bd4a-5c3a-b3bc-3461b1d5e91c', 'Marut', 1787227689921, 1787227689921);
-INSERT INTO surawalis (id, name, created_at, updated_at) VALUES ('sur_4bfa3337-f4f1-5996-8ff4-c223232e179a', 'Name of Surawali', 1787227689921, 1787227689921);
+
 INSERT INTO surawalis (id, name, created_at, updated_at) VALUES ('sur_2eaaa7d7-a034-5c9a-8118-8ff0844985d6', 'Nidra mohini', 1787227689921, 1787227689921);
 INSERT INTO surawalis (id, name, created_at, updated_at) VALUES ('sur_18c57c14-e5ec-5c3f-8b49-92054b343604', 'Pad dukh harini', 1787227689921, 1787227689921);
 INSERT INTO surawalis (id, name, created_at, updated_at) VALUES ('sur_9c310173-44ef-552a-a3ce-7731928d8e99', 'Parjanya', 1787227689921, 1787227689921);
@@ -89,12 +89,12 @@ INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_67350494-5f8
 INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_4b5ed279-6868-5d0a-b0ca-8b7b7293524d', '6 to 9 am', 1787227689921, 1787227689921);
 INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_743f8d1d-7329-54cd-a69d-fc77a03811bc', '6 to 9am', 1787227689921, 1787227689921);
 INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_21204de2-8576-5ad7-9d23-038cac62c682', '8 to 10am', 1787227689921, 1787227689921);
-INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_ec9cbd94-132d-5b7b-88dc-e44e2c598acd', 'Prescribed time for Efficacy (however can be hearded any time of a day)', 1787227689921, 1787227689921);
+
 INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_e162c7a8-8c04-506c-b445-952e82b32c9b', 'after lunch', 1787227689921, 1787227689921);
 INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_52176c2c-8b50-511f-832b-e63453db83f9', 'any time', 1787227689921, 1787227689921);
 INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_8f89e64f-fac6-5268-966f-4ede82d013ca', 'before lunch', 1787227689921, 1787227689921);
 INSERT INTO timings (id, name, created_at, updated_at) VALUES ('tim_6de52d03-0716-52c4-97ea-0466fbee5dfb', 'before sleep', 1787227689921, 1787227689921);
-INSERT INTO ailment_surawalis (id, ailment_id, surawali_id, timing_id, created_at) VALUES ('asm_4e3886e2-5a14-49e5-b6cd-1c2d7b3e8efc', 'ail_0b8127c7-6374-529d-bd07-ba4ca377f981', 'sur_4bfa3337-f4f1-5996-8ff4-c223232e179a', 'tim_ec9cbd94-132d-5b7b-88dc-e44e2c598acd', 1787227689921);
+
 INSERT INTO ailment_surawalis (id, ailment_id, surawali_id, timing_id, created_at) VALUES ('asm_fe0e5375-b2d1-4d1a-a0af-1dedd0bbcb61', 'ail_1b0667a0-8687-5745-b13f-5ecf4dc0b232', 'sur_b719ad07-c4a5-51db-aaa5-48027611b68d', 'tim_e162c7a8-8c04-506c-b445-952e82b32c9b', 1787227689921);
 INSERT INTO ailment_surawalis (id, ailment_id, surawali_id, timing_id, created_at) VALUES ('asm_139b3034-1e79-4d23-a4f5-6f6fabb3bcd7', 'ail_9621233b-e949-5072-a69e-d105dbd7f757', 'sur_2eaaa7d7-a034-5c9a-8118-8ff0844985d6', 'tim_52176c2c-8b50-511f-832b-e63453db83f9', 1787227689921);
 INSERT INTO ailment_surawalis (id, ailment_id, surawali_id, timing_id, created_at) VALUES ('asm_aae15703-7abe-418b-85d1-e454092e53aa', 'ail_6a2d6452-d56b-5062-8737-8a02b6e4817b', 'sur_25aba99d-1a06-5a82-99a7-f283f8d8b972', 'tim_52176c2c-8b50-511f-832b-e63453db83f9', 1787227689921);

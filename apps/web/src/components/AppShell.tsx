@@ -13,13 +13,7 @@ type Props = {
   chrome?: boolean;
 };
 
-export function AppShell({
-  title,
-  subtitle,
-  children,
-  narrow = false,
-  chrome = true,
-}: Props) {
+export function AppShell({ title, subtitle, children, narrow = false, chrome = true }: Props) {
   return (
     <div className="min-h-dvh bg-background">
       {chrome && <AppSidebar />}

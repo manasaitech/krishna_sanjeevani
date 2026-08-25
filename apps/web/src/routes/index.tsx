@@ -7,6 +7,7 @@ import { VersePlayerModal } from "@/components/home/VersePlayerModal";
 import { HomeNavbar } from "@/components/home/HomeNavbar";
 import { HomeHeroCarousel } from "@/components/home/HomeHeroCarousel";
 import { HomeIntro } from "@/components/home/HomeIntro";
+import { SurawaliShowcase } from "@/components/home/SurawaliShowcase";
 import { ImmerseMusicSection } from "@/components/home/ImmerseMusicSection";
 import { MusicMantraStory } from "@/components/home/MusicMantraStory";
 import { ExploreCardsGrid } from "@/components/home/ExploreCardsGrid";
@@ -55,12 +56,7 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-cat-light selection:text-cat flex flex-col">
       {/* 1. 3-Second Cinematic Opening Experience */}
-      {!openingFinished && (
-        <OpeningExperience
-          audio={audio}
-          onComplete={handleOpeningComplete}
-        />
-      )}
+      {!openingFinished && <OpeningExperience audio={audio} onComplete={handleOpeningComplete} />}
 
       {/* 2. Persistent Floating Mini Verse Player (Bottom-Right) */}
       <VerseMiniPlayer audio={audio} />
@@ -89,7 +85,9 @@ function HomePage() {
                     Welcome back, {user.name}! Ready to discover your Surāwali?
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Search from our catalogue of disorders, pregnancy months, and corporate wellness weekdays to subscribe to your personalized therapeutic classical raga frequency plan.
+                    Search from our catalogue of disorders, pregnancy months, and corporate wellness
+                    weekdays to subscribe to your personalized therapeutic classical raga frequency
+                    plan.
                   </p>
                 </div>
                 <div className="shrink-0 w-full md:w-auto flex flex-col sm:flex-row gap-3">
@@ -112,8 +110,10 @@ function HomePage() {
           </section>
         )}
 
-        {/* 6. Introduction to Krishna Sanjeevani */}
-        <HomeIntro />
+
+
+        {/* 6a. Interactive Surāwalis Showcase */}
+        <SurawaliShowcase />
 
         {/* 6b. Immerse into Divine Music Callout (Routes to Login/Register) */}
         <ImmerseMusicSection />
@@ -141,17 +141,22 @@ function HomePage() {
             </h2>
             <div className="max-w-2xl mx-auto space-y-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
               <p>
-                <strong>Application Name:</strong> <span className="text-foreground font-semibold">Krishna Sanjeevani</span>
+                <strong>Application Name:</strong>{" "}
+                <span className="text-foreground font-semibold">Krishna Sanjeevani</span>
               </p>
               <p>
-                <strong>Our Purpose:</strong> Krishna Sanjeevani is a dedicated therapeutic audio streaming application. 
-                We combine the therapeutic science of Indian classical ragas (Sur Sanjeevan) with sacred Sanskrit mantra recitations 
-                to provide acoustic support for stress reduction, mental focus, emotional balance, sleep aid, and pregnancy care.
+                <strong>Our Purpose:</strong> Krishna Sanjeevani is a dedicated therapeutic audio
+                streaming application. We combine the therapeutic science of Indian classical ragas
+                (Sur Sanjeevan) with sacred Sanskrit mantra recitations to provide acoustic support
+                for stress reduction, mental focus, emotional balance, sleep aid, and pregnancy
+                care.
               </p>
               <p>
-                <strong>Secure Authentication (Google OAuth):</strong> Our application supports secure registration and sign-in 
-                via Google accounts. We access only your basic profile information (email and name) to create your personal listening 
-                account, track your session history, maintain your favorite playlists, and ensure a seamless, high-quality audio experience.
+                <strong>Secure Authentication (Google OAuth):</strong> Our application supports
+                secure registration and sign-in via Google accounts. We access only your basic
+                profile information (email and name) to create your personal listening account,
+                track your session history, maintain your favorite playlists, and ensure a seamless,
+                high-quality audio experience.
               </p>
             </div>
           </div>

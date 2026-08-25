@@ -1,13 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Clock, Heart, Lock, Pause, Play, Sparkles } from "lucide-react";
 import { useApp } from "@/lib/app-state";
-import {
-  categories,
-  formatDuration,
-  formatTime,
-  type Program,
-  type Track,
-} from "@/lib/content";
+import { categories, formatDuration, formatTime, type Program, type Track } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 export function CategoryBadge({ id }: { id: Track["category"] }) {
@@ -38,7 +32,15 @@ export function FavoriteButton({ id, className }: { id: string; className?: stri
   );
 }
 
-export function PlayButton({ track, small = false, programId }: { track: Track; small?: boolean; programId?: string | undefined }) {
+export function PlayButton({
+  track,
+  small = false,
+  programId,
+}: {
+  track: Track;
+  small?: boolean;
+  programId?: string | undefined;
+}) {
   const { current, playing, play, toggle } = useApp();
   const isCurrent = current?.id === track.id;
   const isPlaying = isCurrent && playing;
@@ -149,7 +151,15 @@ export function ContinueCard({
   );
 }
 
-export function TrackRow({ track, index, programId }: { track: Track; index?: number; programId?: string | undefined }) {
+export function TrackRow({
+  track,
+  index,
+  programId,
+}: {
+  track: Track;
+  index?: number;
+  programId?: string | undefined;
+}) {
   const { current } = useApp();
   const active = current?.id === track.id;
   return (
@@ -194,13 +204,7 @@ export function TrackRow({ track, index, programId }: { track: Track; index?: nu
   );
 }
 
-export function ProgramCard({
-  program,
-  wide = false,
-}: {
-  program: Program;
-  wide?: boolean;
-}) {
+export function ProgramCard({ program, wide = false }: { program: Program; wide?: boolean }) {
   return (
     <Link
       to="/program/$programId"
@@ -227,9 +231,7 @@ export function ProgramCard({
       </div>
       <div className="p-4">
         <h3 className="truncate text-[15px] font-semibold">{program.title}</h3>
-        <p className="mt-1 truncate text-[12px] text-muted-foreground">
-          {program.subtitle}
-        </p>
+        <p className="mt-1 truncate text-[12px] text-muted-foreground">{program.subtitle}</p>
         <p className="mt-3 text-[12px] font-medium text-muted-foreground">
           {program.sessions} sessions · {program.days} days
         </p>

@@ -8,7 +8,13 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import { type CategoryId, type Track, tracks as staticTracks, programs as staticPrograms, notifications as staticNotifications } from "@/lib/content";
+import {
+  type CategoryId,
+  type Track,
+  tracks as staticTracks,
+  programs as staticPrograms,
+  notifications as staticNotifications,
+} from "@/lib/content";
 import { api, storeTokens, clearTokens, getAccessToken, BASE_URL } from "@/lib/api";
 import Hls from "hls.js";
 
@@ -33,8 +39,16 @@ type AppState = {
   isAuthenticated: boolean;
   authLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
-  loginWithGoogle: (idToken: string, category?: string) => Promise<{ success: boolean; message: string }>;
-  register: (data: { email: string; password: string; fullName: string; category: string }) => Promise<{ success: boolean; message: string }>;
+  loginWithGoogle: (
+    idToken: string,
+    category?: string,
+  ) => Promise<{ success: boolean; message: string }>;
+  register: (data: {
+    email: string;
+    password: string;
+    fullName: string;
+    category: string;
+  }) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
 
@@ -118,15 +132,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [notificationsList, setNotificationsList] = useState(() => [...staticNotifications]);
 
   const markAsRead = useCallback((id: string) => {
-    setNotificationsList((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
-    );
+    setNotificationsList((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
   }, []);
 
   const markAllAsRead = useCallback(() => {
-    setNotificationsList((prev) =>
-      prev.map((n) => ({ ...n, unread: false }))
-    );
+    setNotificationsList((prev) => prev.map((n) => ({ ...n, unread: false })));
   }, []);
 
   const currentRef = useRef<Track | null>(null);
@@ -180,18 +190,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
           // Sync position to D1 on 10s intervals
           const currentTrack = currentRef.current;
-          if (currentTrack) {
+          if (currentTrack && !currentTrack.audioUrl) {
             const posSeconds = Math.round(audio.currentTime);
-            const shouldSync = Math.abs(posSeconds - lastSyncedPosRef.current) >= 10 || progressPercent >= 99;
+            const shouldSync =
+              Math.abs(posSeconds - lastSyncedPosRef.current) >= 10 || progressPercent >= 99;
             if (shouldSync) {
               lastSyncedPosRef.current = posSeconds;
-              api.progress.update(
-                currentTrack.id,
-                posSeconds,
-                Math.round(audio.duration),
-                progressPercent >= 99,
-                currentProgramIdRef.current || undefined
-              ).catch(err => console.warn(err));
+              api.progress
+                .update(
+                  currentTrack.id,
+                  posSeconds,
+                  Math.round(audio.duration),
+                  progressPercent >= 99,
+                  currentProgramIdRef.current || undefined,
+                )
+                .catch((err) => console.warn(err));
             }
           }
         }
@@ -202,14 +215,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       audio.addEventListener("pause", () => {
         setPlaying(false);
         const currentTrack = currentRef.current;
-        if (currentTrack) {
-          api.progress.update(
-            currentTrack.id,
-            Math.round(audio.currentTime),
-            Math.round(audio.duration || currentTrack.duration),
-            false,
-            currentProgramIdRef.current || undefined
-          ).catch(err => console.warn(err));
+        if (currentTrack && !currentTrack.audioUrl) {
+          api.progress
+            .update(
+              currentTrack.id,
+              Math.round(audio.currentTime),
+              Math.round(audio.duration || currentTrack.duration),
+              false,
+              currentProgramIdRef.current || undefined,
+            )
+            .catch((err) => console.warn(err));
         }
       });
     }
@@ -225,7 +240,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         api.programs.list({ category: cat }),
       ]);
       if (tRes.success && tRes.data) {
-        const tList = Array.isArray(tRes.data) ? tRes.data : (tRes.data.data || []);
+        const tList = Array.isArray(tRes.data) ? tRes.data : tRes.data.data || [];
         const mappedTracks = tList.map((t: any) => ({
           ...t,
           art: t.thumbnailKey ? `${BASE_URL}/storage/file/${t.thumbnailKey}` : undefined,
@@ -239,7 +254,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         staticTracks.push(...mappedTracks);
       }
       if (pRes.success && pRes.data) {
-        const pList = Array.isArray(pRes.data) ? pRes.data : (pRes.data.data || []);
+        const pList = Array.isArray(pRes.data) ? pRes.data : pRes.data.data || [];
         const mappedPrograms = pList.map((p: any) => ({
           ...p,
           art: p.thumbnailKey ? `${BASE_URL}/storage/file/${p.thumbnailKey}` : undefined,
@@ -334,29 +349,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const register = useCallback(async (data: { email: string; password: string; fullName: string; category: string }) => {
-    try {
-      const res = await api.post<{
-        user: { id: string; email: string; role: string };
-        tokens: { accessToken: string; refreshToken: string };
-      }>("/auth/register", data);
+  const register = useCallback(
+    async (data: { email: string; password: string; fullName: string; category: string }) => {
+      try {
+        const res = await api.post<{
+          user: { id: string; email: string; role: string };
+          tokens: { accessToken: string; refreshToken: string };
+        }>("/auth/register", data);
 
-      if (res.success && res.data) {
-        storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
-        const me = await api.get<AuthUser>("/auth/me");
-        if (me.success && me.data) {
-          setUser(me.data);
-          if (me.data.profile?.category) {
-            setCategory(me.data.profile.category as CategoryId);
+        if (res.success && res.data) {
+          storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
+          const me = await api.get<AuthUser>("/auth/me");
+          if (me.success && me.data) {
+            setUser(me.data);
+            if (me.data.profile?.category) {
+              setCategory(me.data.profile.category as CategoryId);
+            }
           }
+          return { success: true, message: "Account created successfully" };
         }
-        return { success: true, message: "Account created successfully" };
+        return { success: false, message: res.message || "Registration failed" };
+      } catch {
+        return { success: false, message: "Network error. Please try again." };
       }
-      return { success: false, message: res.message || "Registration failed" };
-    } catch {
-      return { success: false, message: "Network error. Please try again." };
-    }
-  }, []);
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -441,7 +459,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const [histRes, contRes] = await Promise.all([
         api.progress.history(),
-        api.progress.continueListening()
+        api.progress.continueListening(),
       ]);
       if (histRes.success && Array.isArray(histRes.data)) {
         setHistoryList(histRes.data);
@@ -465,172 +483,208 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [user, fetchFavorites, fetchHistoryAndContinueListening]);
 
-  const toggleFavorite = useCallback(async (id: string) => {
-    const isFav = favorites.includes(id);
+  const toggleFavorite = useCallback(
+    async (id: string) => {
+      const isFav = favorites.includes(id);
 
-    // Optimistic UI update
-    setFavorites((prev) =>
-      isFav ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+      // Optimistic UI update
+      setFavorites((prev) => (isFav ? prev.filter((x) => x !== id) : [...prev, id]));
 
-    try {
-      if (isFav) {
-        const res = await api.favorites.remove(id);
-        if (!res.success) throw new Error("API call failed");
-      } else {
-        const res = await api.favorites.add(id, "track");
-        if (!res.success) throw new Error("API call failed");
+      try {
+        if (isFav) {
+          const res = await api.favorites.remove(id);
+          if (!res.success) throw new Error("API call failed");
+        } else {
+          const res = await api.favorites.add(id, "track");
+          if (!res.success) throw new Error("API call failed");
+        }
+        fetchHistoryAndContinueListening();
+      } catch (err) {
+        console.error("Failed to toggle favorite", err);
+        // Revert optimistic update on error
+        setFavorites((prev) => (isFav ? [...prev, id] : prev.filter((x) => x !== id)));
       }
-      fetchHistoryAndContinueListening();
-    } catch (err) {
-      console.error("Failed to toggle favorite", err);
-      // Revert optimistic update on error
-      setFavorites((prev) =>
-        isFav ? [...prev, id] : prev.filter((x) => x !== id)
-      );
-    }
-  }, [favorites, fetchHistoryAndContinueListening]);
+    },
+    [favorites, fetchHistoryAndContinueListening],
+  );
 
-  const play = useCallback(async (t: Track, programId?: string) => {
-    if (typeof window === "undefined") return;
+  const play = useCallback(
+    async (t: Track, programId?: string) => {
+      if (typeof window === "undefined") return;
 
-    const audio = getAudioElement();
-    if (!audio) return;
+      const audio = getAudioElement();
+      if (!audio) return;
 
-    // Reset previous HLS/source
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-    audio.src = "";
-
-    setCurrent(t);
-    setCurrentProgramId(programId ?? null);
-    currentProgramIdRef.current = programId ?? null;
-    setPosition(0);
-    setPlaying(false);
-    audio.setAttribute("data-track-id", t.id);
-    lastSyncedPosRef.current = 0;
-
-    // Get saved position from backend D1
-    let initialPos = 0;
-    try {
-      const progressRes = await api.progress.getTrackProgress(t.id);
-      if (progressRes.success && progressRes.data) {
-        initialPos = progressRes.data.position || 0;
+      // Reset previous HLS/source
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
       }
-    } catch (err) {
-      console.warn("Failed to get track progress", err);
-    }
+      audio.src = "";
 
-    try {
-      // 1. Get playback ticket
-      const res = await api.stream.getTicket(t.id);
-      if (!res.success || !res.data) {
-        throw new Error(res.message || "Failed to get streaming ticket");
+      setCurrent(t);
+      setCurrentProgramId(programId ?? null);
+      currentProgramIdRef.current = programId ?? null;
+      setPosition(0);
+      setPlaying(false);
+      audio.setAttribute("data-track-id", t.id);
+      lastSyncedPosRef.current = 0;
+
+      // Get saved position from backend D1 (skip if playing a direct public URL)
+      let initialPos = 0;
+      if (!t.audioUrl) {
+        try {
+          const progressRes = await api.progress.getTrackProgress(t.id);
+          if (progressRes.success && progressRes.data) {
+            initialPos = progressRes.data.position || 0;
+          }
+        } catch (err) {
+          console.warn("Failed to get track progress", err);
+        }
       }
 
-      const { streamUrl } = res.data;
-      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
-      const absoluteStreamUrl = `${origin}${streamUrl}`;
+      try {
+        let absoluteStreamUrl = "";
+        if (t.audioUrl) {
+          absoluteStreamUrl = t.audioUrl;
+        } else {
+          // 1. Get playback ticket
+          const res = await api.stream.getTicket(t.id);
+          if (!res.success || !res.data) {
+            throw new Error(res.message || "Failed to get streaming ticket");
+          }
 
-      // 2. Play stream using Hls.js or native playback
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hlsRef.current = hls;
-        hls.loadSource(absoluteStreamUrl);
-        hls.attachMedia(audio);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          audio.playbackRate = speed;
-          audio.volume = muted ? 0 : volume / 100;
-          audio.currentTime = initialPos;
-          audio.play()
-            .then(() => setPlaying(true))
-            .catch((err) => console.error("Playback failed to start", err));
-        });
-        hls.on(Hls.Events.ERROR, async (event, data) => {
-          if (data.fatal) {
-            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-              const statusCode = data.response?.code;
-              // If unauthorized or forbidden, the streaming ticket has expired!
-              if (statusCode === 401 || statusCode === 403) {
-                console.log("Stream ticket expired (HTTP " + statusCode + "), renewing ticket...");
-                try {
-                  const currentTrack = currentRef.current;
-                  if (currentTrack) {
-                    const res = await api.stream.getTicket(currentTrack.id);
-                    if (res.success && res.data) {
-                      const { streamUrl } = res.data;
-                      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
-                      const absoluteStreamUrl = `${origin}${streamUrl}`;
-                      
-                      // Save current position before reloading
-                      const currentPos = audio.currentTime;
-                      
-                      hls.loadSource(absoluteStreamUrl);
-                      audio.currentTime = currentPos;
-                      audio.play()
-                        .then(() => setPlaying(true))
-                        .catch(e => console.error(e));
-                      return;
+          const { streamUrl } = res.data;
+          const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
+          absoluteStreamUrl = `${origin}${streamUrl}`;
+        }
+
+        const isM3u8 = absoluteStreamUrl.includes(".m3u8");
+
+        // 2. Play stream using Hls.js or native playback
+        if (isM3u8 && Hls.isSupported()) {
+          const hls = new Hls();
+          hlsRef.current = hls;
+          hls.loadSource(absoluteStreamUrl);
+          hls.attachMedia(audio);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            audio.playbackRate = speed;
+            audio.volume = muted ? 0 : volume / 100;
+            audio.currentTime = initialPos;
+            audio
+              .play()
+              .then(() => setPlaying(true))
+              .catch((err) => console.error("Playback failed to start", err));
+          });
+          hls.on(Hls.Events.ERROR, async (event, data) => {
+            if (data.fatal) {
+              if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                const statusCode = data.response?.code;
+                // If unauthorized or forbidden, the streaming ticket has expired!
+                if (statusCode === 401 || statusCode === 403) {
+                  console.log(
+                    "Stream ticket expired (HTTP " + statusCode + "), renewing ticket...",
+                  );
+                  try {
+                    const currentTrack = currentRef.current;
+                    if (currentTrack && !currentTrack.audioUrl) {
+                      const res = await api.stream.getTicket(currentTrack.id);
+                      if (res.success && res.data) {
+                        const { streamUrl } = res.data;
+                        const origin = BASE_URL.endsWith("/api/v1")
+                          ? BASE_URL.slice(0, -7)
+                          : BASE_URL;
+                        const absoluteStreamUrl = `${origin}${streamUrl}`;
+
+                        // Save current position before reloading
+                        const currentPos = audio.currentTime;
+
+                        hls.loadSource(absoluteStreamUrl);
+                        audio.currentTime = currentPos;
+                        audio
+                          .play()
+                          .then(() => setPlaying(true))
+                          .catch((e) => console.error(e));
+                        return;
+                      }
                     }
+                  } catch (err) {
+                    console.error("Failed to renew stream ticket", err);
                   }
-                } catch (err) {
-                  console.error("Failed to renew stream ticket", err);
                 }
+                hls.startLoad();
+              } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                hls.recoverMediaError();
+              } else {
+                hls.destroy();
+                hlsRef.current = null;
               }
-              hls.startLoad();
-            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-              hls.recoverMediaError();
-            } else {
-              hls.destroy();
-              hlsRef.current = null;
             }
-          }
-        });
-      } else if (audio.canPlayType("application/vnd.apple.mpegurl")) {
-        audio.src = absoluteStreamUrl;
-        audio.addEventListener("canplay", () => {
-          audio.playbackRate = speed;
-          audio.volume = muted ? 0 : volume / 100;
-          audio.currentTime = initialPos;
-          audio.play()
-            .then(() => setPlaying(true))
-            .catch((err) => console.error("Native playback failed to start", err));
-        }, { once: true });
+          });
+        } else if (!isM3u8 || audio.canPlayType("application/vnd.apple.mpegurl")) {
+          // Native MP3/M4A/etc. playback (e.g. direct public URLs or non-HLS safari streams)
+          audio.src = absoluteStreamUrl;
+          audio.addEventListener(
+            "canplay",
+            () => {
+              audio.playbackRate = speed;
+              audio.volume = muted ? 0 : volume / 100;
+              audio.currentTime = initialPos;
+              audio
+                .play()
+                .then(() => setPlaying(true))
+                .catch((err) => console.error("Native playback failed to start", err));
+            },
+            { once: true },
+          );
 
-        audio.addEventListener("error", async () => {
-          const error = audio.error;
-          if (error && (error.code === error.MEDIA_ERR_NETWORK || error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED)) {
-            console.log("Native audio element network error, attempting ticket renewal...");
-            try {
-              const currentTrack = currentRef.current;
-              if (currentTrack) {
-                const res = await api.stream.getTicket(currentTrack.id);
-                if (res.success && res.data) {
-                  const { streamUrl } = res.data;
-                  const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
-                  const absoluteStreamUrl = `${origin}${streamUrl}`;
-                  const currentPos = audio.currentTime;
-                  audio.src = absoluteStreamUrl;
-                  audio.currentTime = currentPos;
-                  audio.play()
-                    .then(() => setPlaying(true))
-                    .catch(e => console.error(e));
+          if (!t.audioUrl) {
+            audio.addEventListener(
+              "error",
+              async () => {
+                const error = audio.error;
+                if (
+                  error &&
+                  (error.code === error.MEDIA_ERR_NETWORK ||
+                    error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED)
+                ) {
+                  console.log("Native audio element network error, attempting ticket renewal...");
+                  try {
+                    const currentTrack = currentRef.current;
+                    if (currentTrack) {
+                      const res = await api.stream.getTicket(currentTrack.id);
+                      if (res.success && res.data) {
+                        const { streamUrl } = res.data;
+                        const origin = BASE_URL.endsWith("/api/v1")
+                          ? BASE_URL.slice(0, -7)
+                          : BASE_URL;
+                        const absoluteStreamUrl = `${origin}${streamUrl}`;
+                        const currentPos = audio.currentTime;
+                        audio.src = absoluteStreamUrl;
+                        audio.currentTime = currentPos;
+                        audio
+                          .play()
+                          .then(() => setPlaying(true))
+                          .catch((e) => console.error(e));
+                      }
+                    }
+                  } catch (err) {
+                    console.error("Failed to renew ticket natively", err);
+                  }
                 }
-              }
-            } catch (err) {
-              console.error("Failed to renew ticket natively", err);
-            }
+              },
+              { once: true },
+            );
           }
-        }, { once: true });
-      } else {
-        console.error("HLS streaming is not supported in this browser");
+        } else {
+          console.error("HLS streaming is not supported in this browser");
+        }
+      } catch (err) {
+        console.error("Failed to load and play HLS track", err);
       }
-    } catch (err) {
-      console.error("Failed to load and play HLS track", err);
-    }
-  }, [getAudioElement, speed, volume, muted]);
+    },
+    [getAudioElement, speed, volume, muted],
+  );
 
   const toggle = useCallback(() => {
     const audio = audioRef.current;
@@ -639,7 +693,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       audio.pause();
       setPlaying(false);
     } else {
-      audio.play()
+      audio
+        .play()
         .then(() => setPlaying(true))
         .catch((err) => console.error("Playback failed to start", err));
     }
@@ -653,14 +708,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const skip = useCallback((delta: number) => {
-    const audio = audioRef.current;
-    if (audio && current) {
-      const newPos = Math.max(0, Math.min(current.duration, audio.currentTime + delta));
-      audio.currentTime = newPos;
-      setPosition(newPos);
-    }
-  }, [current]);
+  const skip = useCallback(
+    (delta: number) => {
+      const audio = audioRef.current;
+      if (audio && current) {
+        const newPos = Math.max(0, Math.min(current.duration, audio.currentTime + delta));
+        audio.currentTime = newPos;
+        setPosition(newPos);
+      }
+    },
+    [current],
+  );
 
   const stop = useCallback(() => {
     const audio = audioRef.current;
@@ -772,14 +830,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (audio) {
           audio.pause();
           const currentTrack = currentRef.current;
-          if (currentTrack) {
-            api.progress.update(
-              currentTrack.id,
-              Math.round(audio.currentTime),
-              Math.round(audio.duration || currentTrack.duration),
-              false,
-              currentProgramIdRef.current || undefined
-            ).catch(err => console.warn(err));
+          if (currentTrack && !currentTrack.audioUrl) {
+            api.progress
+              .update(
+                currentTrack.id,
+                Math.round(audio.currentTime),
+                Math.round(audio.duration || currentTrack.duration),
+                false,
+                currentProgramIdRef.current || undefined,
+              )
+              .catch((err) => console.warn(err));
           }
         }
         setPlaying(false);

@@ -46,7 +46,8 @@ function PrivacyPage() {
               Privacy Policy
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground font-sans max-w-lg mx-auto">
-              Last updated: August 20, 2026. We are committed to safeguarding your personal sanctuary and data.
+              Last updated: August 20, 2026. We are committed to safeguarding your personal
+              sanctuary and data.
             </p>
           </div>
 
@@ -58,21 +59,23 @@ function PrivacyPage() {
                 <span className="text-cat">1.</span> Information We Collect
               </h2>
               <p>
-                To provide a personalized, calm therapeutic listening environment, we collect minimal and 
-                purposeful personal information. This includes:
+                To provide a personalized, calm therapeutic listening environment, we collect
+                minimal and purposeful personal information. This includes:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
                 <li>
-                  <strong>Account Information:</strong> Your name, email address, password, and registration 
-                  preferences (e.g. category interests like sleep, focus, devotional, or pregnancy care).
+                  <strong>Account Information:</strong> Your name, email address, password, and
+                  registration preferences (e.g. category interests like sleep, focus, devotional,
+                  or pregnancy care).
                 </li>
                 <li>
-                  <strong>Listening Behavior:</strong> Track playback history, favorite ragas, and completed 
-                  sessions, which helps compile your personal wellness journey stats.
+                  <strong>Listening Behavior:</strong> Track playback history, favorite ragas, and
+                  completed sessions, which helps compile your personal wellness journey stats.
                 </li>
                 <li>
-                  <strong>Device and Usage Info:</strong> IP address, browser type, operating system, and basic 
-                  interactions to optimize audio streaming quality and prevent service abuse.
+                  <strong>Device and Usage Info:</strong> IP address, browser type, operating
+                  system, and basic interactions to optimize audio streaming quality and prevent
+                  service abuse.
                 </li>
               </ul>
             </section>
@@ -82,14 +85,17 @@ function PrivacyPage() {
               <h2 className="text-lg font-semibold font-serif text-foreground flex items-center gap-2">
                 <span className="text-cat">2.</span> How We Use Your Information
               </h2>
-              <p>
-                We use the collected information strictly to:
-              </p>
+              <p>We use the collected information strictly to:</p>
               <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
                 <li>Deliver uninterrupted, adaptive therapeutic audio streaming.</li>
                 <li>Maintain your personal history, recently played files, and favorites.</li>
-                <li>Analyze aggregate usage patterns to enhance raga quality and curate new playlists.</li>
-                <li>Send account-related notifications, security updates, and voluntary spiritual newsletters.</li>
+                <li>
+                  Analyze aggregate usage patterns to enhance raga quality and curate new playlists.
+                </li>
+                <li>
+                  Send account-related notifications, security updates, and voluntary spiritual
+                  newsletters.
+                </li>
               </ul>
             </section>
 
@@ -99,10 +105,10 @@ function PrivacyPage() {
                 <span className="text-cat">3.</span> Data Sharing & Third Parties
               </h2>
               <p>
-                We value your trust and do not sell, rent, trade, or distribute your personal details to 
-                third-party marketers. We only share information with trusted operational service providers 
-                under strict privacy conditions to process secure payments (like Stripe) and maintain 
-                our cloud hosting infrastructure.
+                We value your trust and do not sell, rent, trade, or distribute your personal
+                details to third-party marketers. We only share information with trusted operational
+                service providers under strict privacy conditions to process secure payments (like
+                Stripe) and maintain our cloud hosting infrastructure.
               </p>
             </section>
 
@@ -112,9 +118,10 @@ function PrivacyPage() {
                 <span className="text-cat">4.</span> Cookies and Tracking
               </h2>
               <p>
-                We utilize essential cookies and secure local storage to keep you logged in and persist your 
-                volume, player settings, and aesthetic preferences. You can disable cookies via your 
-                browser settings, though some streaming features may not function properly.
+                We utilize essential cookies and secure local storage to keep you logged in and
+                persist your volume, player settings, and aesthetic preferences. You can disable
+                cookies via your browser settings, though some streaming features may not function
+                properly.
               </p>
             </section>
 
@@ -124,9 +131,10 @@ function PrivacyPage() {
                 <span className="text-cat">5.</span> Data Security
               </h2>
               <p>
-                We implement robust security measures, including HTTPS encryption (SSL/TLS) for all data 
-                transmissions, to protect your details against unauthorized access, loss, or disclosure. 
-                However, please remember that no transmission method over the internet is 100% secure.
+                We implement robust security measures, including HTTPS encryption (SSL/TLS) for all
+                data transmissions, to protect your details against unauthorized access, loss, or
+                disclosure. However, please remember that no transmission method over the internet
+                is 100% secure.
               </p>
             </section>
 
@@ -136,9 +144,9 @@ function PrivacyPage() {
                 <span className="text-cat">6.</span> Your Rights & Control
               </h2>
               <p>
-                You retain full control over your data. You may access, correct, or permanently delete your 
-                account and personal history at any time by visiting your Profile page or contacting our support 
-                team.
+                You retain full control over your data. You may access, correct, or permanently
+                delete your account and personal history at any time by visiting your Profile page
+                or contacting our support team.
               </p>
             </section>
 
@@ -148,9 +156,9 @@ function PrivacyPage() {
                 <span className="text-cat">7.</span> Children's Privacy
               </h2>
               <p>
-                While the Platform is safe for all ages and features soothing melodies for children's sleep 
-                and pregnancy care, we do not intentionally collect data from children under 13 without parental 
-                consent.
+                While the Platform is safe for all ages and features soothing melodies for
+                children's sleep and pregnancy care, we do not intentionally collect data from
+                children under 13 without parental consent.
               </p>
             </section>
 
@@ -160,8 +168,12 @@ function PrivacyPage() {
                 <span className="text-cat">8.</span> Contact Us
               </h2>
               <p>
-                If you have any questions, concerns, or requests regarding this Privacy Policy or your personal 
-                sanctuary details, please reach out to us at <a href="mailto:support@krishnasanjeevani.com" className="text-cat hover:underline">support@krishnasanjeevani.com</a>.
+                If you have any questions, concerns, or requests regarding this Privacy Policy or
+                your personal sanctuary details, please reach out to us at{" "}
+                <a href="mailto:support@krishnasanjeevani.com" className="text-cat hover:underline">
+                  support@krishnasanjeevani.com
+                </a>
+                .
               </p>
             </section>
 

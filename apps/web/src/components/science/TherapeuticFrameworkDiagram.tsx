@@ -20,8 +20,8 @@ export function TherapeuticFrameworkDiagram() {
           </h2>
 
           <p className="mt-4 text-sm sm:text-base text-muted-foreground font-sans">
-            How somatic assessment, qualitative profiling, aesthetic rasa, and modal scale
-            selection unite into a coherent therapeutic intervention.
+            How somatic assessment, qualitative profiling, aesthetic rasa, and modal scale selection
+            unite into a coherent therapeutic intervention.
           </p>
         </div>
 

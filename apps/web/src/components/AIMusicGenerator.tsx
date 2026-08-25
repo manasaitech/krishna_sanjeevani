@@ -11,9 +11,9 @@ const NOTES = {
   Ga: 329.63,
   ma: 349.23,
   Ma: 369.99, // Teevra Ma
-  Pa: 392.00,
-  dha: 415.30, // Komal Dha
-  Dha: 440.00,
+  Pa: 392.0,
+  dha: 415.3, // Komal Dha
+  Dha: 440.0,
   ni: 466.16, // Komal Ni
   Ni: 493.88,
   Sa_High: 523.25, // Higher Octave Sa
@@ -27,30 +27,41 @@ const RAGAS = {
     name: "Yaman",
     time: "Evening",
     benefit: "Peace & Devotion",
-    scale: [NOTES.Sa, NOTES.Re, NOTES.Ga, NOTES.Ma, NOTES.Pa, NOTES.Dha, NOTES.Ni, NOTES.Sa_High, NOTES.Re_High, NOTES.Ga_High],
-    tanpura: [NOTES.Sa / 2, NOTES.Ni / 2] // Sa and Ni drone
+    scale: [
+      NOTES.Sa,
+      NOTES.Re,
+      NOTES.Ga,
+      NOTES.Ma,
+      NOTES.Pa,
+      NOTES.Dha,
+      NOTES.Ni,
+      NOTES.Sa_High,
+      NOTES.Re_High,
+      NOTES.Ga_High,
+    ],
+    tanpura: [NOTES.Sa / 2, NOTES.Ni / 2], // Sa and Ni drone
   },
   Bhairav: {
     name: "Bhairav",
     time: "Morning",
     benefit: "Focus & Grounding",
     scale: [NOTES.Sa, NOTES.re, NOTES.Ga, NOTES.ma, NOTES.Pa, NOTES.dha, NOTES.Ni, NOTES.Sa_High],
-    tanpura: [NOTES.Sa / 2, NOTES.Pa / 2] // Sa and Pa drone
+    tanpura: [NOTES.Sa / 2, NOTES.Pa / 2], // Sa and Pa drone
   },
   Shivaranjani: {
     name: "Shivaranjani",
     time: "Midnight",
     benefit: "Deep Healing",
     scale: [NOTES.Sa, NOTES.Re, NOTES.ga, NOTES.Pa, NOTES.Dha, NOTES.Sa_High, NOTES.Re_High],
-    tanpura: [NOTES.Sa / 2, NOTES.Pa / 2]
+    tanpura: [NOTES.Sa / 2, NOTES.Pa / 2],
   },
   Malkauns: {
     name: "Malkauns",
     time: "Late Night",
     benefit: "Sleep & Calm",
     scale: [NOTES.Sa, NOTES.ga, NOTES.ma, NOTES.dha, NOTES.ni, NOTES.Sa_High],
-    tanpura: [NOTES.Sa / 2, NOTES.ma / 2] // Sa and Ma drone
-  }
+    tanpura: [NOTES.Sa / 2, NOTES.ma / 2], // Sa and Ma drone
+  },
 };
 
 type RagaKey = keyof typeof RAGAS;
@@ -93,7 +104,7 @@ export function AIMusicGenerator() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       localAnalyser = analyserRef.current; // Re-evaluate ref in loop
-      
+
       if (playStateRef.current && localAnalyser) {
         localAnalyser.getByteTimeDomainData(dataArray);
       }
@@ -192,13 +203,15 @@ export function AIMusicGenerator() {
 
   const startTanpuraDrone = (audioCtx: AudioContext, outputNode: AudioNode) => {
     // Clean existing drone nodes
-    tanpuraNodesRef.current.forEach(node => {
-      try { node.stop(); } catch {}
+    tanpuraNodesRef.current.forEach((node) => {
+      try {
+        node.stop();
+      } catch {}
     });
     tanpuraNodesRef.current = [];
 
     const raga = RAGAS[activeRaga];
-    
+
     // Create 2 drone notes (Tonic Sa and Pa/Ma/Ni)
     raga.tanpura.forEach((freq, idx) => {
       const osc = audioCtx.createOscillator();
@@ -250,7 +263,10 @@ export function AIMusicGenerator() {
       }
     } else {
       // Occasional random jump to neighbor notes
-      noteIndex = Math.max(0, Math.min(scale.length - 1, noteIndex + (Math.random() > 0.5 ? 2 : -2)));
+      noteIndex = Math.max(
+        0,
+        Math.min(scale.length - 1, noteIndex + (Math.random() > 0.5 ? 2 : -2)),
+      );
     }
 
     const freq = scale[noteIndex];
@@ -258,7 +274,8 @@ export function AIMusicGenerator() {
 
     // Calculate delay based on tempo slider
     // tempo = 40 (Mid), interval = 60000 / 80 = 750ms
-    const intervalMs = (60000 / (tempo * 2)) * (mood === "Calm" ? 1.5 : mood === "Meditative" ? 2.0 : 1.0);
+    const intervalMs =
+      (60000 / (tempo * 2)) * (mood === "Calm" ? 1.5 : mood === "Meditative" ? 2.0 : 1.0);
 
     sequenceTimerRef.current = window.setTimeout(() => {
       scheduleNextNote();
@@ -275,7 +292,7 @@ export function AIMusicGenerator() {
     const lfo = audioCtx.createOscillator();
     const lfoGain = audioCtx.createGain();
     lfo.frequency.setValueAtTime(6.5, audioCtx.currentTime); // 6.5 Hz vibrato
-    lfoGain.gain.setValueAtTime(3.5, audioCtx.currentTime);  // Pitch variation width
+    lfoGain.gain.setValueAtTime(3.5, audioCtx.currentTime); // Pitch variation width
     lfo.connect(lfoGain);
     lfoGain.connect(osc.frequency);
     lfo.start();
@@ -292,16 +309,16 @@ export function AIMusicGenerator() {
 
     delay.delayTime.setValueAtTime(0.45, audioCtx.currentTime); // 450ms delay
     delayGain.gain.setValueAtTime(0.18, audioCtx.currentTime); // Echo volume
-    feedback.gain.setValueAtTime(0.35, audioCtx.currentTime);  // Echo feedback tail
+    feedback.gain.setValueAtTime(0.35, audioCtx.currentTime); // Echo feedback tail
 
     // 4. Amplitude Envelope
     const ampEnv = audioCtx.createGain();
     const now = audioCtx.currentTime;
-    
+
     // Slow Attack: mimics gentle breath on flute
     ampEnv.gain.setValueAtTime(0, now);
     ampEnv.gain.linearRampToValueAtTime(0.22, now + 0.15); // Ramp up to volume
-    
+
     // Slow Decay/Sustain/Release
     ampEnv.gain.setValueAtTime(0.22, now + 0.35);
     ampEnv.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
@@ -336,13 +353,15 @@ export function AIMusicGenerator() {
     }
 
     // Stop Tanpura Drone
-    tanpuraNodesRef.current.forEach(node => {
-      try { node.stop(); } catch {}
+    tanpuraNodesRef.current.forEach((node) => {
+      try {
+        node.stop();
+      } catch {}
     });
     tanpuraNodesRef.current = [];
 
     // Stop and clean up active note nodes
-    activeNodesRef.current.forEach(node => {
+    activeNodesRef.current.forEach((node) => {
       try {
         if (node instanceof OscillatorNode) {
           node.stop();
@@ -372,7 +391,6 @@ export function AIMusicGenerator() {
 
   return (
     <div className="flex flex-col w-full max-w-[420px] mx-auto bg-surface rounded-sheet border border-border p-6 shadow-lift text-foreground">
-      
       {/* Bot Header */}
       <div className="flex items-center gap-3.5 mb-6">
         <div className="relative flex items-center justify-center w-11 h-11 rounded-full bg-cat-light border border-cat/30">
@@ -383,9 +401,7 @@ export function AIMusicGenerator() {
           <h3 className="text-sm font-semibold tracking-wider uppercase text-cat font-sans">
             AI Music Studio
           </h3>
-          <p className="text-[11px] text-muted-foreground">
-            Procedural Raga Improviser
-          </p>
+          <p className="text-[11px] text-muted-foreground">Procedural Raga Improviser</p>
         </div>
         {isPlaying && (
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cat-light border border-cat/30">
@@ -398,10 +414,10 @@ export function AIMusicGenerator() {
       {/* Visualizer Display Panel */}
       <div className="relative h-28 w-full bg-background rounded-btn border border-border flex items-center justify-center overflow-hidden mb-6">
         {/* Canvas visualizer */}
-        <canvas 
-          ref={canvasRef} 
-          width={370} 
-          height={112} 
+        <canvas
+          ref={canvasRef}
+          width={370}
+          height={112}
           className="absolute inset-0 w-full h-full"
         />
 
@@ -446,7 +462,6 @@ export function AIMusicGenerator() {
 
       {/* Sliders Area */}
       <div className="flex flex-col gap-4 mb-6 text-left">
-        
         {/* Tempo Slider */}
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
@@ -518,7 +533,6 @@ export function AIMusicGenerator() {
           <Download className="w-3.5 h-3.5" /> Download
         </button>
       </div>
-      
     </div>
   );
 }

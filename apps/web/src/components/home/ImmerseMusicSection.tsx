@@ -24,7 +24,10 @@ export function ImmerseMusicSection() {
             </h2>
 
             <p className="mt-4 text-base sm:text-lg text-muted-foreground font-serif leading-relaxed max-w-2xl">
-              Step into an elevated auditory journey rooted in the 9th-century Mukundamālā Stotra of King Kulasekhara Alvar. Discover restorative classical ragas, microtonal swaras, and guided soundscapes designed for mental stillness, stress relief, and spiritual wellbeing.
+              Step into an elevated auditory journey rooted in the 9th-century Mukundamālā Stotra of
+              King Kulasekhara Alvar. Discover restorative classical ragas, microtonal swaras, and
+              guided soundscapes designed for mental stillness, stress relief, and spiritual
+              wellbeing.
             </p>
 
             {/* Action Buttons Routing to Login and Signup */}

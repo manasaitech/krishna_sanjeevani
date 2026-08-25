@@ -7,6 +7,7 @@ import { VersePlayerModal } from "@/components/home/VersePlayerModal";
 import { HomeNavbar } from "@/components/home/HomeNavbar";
 import { HomeHeroCarousel } from "@/components/home/HomeHeroCarousel";
 import { HomeIntro } from "@/components/home/HomeIntro";
+import { SurawaliShowcase } from "@/components/home/SurawaliShowcase";
 import { ImmerseMusicSection } from "@/components/home/ImmerseMusicSection";
 import { MusicMantraStory } from "@/components/home/MusicMantraStory";
 import { ExploreCardsGrid } from "@/components/home/ExploreCardsGrid";
@@ -76,7 +77,7 @@ function HomePage() {
                     <span>Personalized Sound Healing</span>
                   </div>
                   <h3 className="font-display font-bold text-2xl sm:text-3xl text-foreground">
-                    Welcome back, {user.name}! Ready to discover your Surāwali?
+                    {user.profile?.fullName ? `Welcome back, ${user.profile.fullName}!` : "Welcome back!"} Ready to discover your Surāwali?
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Search from our catalogue of disorders, pregnancy months, and corporate wellness weekdays to subscribe to your personalized therapeutic classical raga frequency plan.
@@ -104,6 +105,9 @@ function HomePage() {
 
         {/* 6. Introduction to Krishna Sanjeevani */}
         <HomeIntro />
+
+        {/* 6a. Interactive Surāwalis Showcase */}
+        <SurawaliShowcase />
 
         {/* 6b. Immerse into Divine Music Callout (Routes to Login/Register) */}
         <ImmerseMusicSection />

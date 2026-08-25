@@ -16,6 +16,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider, useApp } from "../lib/app-state";
 import { Toaster } from "../components/ui/sonner";
 import { queryClient } from "../router";
+import { AuthModalProvider } from "../hooks/useAuthModal";
+import { AuthFloatingPopup } from "../components/AuthFloatingPopup";
+import { AuthModal } from "../components/AuthModal";
 
 function NotFoundComponent() {
   return (
@@ -89,8 +92,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:title", content: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
       { name: "twitter:title", content: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
-      { property: "og:description", content: "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care." },
-      { name: "twitter:description", content: "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care." },
+      {
+        property: "og:description",
+        content:
+          "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care.",
+      },
       { property: "og:image", content: "https://krishnasanjeevani.com/logo.png" },
       { name: "twitter:image", content: "https://krishnasanjeevani.com/logo.png" },
     ],
@@ -140,6 +151,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
       "/vedic-science",
       "/inspiration",
       "/the-beginning",
+      "/origin",
       "/about",
       "/team",
       "/terms",
@@ -158,7 +170,9 @@ function RouteGuard({ children }: { children: ReactNode }) {
       <div className="grid min-h-dvh place-items-center bg-background">
         <div className="flex flex-col items-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-cat-light border-t-cat" />
-          <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">Restoring calm...</p>
+          <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">
+            Restoring calm...
+          </p>
         </div>
       </div>
     );
@@ -171,11 +185,15 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        <RouteGuard>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </RouteGuard>
-        <Toaster />
+        <AuthModalProvider>
+          <RouteGuard>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </RouteGuard>
+          <AuthFloatingPopup />
+          <AuthModal />
+          <Toaster />
+        </AuthModalProvider>
       </AppProvider>
     </QueryClientProvider>
   );

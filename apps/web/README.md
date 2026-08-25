@@ -36,11 +36,11 @@ The interface must feel:
 
 Avoid flashy gradients, loud colors, glassmorphism everywhere, neon colors, or gaming UI.
 
------------------------------------
+---
 
 DESIGN SYSTEM
 
------------------------------------
+---
 
 Use an 8px spacing system.
 
@@ -108,11 +108,11 @@ Expandable mini player.
 
 Beautiful page transitions.
 
------------------------------------
+---
 
 COLOR SYSTEM
 
------------------------------------
+---
 
 Background
 
@@ -154,11 +154,11 @@ Error
 
 #DC2626
 
------------------------------------
+---
 
 CATEGORY COLORS
 
------------------------------------
+---
 
 Devotional
 
@@ -174,7 +174,7 @@ Accent Gold
 
 #C9A227
 
------------------------------------
+---
 
 Secular
 
@@ -186,7 +186,7 @@ Light
 
 #DFF5F2
 
------------------------------------
+---
 
 Pregnancy
 
@@ -198,11 +198,11 @@ Light
 
 #FCEEF1
 
------------------------------------
+---
 
 GENERAL PRINCIPLES
 
------------------------------------
+---
 
 There should NOT be three separate apps.
 
@@ -220,11 +220,11 @@ Avoid clutter.
 
 The app should immediately communicate trust.
 
------------------------------------
+---
 
 APPLICATION STRUCTURE
 
------------------------------------
+---
 
 Create ALL screens with production quality.
 
@@ -246,13 +246,13 @@ Every screen should include:
 
 • Bottom Navigation when applicable
 
------------------------------------
+---
 
 SCREEN 1
 
 Splash Screen
 
------------------------------------
+---
 
 Elegant logo centered.
 
@@ -262,13 +262,13 @@ Tiny loading animation.
 
 Premium typography.
 
------------------------------------
+---
 
 SCREEN 2
 
 Welcome
 
------------------------------------
+---
 
 Illustration.
 
@@ -286,13 +286,13 @@ Continue with Apple
 
 Privacy policy.
 
------------------------------------
+---
 
 SCREEN 3
 
 Category Selection
 
------------------------------------
+---
 
 Three beautiful premium cards.
 
@@ -306,7 +306,7 @@ Description:
 
 Traditional Krishna Sanjeevani healing.
 
------------------------------------
+---
 
 Secular & Corporate
 
@@ -316,7 +316,7 @@ Description:
 
 Stress reduction, productivity, emotional wellness.
 
------------------------------------
+---
 
 Pregnancy
 
@@ -330,13 +330,13 @@ Beautiful card hover animations.
 
 Selecting a card changes application theme.
 
------------------------------------
+---
 
 SCREEN 4
 
 Home
 
------------------------------------
+---
 
 Greeting
 
@@ -400,13 +400,13 @@ Play Button
 
 Modern card design.
 
------------------------------------
+---
 
 SCREEN 5
 
 Search
 
------------------------------------
+---
 
 Beautiful search interface.
 
@@ -422,13 +422,13 @@ Suggested programs.
 
 Animated search.
 
------------------------------------
+---
 
 SCREEN 6
 
 Player
 
------------------------------------
+---
 
 Most important screen.
 
@@ -478,13 +478,13 @@ Only streaming.
 
 Mini player remains persistent across application.
 
------------------------------------
+---
 
 SCREEN 7
 
 Program Details
 
------------------------------------
+---
 
 Large hero banner.
 
@@ -502,13 +502,13 @@ Play Program.
 
 Save Program.
 
------------------------------------
+---
 
 SCREEN 8
 
 Pregnancy Dashboard
 
------------------------------------
+---
 
 Beautiful timeline.
 
@@ -526,13 +526,13 @@ Baby Wellness Tips.
 
 Doctor Note section.
 
------------------------------------
+---
 
 SCREEN 9
 
 Favorites
 
------------------------------------
+---
 
 Saved tracks.
 
@@ -540,13 +540,13 @@ Saved programs.
 
 Continue Listening.
 
------------------------------------
+---
 
 SCREEN 10
 
 Profile
 
------------------------------------
+---
 
 User avatar.
 
@@ -568,13 +568,13 @@ Help.
 
 Logout.
 
------------------------------------
+---
 
 SCREEN 11
 
 Subscription
 
------------------------------------
+---
 
 Beautiful pricing cards.
 
@@ -590,13 +590,13 @@ Feature comparison.
 
 Purchase button.
 
------------------------------------
+---
 
 SCREEN 12
 
 Notifications
 
------------------------------------
+---
 
 Today's reminder.
 
@@ -606,13 +606,13 @@ New tracks.
 
 Program updates.
 
------------------------------------
+---
 
 SCREEN 13
 
 Session Completed
 
------------------------------------
+---
 
 Beautiful celebration.
 
@@ -630,11 +630,11 @@ Mood selection.
 
 Optional notes.
 
------------------------------------
+---
 
 ADMIN DASHBOARD
 
------------------------------------
+---
 
 Desktop-first.
 
@@ -698,11 +698,11 @@ Pagination.
 
 Search.
 
------------------------------------
+---
 
 RESPONSIVE DESIGN
 
------------------------------------
+---
 
 Design for
 
@@ -718,11 +718,11 @@ Responsive navigation.
 
 Responsive typography.
 
------------------------------------
+---
 
 ACCESSIBILITY
 
------------------------------------
+---
 
 WCAG AA
 
@@ -736,11 +736,11 @@ Keyboard navigation.
 
 Screen reader friendly.
 
------------------------------------
+---
 
 DESIGN QUALITY
 
------------------------------------
+---
 
 This should look like a premium application from a funded startup.
 

@@ -31,7 +31,7 @@ export const Route = createFileRoute("/program/$programId")({
       days: p.trackCount ? Math.ceil(p.trackCount / 2) : 7,
       benefits: p.benefits || [],
       usage: p.usage || "Listen once daily with focus.",
-      trackIds: tracksData.map((t: any) => t.id)
+      trackIds: tracksData.map((t: any) => t.id),
     };
 
     const mappedTracks = tracksData.map((t: any) => ({
@@ -75,7 +75,10 @@ export const Route = createFileRoute("/program/$programId")({
 });
 
 function ProgramDetails() {
-  const { program, tracks: programTracks } = Route.useLoaderData() as { program: Program; tracks: Track[] };
+  const { program, tracks: programTracks } = Route.useLoaderData() as {
+    program: Program;
+    tracks: Track[];
+  };
   const { savedPrograms, toggleSavedProgram, play } = useApp();
   const saved = savedPrograms.includes(program.id);
   const list = programTracks;

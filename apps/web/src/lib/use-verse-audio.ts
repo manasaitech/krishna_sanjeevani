@@ -1,5 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
-import { KULASEKHARA_VERSE } from "./home-data";
+import { KULASEKHARA_VERSE, CHAITANYA_SIKSASTAKAM, prabhupadaImg } from "./home-data";
+import { BASE_URL } from "./api";
+
+export interface VerseTrack {
+  id: string;
+  title: string;
+  artist: string;
+  audioPath: string;
+  image: string;
+}
 
 export interface VerseAudioState {
   isPlaying: boolean;
@@ -18,7 +27,35 @@ export interface VerseAudioState {
   setVolume: (val: number) => void;
   setIsModalOpen: (open: boolean) => void;
   setIsMiniPlayerVisible: (visible: boolean) => void;
+  currentTrackId: string;
+  playTrack: (trackId: string) => void;
+  nextTrack: () => void;
+  previousTrack: () => void;
 }
+
+export const VERSE_TRACKS: VerseTrack[] = [
+  {
+    id: "kulasekhara",
+    title: "Mukundamālā Stotra — Verse 24",
+    artist: "King Kulasekhara Alvar",
+    audioPath: KULASEKHARA_VERSE.audioPath,
+    image: KULASEKHARA_VERSE.image,
+  },
+  {
+    id: "chaitanya",
+    title: "Śrī Śikṣāṣṭakam — Verse 1",
+    artist: "Śrī Caitanya Mahāprabhu",
+    audioPath: "/audio/chaitanya-verse.mp3",
+    image: CHAITANYA_SIKSASTAKAM.image,
+  },
+  {
+    id: "mahamantra",
+    title: "Hare Krishna Mahamantra",
+    artist: "Srila Prabhupada Legacy",
+    audioPath: "/audio/hare-krishna-mahamantra.mp3",
+    image: prabhupadaImg,
+  },
+];
 
 // Shared Global Audio instance and state
 let globalAudio: HTMLAudioElement | null = null;
@@ -32,6 +69,7 @@ let globalIsModalOpen = false;
 let globalIsMiniPlayerVisible = true;
 let globalIsLoaded = false;
 let globalIsSimulated = false;
+let globalCurrentTrackId = "kulasekhara";
 
 // Active hook listeners to trigger re-renders
 const listeners = new Set<() => void>();
@@ -44,7 +82,9 @@ function initGlobalAudio() {
   if (typeof window === "undefined" || globalAudio) return;
 
   const audio = new Audio();
-  audio.src = KULASEKHARA_VERSE.audioPath;
+  const activeTrack = VERSE_TRACKS.find((t) => t.id === globalCurrentTrackId) || VERSE_TRACKS[0];
+  if (!activeTrack) return;
+  audio.src = activeTrack.audioPath;
   audio.preload = "auto";
   audio.volume = globalVolume;
   audio.loop = false;
@@ -74,6 +114,7 @@ function initGlobalAudio() {
   const onEnded = () => {
     globalIsPlaying = false;
     globalCurrentTime = 0;
+    globalIsMiniPlayerVisible = false;
     emitUpdate();
   };
 
@@ -88,7 +129,7 @@ function initGlobalAudio() {
   audio.addEventListener("timeupdate", onTimeUpdate);
   audio.addEventListener("ended", onEnded);
   audio.addEventListener("error", onError);
-  
+
   audio.load();
 }
 
@@ -109,6 +150,7 @@ export function useVerseAudio(): VerseAudioState {
         if (globalCurrentTime >= globalDuration) {
           globalIsPlaying = false;
           globalCurrentTime = 0;
+          globalIsMiniPlayerVisible = false;
         }
         emitUpdate();
       }, 1000);
@@ -196,6 +238,52 @@ export function useVerseAudio(): VerseAudioState {
     emitUpdate();
   }, []);
 
+  const playTrack = useCallback((trackId: string) => {
+    initGlobalAudio();
+    globalCurrentTrackId = trackId;
+    const activeTrack = VERSE_TRACKS.find((t) => t.id === trackId) || VERSE_TRACKS[0];
+    if (!activeTrack) return;
+    if (globalAudio) {
+      globalAudio.pause();
+      globalAudio.src = activeTrack.audioPath;
+      globalAudio.load();
+      globalCurrentTime = 0;
+      globalIsLoaded = false;
+      const playPromise = globalAudio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            globalIsPlaying = true;
+            globalAutoplayBlocked = false;
+            emitUpdate();
+          })
+          .catch((err) => {
+            console.error(err);
+            globalIsPlaying = false;
+            emitUpdate();
+          });
+      }
+    }
+  }, []);
+
+  const nextTrack = useCallback(() => {
+    const idx = VERSE_TRACKS.findIndex((t) => t.id === globalCurrentTrackId);
+    const nextIdx = (idx + 1) % VERSE_TRACKS.length;
+    const nextTrackItem = VERSE_TRACKS[nextIdx];
+    if (nextTrackItem) {
+      playTrack(nextTrackItem.id);
+    }
+  }, [playTrack]);
+
+  const previousTrack = useCallback(() => {
+    const idx = VERSE_TRACKS.findIndex((t) => t.id === globalCurrentTrackId);
+    const prevIdx = (idx - 1 + VERSE_TRACKS.length) % VERSE_TRACKS.length;
+    const prevTrackItem = VERSE_TRACKS[prevIdx];
+    if (prevTrackItem) {
+      playTrack(prevTrackItem.id);
+    }
+  }, [playTrack]);
+
   return {
     isPlaying: globalIsPlaying,
     currentTime: globalCurrentTime,
@@ -213,5 +301,9 @@ export function useVerseAudio(): VerseAudioState {
     setVolume,
     setIsModalOpen,
     setIsMiniPlayerVisible,
+    currentTrackId: globalCurrentTrackId,
+    playTrack,
+    nextTrack,
+    previousTrack,
   };
 }

@@ -12,8 +12,7 @@ export const Route = createFileRoute("/subscription")({
       { title: "Plans — Krishna Sanjeevani" },
       {
         name: "description",
-        content:
-          "Free, Standard and Premium Care plans for therapeutic raga streaming.",
+        content: "Free, Standard and Premium Care plans for therapeutic raga streaming.",
       },
       { property: "og:title", content: "Plans — Krishna Sanjeevani" },
       { property: "og:description", content: "Choose the plan that fits your practice." },
@@ -126,7 +125,7 @@ function SubscriptionRouteComponent() {
       const res = await api.subscriptions.verifyPayment(
         checkoutOrder.orderId,
         `pay_${crypto.randomUUID()}`,
-        signature
+        signature,
       );
       if (res.success && res.data?.success) {
         setCheckoutStatus("success");
@@ -157,11 +156,11 @@ function SubscriptionRouteComponent() {
     return `₹${Math.round(priceCents / 100)}`;
   };
 
-  const isSubscribed = currentSub && currentSub.status === "active" && currentSub.currentPeriodEnd > Date.now();
+  const isSubscribed =
+    currentSub && currentSub.status === "active" && currentSub.currentPeriodEnd > Date.now();
 
   return (
     <AppShell title="Plans" subtitle="Unlock complete therapeutic access">
-      
       {/* Current Subscription Status Header */}
       <div className="animate-rise mb-8 rounded-card border border-border bg-surface p-5 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -171,7 +170,8 @@ function SubscriptionRouteComponent() {
           <h2 className="text-lg font-semibold mt-2.5">
             {isSubscribed ? (
               <span className="text-green-600 flex items-center gap-1.5">
-                Active {plans.find(p => p.id === currentSub.planId)?.name || currentSub.planId} Tier
+                Active {plans.find((p) => p.id === currentSub.planId)?.name || currentSub.planId}{" "}
+                Tier
               </span>
             ) : (
               <span className="text-muted-foreground">Free Tier Account</span>
@@ -193,7 +193,8 @@ function SubscriptionRouteComponent() {
       <div className="mt-2 grid gap-6 sm:grid-cols-3">
         {plans.map((p) => {
           const active = selectedPlan === p.id;
-          const isCurrentPlan = (isSubscribed && currentSub.planId === p.id) || (!isSubscribed && p.id === "free");
+          const isCurrentPlan =
+            (isSubscribed && currentSub.planId === p.id) || (!isSubscribed && p.id === "free");
           const features = featuresMap[p.id] || [];
 
           return (
@@ -302,7 +303,7 @@ function SubscriptionRouteComponent() {
             {processing ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              `Subscribe to ${plans.find(p => p.id === selectedPlan)?.name}`
+              `Subscribe to ${plans.find((p) => p.id === selectedPlan)?.name}`
             )}
           </button>
           <p className="mt-4 text-center text-[12px] leading-relaxed text-muted-foreground">
@@ -321,7 +322,9 @@ function SubscriptionRouteComponent() {
               </span>
               <div>
                 <h3 className="font-semibold text-base">Development Mode Payment</h3>
-                <p className="text-xs text-muted-foreground">Simulating Razorpay order validation</p>
+                <p className="text-xs text-muted-foreground">
+                  Simulating Razorpay order validation
+                </p>
               </div>
             </div>
 
@@ -336,7 +339,9 @@ function SubscriptionRouteComponent() {
               </div>
               <div className="flex justify-between border-t border-border pt-2 mt-2">
                 <span className="font-semibold">Authoritative Amount</span>
-                <span className="font-semibold tabular-nums text-cat">{formatPrice(checkoutOrder.amount)}</span>
+                <span className="font-semibold tabular-nums text-cat">
+                  {formatPrice(checkoutOrder.amount)}
+                </span>
               </div>
             </div>
 
@@ -347,7 +352,11 @@ function SubscriptionRouteComponent() {
                   disabled={processing}
                   className="w-full min-h-[44px] bg-green-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors"
                 >
-                  {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  {processing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
                   Simulate Success (mock_success)
                 </button>
                 <button
@@ -355,7 +364,11 @@ function SubscriptionRouteComponent() {
                   disabled={processing}
                   className="w-full min-h-[44px] bg-red-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors"
                 >
-                  {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Minus className="h-4 w-4" />}
+                  {processing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Minus className="h-4 w-4" />
+                  )}
                   Simulate Failure (fail)
                 </button>
                 <button
@@ -374,9 +387,14 @@ function SubscriptionRouteComponent() {
                   <Check className="h-6 w-6" />
                 </div>
                 <h4 className="font-semibold text-green-700">Subscription Activated!</h4>
-                <p className="text-xs text-muted-foreground">Your tier has successfully synced in D1.</p>
+                <p className="text-xs text-muted-foreground">
+                  Your tier has successfully synced in D1.
+                </p>
                 <button
-                  onClick={() => { setCheckoutOrder(null); setCheckoutStatus("idle"); }}
+                  onClick={() => {
+                    setCheckoutOrder(null);
+                    setCheckoutStatus("idle");
+                  }}
                   className="w-full min-h-[44px] bg-primary text-primary-foreground rounded-xl font-semibold"
                 >
                   Done
@@ -392,7 +410,10 @@ function SubscriptionRouteComponent() {
                 <h4 className="font-semibold text-red-700">Payment Simulation Failed</h4>
                 {checkoutError && <p className="text-xs text-red-500">{checkoutError}</p>}
                 <button
-                  onClick={() => { setCheckoutStatus("idle"); setCheckoutError(null); }}
+                  onClick={() => {
+                    setCheckoutStatus("idle");
+                    setCheckoutError(null);
+                  }}
                   className="w-full min-h-[44px] bg-muted text-foreground rounded-xl font-semibold"
                 >
                   Retry simulation
@@ -414,11 +435,21 @@ function SubscriptionRouteComponent() {
             <table className="w-full text-left text-[13px]">
               <thead>
                 <tr className="text-[11px] tracking-wider text-muted-foreground bg-cat-light/10 uppercase">
-                  <th scope="col" className="px-5 py-3 font-semibold">Date</th>
-                  <th scope="col" className="px-3 py-3 font-semibold">Transaction ID</th>
-                  <th scope="col" className="px-3 py-3 font-semibold">Tier Plan</th>
-                  <th scope="col" className="px-3 py-3 font-semibold">Amount</th>
-                  <th scope="col" className="px-5 py-3 text-right font-semibold">Status</th>
+                  <th scope="col" className="px-5 py-3 font-semibold">
+                    Date
+                  </th>
+                  <th scope="col" className="px-3 py-3 font-semibold">
+                    Transaction ID
+                  </th>
+                  <th scope="col" className="px-3 py-3 font-semibold">
+                    Tier Plan
+                  </th>
+                  <th scope="col" className="px-3 py-3 font-semibold">
+                    Amount
+                  </th>
+                  <th scope="col" className="px-5 py-3 text-right font-semibold">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -431,20 +462,18 @@ function SubscriptionRouteComponent() {
                     <td className="px-3 py-3.5 text-muted-foreground font-mono text-[11px]">
                       {pay.id}
                     </td>
-                    <td className="px-3 py-3.5 font-semibold capitalize">
-                      {pay.planId}
-                    </td>
-                    <td className="px-3 py-3.5 tabular-nums">
-                      {formatPrice(pay.amount)}
-                    </td>
+                    <td className="px-3 py-3.5 font-semibold capitalize">{pay.planId}</td>
+                    <td className="px-3 py-3.5 tabular-nums">{formatPrice(pay.amount)}</td>
                     <td className="px-5 py-3.5 text-right font-semibold">
-                      <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold ${
-                        pay.status === "completed" 
-                          ? "bg-green-50 text-green-700 border border-green-200" 
-                          : pay.status === "pending"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200"
-                            : "bg-red-50 text-red-700 border border-red-200"
-                      }`}>
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold ${
+                          pay.status === "completed"
+                            ? "bg-green-50 text-green-700 border border-green-200"
+                            : pay.status === "pending"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-red-50 text-red-700 border border-red-200"
+                        }`}
+                      >
                         {pay.status}
                       </span>
                     </td>

@@ -120,9 +120,7 @@ export function HomeHeroCarousel() {
                 key={slide.id}
                 onClick={() => setCurrent(idx)}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  idx === current
-                    ? "w-6 bg-amber-300"
-                    : "w-2 bg-white/40 hover:bg-white/70"
+                  idx === current ? "w-6 bg-amber-300" : "w-2 bg-white/40 hover:bg-white/70"
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />

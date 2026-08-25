@@ -28,9 +28,9 @@ export function DoshaExplorer() {
           </h2>
 
           <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans">
-            Disease manifests from disturbances across mental and bodily domains. By mapping
-            the Guṇa profiles of musical Rasas against somatic humors (Vāta, Pitta, Kapha),
-            classical Ayurveda constructed a rigorous logic of musical selection.
+            Disease manifests from disturbances across mental and bodily domains. By mapping the
+            Guṇa profiles of musical Rasas against somatic humors (Vāta, Pitta, Kapha), classical
+            Ayurveda constructed a rigorous logic of musical selection.
           </p>
         </div>
 
@@ -73,7 +73,9 @@ export function DoshaExplorer() {
 
                 <ArrowRight
                   className={`h-4 w-4 transition-transform ${
-                    isSelected ? "text-cat translate-x-1" : "text-muted-foreground/30 group-hover:translate-x-0.5"
+                    isSelected
+                      ? "text-cat translate-x-1"
+                      : "text-muted-foreground/30 group-hover:translate-x-0.5"
                   }`}
                 />
               </button>

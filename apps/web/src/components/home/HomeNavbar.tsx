@@ -24,6 +24,7 @@ export function HomeNavbar() {
     { label: "Inspiration", to: "/inspiration" },
     { label: "Vedic Science", to: "/vedic-science" },
     { label: "The Beginning", to: "/the-beginning" },
+    { label: "Origin", to: "/origin" },
     { label: "About", to: "/about" },
     { label: "Team", to: "/team" },
   ];
@@ -65,9 +66,7 @@ export function HomeNavbar() {
                 key={link.label}
                 to={link.to as any}
                 className={`text-sm font-medium transition-colors relative py-1 ${
-                  isActive
-                    ? "text-cat font-bold"
-                    : "text-muted-foreground hover:text-foreground"
+                  isActive ? "text-cat font-bold" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {link.label}

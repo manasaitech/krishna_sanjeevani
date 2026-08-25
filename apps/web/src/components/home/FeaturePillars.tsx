@@ -11,7 +11,10 @@ export function FeaturePillars() {
   };
 
   return (
-    <section id="pillars" className="py-20 sm:py-28 bg-background border-b border-border/70 relative">
+    <section
+      id="pillars"
+      className="py-20 sm:py-28 bg-background border-b border-border/70 relative"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -25,8 +28,8 @@ export function FeaturePillars() {
           </h2>
 
           <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans">
-            A synthesis of classical musicology, Vedic philosophy, and Ayurvedic wellness,
-            crafted to restore mental equilibrium and elevate consciousness.
+            A synthesis of classical musicology, Vedic philosophy, and Ayurvedic wellness, crafted
+            to restore mental equilibrium and elevate consciousness.
           </p>
         </div>
 
@@ -44,9 +47,7 @@ export function FeaturePillars() {
                     <div className="h-12 w-12 rounded-2xl bg-cat-light border border-cat/25 flex items-center justify-center text-cat group-hover:scale-105 transition-transform shadow-sm">
                       <IconComponent className="h-6 w-6" />
                     </div>
-                    <span className="text-xs font-serif font-bold text-cat/70">
-                      0{index + 1}
-                    </span>
+                    <span className="text-xs font-serif font-bold text-cat/70">0{index + 1}</span>
                   </div>
 
                   <span className="text-[10px] font-bold uppercase tracking-wider text-cat font-sans block">

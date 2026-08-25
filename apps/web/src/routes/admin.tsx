@@ -109,7 +109,15 @@ const formatDate = (val: any, options?: Intl.DateTimeFormatOptions) => {
 };
 
 function Admin() {
-  const { user, isAuthenticated, authLoading, current: playingTrack, playing: isAudioPlaying, play: playHlsTrack, toggle: toggleHlsPlayback } = useApp();
+  const {
+    user,
+    isAuthenticated,
+    authLoading,
+    current: playingTrack,
+    playing: isAudioPlaying,
+    play: playHlsTrack,
+    toggle: toggleHlsPlayback,
+  } = useApp();
   const [section, setSection] = useState<Section>("overview");
 
   // Filter States for Content CMS
@@ -146,10 +154,10 @@ function Admin() {
   const [progFilterCategory, setProgFilterCategory] = useState<string>("All");
   const [progFilterTier, setProgFilterTier] = useState<string>("All");
   const [progFilterDifficulty, setProgFilterDifficulty] = useState<string>("All");
-  
+
   const [progPage, setProgPage] = useState(1);
   const [progPages, setProgPages] = useState(1);
-  
+
   const [programsList, setProgramsList] = useState<any[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(false);
   const [programStats, setProgramStats] = useState<any>(null);
@@ -168,15 +176,21 @@ function Admin() {
   const [progFormTitle, setProgFormTitle] = useState("");
   const [progFormSubtitle, setProgFormSubtitle] = useState("");
   const [progFormDescription, setProgFormDescription] = useState("");
-  const [progFormCategory, setProgFormCategory] = useState<"devotional" | "secular" | "pregnancy" | "corporate">("devotional");
-  const [progFormDifficulty, setProgFormDifficulty] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [progFormCategory, setProgFormCategory] = useState<
+    "devotional" | "secular" | "pregnancy" | "corporate"
+  >("devotional");
+  const [progFormDifficulty, setProgFormDifficulty] = useState<
+    "beginner" | "intermediate" | "advanced"
+  >("beginner");
   const [progFormTier, setProgFormTier] = useState<"free" | "premium">("free");
   const [progFormLanguage, setProgFormLanguage] = useState("hi");
   const [progFormThumbnailKey, setProgFormThumbnailKey] = useState("");
   const [progFormImageFile, setProgFormImageFile] = useState<File | null>(null);
   const [progFormTracks, setProgFormTracks] = useState<any[]>([]);
   const [progFormSchedules, setProgFormSchedules] = useState<any[]>([]);
-  const [progFormStatus, setProgFormStatus] = useState<"idle" | "uploading_image" | "saving" | "success" | "error">("idle");
+  const [progFormStatus, setProgFormStatus] = useState<
+    "idle" | "uploading_image" | "saving" | "success" | "error"
+  >("idle");
   const [progFormStatusMessage, setProgFormStatusMessage] = useState("");
 
   // Track Selector Modal inside Program Editor
@@ -186,11 +200,12 @@ function Admin() {
   const [allReadyTracks, setAllReadyTracks] = useState<any[]>([]);
   const [loadingReadyTracks, setLoadingReadyTracks] = useState(false);
 
-  const filteredReadyTracks = allReadyTracks.filter(t => 
-    (t.title?.toLowerCase().includes(trackSelectorSearch.toLowerCase()) ||
-     t.artist?.toLowerCase().includes(trackSelectorSearch.toLowerCase()) ||
-     t.category?.toLowerCase().includes(trackSelectorSearch.toLowerCase())) &&
-    !progFormTracks.some(pt => pt.id === t.id)
+  const filteredReadyTracks = allReadyTracks.filter(
+    (t) =>
+      (t.title?.toLowerCase().includes(trackSelectorSearch.toLowerCase()) ||
+        t.artist?.toLowerCase().includes(trackSelectorSearch.toLowerCase()) ||
+        t.category?.toLowerCase().includes(trackSelectorSearch.toLowerCase())) &&
+      !progFormTracks.some((pt) => pt.id === t.id),
   );
 
   // Pregnancy Schedule Editor modal inside Program Editor
@@ -206,7 +221,9 @@ function Admin() {
   const [programToDelete, setProgramToDelete] = useState<any>(null);
   const [showProgDeleteConfirm, setShowProgDeleteConfirm] = useState(false);
   const [showProgUnsavedConfirm, setShowProgUnsavedConfirm] = useState(false);
-  const [progUnsavedConfirmCallback, setProgUnsavedConfirmCallback] = useState<(() => void) | null>(null);
+  const [progUnsavedConfirmCallback, setProgUnsavedConfirmCallback] = useState<(() => void) | null>(
+    null,
+  );
 
   // Overview dashboard data state
   const [overviewData, setOverviewData] = useState<any>(null);
@@ -223,7 +240,9 @@ function Admin() {
   const [formSubtitle, setFormSubtitle] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formArtist, setFormArtist] = useState("");
-  const [formCategory, setFormCategory] = useState<"devotional" | "secular" | "pregnancy">("devotional");
+  const [formCategory, setFormCategory] = useState<"devotional" | "secular" | "pregnancy">(
+    "devotional",
+  );
   const [formLanguage, setFormLanguage] = useState("hi");
   const [formTier, setFormTier] = useState<"free" | "premium">("free");
   const [formSelectedTags, setFormSelectedTags] = useState<string[]>([]);
@@ -232,7 +251,13 @@ function Admin() {
 
   // Transcoding Status State inside Form
   const [formStatus, setFormStatus] = useState<
-    "idle" | "uploading_image" | "creating_metadata" | "uploading_audio" | "transcoding" | "success" | "error"
+    | "idle"
+    | "uploading_image"
+    | "creating_metadata"
+    | "uploading_audio"
+    | "transcoding"
+    | "success"
+    | "error"
   >("idle");
   const [formStatusMessage, setFormStatusMessage] = useState("");
 
@@ -254,7 +279,12 @@ function Admin() {
   const [userFilterTier, setUserFilterTier] = useState("All");
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingUserStats, setLoadingUserStats] = useState(false);
-  const [userStats, setUserStats] = useState<{ total: number; active: number; newThisMonth: number; premium: number } | null>(null);
+  const [userStats, setUserStats] = useState<{
+    total: number;
+    active: number;
+    newThisMonth: number;
+    premium: number;
+  } | null>(null);
 
   // User details slider state
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -268,7 +298,9 @@ function Admin() {
   const [showReactivateConfirm, setShowReactivateConfirm] = useState(false);
 
   // Subscriptions & Billing CMS state variables
-  const [subSection, setSubSection] = useState<"subscriptions" | "plans" | "payments">("subscriptions");
+  const [subSection, setSubSection] = useState<"subscriptions" | "plans" | "payments">(
+    "subscriptions",
+  );
   const [subsList, setSubsList] = useState<any[]>([]);
   const [totalSubsCount, setTotalSubsCount] = useState(0);
   const [subPage, setSubPage] = useState(1);
@@ -279,7 +311,13 @@ function Admin() {
   const [subFilterPlan, setSubFilterPlan] = useState("All");
   const [loadingSubs, setLoadingSubs] = useState(false);
   const [loadingSubStats, setLoadingSubStats] = useState(false);
-  const [subStats, setSubStats] = useState<{ activeSubscriptions: number; standardSubscribers: number; premiumSubscribers: number; expiringSoon: number; paymentMode: string } | null>(null);
+  const [subStats, setSubStats] = useState<{
+    activeSubscriptions: number;
+    standardSubscribers: number;
+    premiumSubscribers: number;
+    expiringSoon: number;
+    paymentMode: string;
+  } | null>(null);
 
   // Plans Management state
   const [plansList, setPlansList] = useState<any[]>([]);
@@ -316,7 +354,12 @@ function Admin() {
 
   // Upgrade/Downgrade Subscription Tier Modal State
   const [subChangeModalOpen, setSubChangeModalOpen] = useState(false);
-  const [targetSubUser, setTargetSubUser] = useState<{ id: string; email: string; fullName?: string; currentPlanId?: string } | null>(null);
+  const [targetSubUser, setTargetSubUser] = useState<{
+    id: string;
+    email: string;
+    fullName?: string;
+    currentPlanId?: string;
+  } | null>(null);
   const [selectedPlanTier, setSelectedPlanTier] = useState<string>("monthly_premium");
   const [subDurationDays, setSubDurationDays] = useState<number>(30);
   const [savingSubTier, setSavingSubTier] = useState(false);
@@ -340,7 +383,7 @@ function Admin() {
       const res = await api.admin.users.changeSubscription(
         targetSubUser.id,
         selectedPlanTier,
-        subDurationDays
+        subDurationDays,
       );
       if (res.success) {
         toast.success(res.message || "User subscription tier updated successfully!");
@@ -363,17 +406,39 @@ function Admin() {
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
   // Settings state variables
-  const [settingsSupportEmail, setSettingsSupportEmail] = useState(() => localStorage.getItem("ks_settings_support_email") || "support@krishnasanjeevani.org");
-  const [settingsDefaultVisibility, setSettingsDefaultVisibility] = useState(() => localStorage.getItem("ks_settings_default_visibility") || "draft");
-  const [settingsDefaultDifficulty, setSettingsDefaultDifficulty] = useState(() => localStorage.getItem("ks_settings_default_difficulty") || "beginner");
-  const [settingsDefaultTier, setSettingsDefaultTier] = useState(() => localStorage.getItem("ks_settings_default_tier") || "free");
-  const [settingsDefaultCategory, setSettingsDefaultCategory] = useState(() => localStorage.getItem("ks_settings_default_category") || "devotional");
-  const [settingsPregnancyEnabled, setSettingsPregnancyEnabled] = useState(() => localStorage.getItem("ks_settings_pregnancy_enabled") !== "false");
-  const [settingsPregnancyRec, setSettingsPregnancyRec] = useState(() => localStorage.getItem("ks_settings_pregnancy_rec") || "automatic");
-  const [settingsAdminRefresh, setSettingsAdminRefresh] = useState(() => localStorage.getItem("ks_settings_admin_refresh") || "automatic");
-  const [settingsAdminPageSize, setSettingsAdminPageSize] = useState(() => Number(localStorage.getItem("ks_settings_admin_page_size") || "25"));
-  const [settingsShowNotify, setSettingsShowNotify] = useState(() => localStorage.getItem("ks_settings_show_notify") !== "false");
-  const [settingsShowConfirm, setSettingsShowConfirm] = useState(() => localStorage.getItem("ks_settings_show_confirm") !== "false");
+  const [settingsSupportEmail, setSettingsSupportEmail] = useState(
+    () => localStorage.getItem("ks_settings_support_email") || "support@krishnasanjeevani.org",
+  );
+  const [settingsDefaultVisibility, setSettingsDefaultVisibility] = useState(
+    () => localStorage.getItem("ks_settings_default_visibility") || "draft",
+  );
+  const [settingsDefaultDifficulty, setSettingsDefaultDifficulty] = useState(
+    () => localStorage.getItem("ks_settings_default_difficulty") || "beginner",
+  );
+  const [settingsDefaultTier, setSettingsDefaultTier] = useState(
+    () => localStorage.getItem("ks_settings_default_tier") || "free",
+  );
+  const [settingsDefaultCategory, setSettingsDefaultCategory] = useState(
+    () => localStorage.getItem("ks_settings_default_category") || "devotional",
+  );
+  const [settingsPregnancyEnabled, setSettingsPregnancyEnabled] = useState(
+    () => localStorage.getItem("ks_settings_pregnancy_enabled") !== "false",
+  );
+  const [settingsPregnancyRec, setSettingsPregnancyRec] = useState(
+    () => localStorage.getItem("ks_settings_pregnancy_rec") || "automatic",
+  );
+  const [settingsAdminRefresh, setSettingsAdminRefresh] = useState(
+    () => localStorage.getItem("ks_settings_admin_refresh") || "automatic",
+  );
+  const [settingsAdminPageSize, setSettingsAdminPageSize] = useState(() =>
+    Number(localStorage.getItem("ks_settings_admin_page_size") || "25"),
+  );
+  const [settingsShowNotify, setSettingsShowNotify] = useState(
+    () => localStorage.getItem("ks_settings_show_notify") !== "false",
+  );
+  const [settingsShowConfirm, setSettingsShowConfirm] = useState(
+    () => localStorage.getItem("ks_settings_show_confirm") !== "false",
+  );
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [loadingHealth, setLoadingHealth] = useState(false);
 
@@ -513,7 +578,7 @@ function Admin() {
         if (selectedUser?.user.id === userToDeactivate.id) {
           setSelectedUser((prev: any) => ({
             ...prev,
-            user: { ...prev.user, status: "suspended" }
+            user: { ...prev.user, status: "suspended" },
           }));
         }
         loadUsersList();
@@ -543,7 +608,7 @@ function Admin() {
         if (selectedUser?.user.id === userToReactivate.id) {
           setSelectedUser((prev: any) => ({
             ...prev,
-            user: { ...prev.user, status: "active" }
+            user: { ...prev.user, status: "active" },
           }));
         }
         loadUsersList();
@@ -681,7 +746,7 @@ function Admin() {
         if (selectedSub?.subscription.id === subToCancel.id) {
           setSelectedSub((prev: any) => ({
             ...prev,
-            subscription: { ...prev.subscription, status: "canceled" }
+            subscription: { ...prev.subscription, status: "canceled" },
           }));
         }
         loadSubsList();
@@ -835,7 +900,7 @@ function Admin() {
       rows = (analyticsData.listening?.listeningTrend || []).map((t: any) => [
         t.date,
         String(t.hours),
-        String(t.plays)
+        String(t.plays),
       ]);
     } else if (type === "tracks") {
       headers = ["Track Name", "Artist", "Plays", "Completions", "Completion Rate"];
@@ -844,7 +909,7 @@ function Admin() {
         t.artist || "Unknown",
         String(t.plays),
         String(t.completions),
-        `${t.completionRate}%`
+        `${t.completionRate}%`,
       ]);
     } else if (type === "programs") {
       headers = ["Program Name", "Starts", "Completions", "Completion Rate"];
@@ -852,7 +917,7 @@ function Admin() {
         p.title || "Unknown",
         String(p.starts),
         String(p.completions),
-        `${p.completionRate}%`
+        `${p.completionRate}%`,
       ]);
     } else if (type === "subscriptions") {
       headers = ["Metric", "Count"];
@@ -861,13 +926,17 @@ function Admin() {
         ["Active Subscriptions", String(sub?.activeSubscriptions || 0)],
         ["New Subscriptions", String(sub?.newSubscriptions || 0)],
         ["Expired Subscriptions", String(sub?.expiredSubscriptions || 0)],
-        ["Cancelled Subscriptions", String(sub?.cancelledSubscriptions || 0)]
+        ["Cancelled Subscriptions", String(sub?.cancelledSubscriptions || 0)],
       ];
     }
 
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(","), ...rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))].join("\n");
-    
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [
+        headers.join(","),
+        ...rows.map((e) => e.map((val) => `"${val.replace(/"/g, '""')}"`).join(",")),
+      ].join("\n");
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -917,7 +986,16 @@ function Admin() {
     } finally {
       setLoadingTracks(false);
     }
-  }, [page, perPage, debouncedQuery, filterCategory, filterTier, filterLanguage, filterStatus, filterProcessing]);
+  }, [
+    page,
+    perPage,
+    debouncedQuery,
+    filterCategory,
+    filterTier,
+    filterLanguage,
+    filterStatus,
+    filterProcessing,
+  ]);
 
   const loadTags = useCallback(async () => {
     try {
@@ -926,8 +1004,8 @@ function Admin() {
         if (res.data.length === 0) {
           await Promise.all(
             DEFAULT_PURPOSES.map((name) =>
-              api.tracks.createTag(name, `Therapeutic category for ${name.toLowerCase()}`)
-            )
+              api.tracks.createTag(name, `Therapeutic category for ${name.toLowerCase()}`),
+            ),
           );
           const reRes = await api.tracks.listTags();
           if (reRes.success && reRes.data) {
@@ -946,7 +1024,7 @@ function Admin() {
     try {
       const res = await api.programs.list({ limit: 100 });
       if (res.success && res.data) {
-        const list = Array.isArray(res.data) ? res.data : (res.data.data || []);
+        const list = Array.isArray(res.data) ? res.data : res.data.data || [];
         setTotalProgramsCount(list.length);
       }
     } catch (err) {
@@ -978,7 +1056,14 @@ function Admin() {
     } finally {
       setLoadingPrograms(false);
     }
-  }, [progPage, progDebouncedQuery, progFilterCategory, progFilterTier, progFilterDifficulty, progFilterStatus]);
+  }, [
+    progPage,
+    progDebouncedQuery,
+    progFilterCategory,
+    progFilterTier,
+    progFilterDifficulty,
+    progFilterStatus,
+  ]);
 
   const loadProgramStats = useCallback(async () => {
     setLoadingProgramStats(true);
@@ -1042,15 +1127,25 @@ function Admin() {
       const catChanged = formCategory !== (editingTrack.category || "devotional");
       const langChanged = formLanguage !== (editingTrack.language || "hi");
       const tierChanged = formTier !== (editingTrack.tier || "free");
-      
+
       const originalTags = editingTrack.purposeTags?.map((t: any) => t.id) || [];
-      const tagsChanged = 
+      const tagsChanged =
         formSelectedTags.length !== originalTags.length ||
-        formSelectedTags.some(t => !originalTags.includes(t));
+        formSelectedTags.some((t) => !originalTags.includes(t));
 
       const hasNewFiles = formAudioFile !== null || formImageFile !== null;
 
-      return titleChanged || subtitleChanged || descChanged || artistChanged || catChanged || langChanged || tierChanged || tagsChanged || hasNewFiles;
+      return (
+        titleChanged ||
+        subtitleChanged ||
+        descChanged ||
+        artistChanged ||
+        catChanged ||
+        langChanged ||
+        tierChanged ||
+        tagsChanged ||
+        hasNewFiles
+      );
     } else {
       return (
         formTitle !== "" ||
@@ -1125,8 +1220,10 @@ function Admin() {
 
       // 2. Metadata Save (D1 Table)
       setFormStatus("creating_metadata");
-      setFormStatusMessage(editingTrack ? "Updating track metadata..." : "Creating track metadata...");
-      
+      setFormStatusMessage(
+        editingTrack ? "Updating track metadata..." : "Creating track metadata...",
+      );
+
       const payload: any = {
         title: formTitle,
         subtitle: formSubtitle,
@@ -1136,7 +1233,9 @@ function Admin() {
         language: formLanguage,
         tier: formTier,
         purposeTagIds: formSelectedTags,
-        publishStatus: editingTrack ? undefined : (localStorage.getItem("ks_settings_default_visibility") || "draft"),
+        publishStatus: editingTrack
+          ? undefined
+          : localStorage.getItem("ks_settings_default_visibility") || "draft",
       };
 
       if (editingTrack) {
@@ -1187,9 +1286,14 @@ function Admin() {
             while (!success && retryCount <= maxRetries) {
               try {
                 setFormStatusMessage(
-                  `Uploading part ${partNumber}/${totalParts}... (${Math.round((i / totalParts) * 100)}%)`
+                  `Uploading part ${partNumber}/${totalParts}... (${Math.round((i / totalParts) * 100)}%)`,
                 );
-                const partRes = await api.storage.multipartUploadPart(key, uploadId, partNumber, chunkData);
+                const partRes = await api.storage.multipartUploadPart(
+                  key,
+                  uploadId,
+                  partNumber,
+                  chunkData,
+                );
                 if (partRes.success && partRes.data) {
                   partEtag = partRes.data.etag;
                   success = true;
@@ -1211,7 +1315,12 @@ function Admin() {
 
           // 3. Complete multipart upload
           setFormStatusMessage("Finalizing upload...");
-          const completeRes = await api.storage.multipartComplete(key, uploadId, uploadedParts, trackId);
+          const completeRes = await api.storage.multipartComplete(
+            key,
+            uploadId,
+            uploadedParts,
+            trackId,
+          );
           if (!completeRes.success) {
             throw new Error(completeRes.message || "Failed to complete multipart upload.");
           }
@@ -1236,7 +1345,7 @@ function Admin() {
           attempts++;
           setFormStatusMessage("Transcoding to HLS... (Attempt " + attempts + "/60)");
           await new Promise((res) => setTimeout(res, 1500));
-          
+
           const pollRes = await api.tracks.get(trackId);
           if (pollRes.success && pollRes.data) {
             const status = pollRes.data.processingStatus;
@@ -1250,7 +1359,9 @@ function Admin() {
         }
 
         if (!isReady) {
-          throw new Error("Transcoding process timeout. The file will continue processing in the background.");
+          throw new Error(
+            "Transcoding process timeout. The file will continue processing in the background.",
+          );
         }
       }
 
@@ -1270,8 +1381,8 @@ function Admin() {
         editingTrack
           ? "Track metadata updated successfully!"
           : publishImmediate
-          ? "Track created, encoded, and published successfully!"
-          : "Track created and encoded as draft successfully!"
+            ? "Track created, encoded, and published successfully!"
+            : "Track created and encoded as draft successfully!",
       );
 
       // Close and refresh
@@ -1312,7 +1423,9 @@ function Admin() {
       return;
     }
     if (track.processingStatus !== "ready") {
-      toast.error("Track is not ready (current transcoding status: " + track.processingStatus + ")");
+      toast.error(
+        "Track is not ready (current transcoding status: " + track.processingStatus + ")",
+      );
       return;
     }
 
@@ -1535,7 +1648,9 @@ function Admin() {
       }
 
       setProgFormStatus("saving");
-      setProgFormStatusMessage(editingProgram ? "Saving program metadata..." : "Creating program...");
+      setProgFormStatusMessage(
+        editingProgram ? "Saving program metadata..." : "Creating program...",
+      );
 
       let programTypeId = "1";
       if (progFormCategory === "pregnancy") programTypeId = "3";
@@ -1564,7 +1679,7 @@ function Admin() {
 
       // 2. Persist tracks mapping
       const originalTrackIds = editingProgram?._originalTrackIds || [];
-      const currentTrackIds = progFormTracks.map(t => t.id);
+      const currentTrackIds = progFormTracks.map((t) => t.id);
 
       const toAdd = currentTrackIds.filter((id: string) => !originalTrackIds.includes(id));
       const toDelete = originalTrackIds.filter((id: string) => !currentTrackIds.includes(id));
@@ -1585,7 +1700,8 @@ function Admin() {
       }));
       if (trackListForReorder.length > 0) {
         const reorderRes = await api.programs.reorderTracks(programId, trackListForReorder);
-        if (!reorderRes.success) throw new Error(reorderRes.message || "Failed to reorder track sequences.");
+        if (!reorderRes.success)
+          throw new Error(reorderRes.message || "Failed to reorder track sequences.");
       }
 
       // 3. Persist pregnancy schedules
@@ -1621,8 +1737,8 @@ function Admin() {
         editingProgram
           ? "Program saved successfully!"
           : publishImmediate
-          ? "Program created and published successfully!"
-          : "Program created as draft successfully!"
+            ? "Program created and published successfully!"
+            : "Program created as draft successfully!",
       );
 
       setIsProgramFormOpen(false);
@@ -1639,9 +1755,12 @@ function Admin() {
   };
 
   const handleProgramDuplicate = async (program: any) => {
-    const copyName = prompt("Duplicate Program\n\nEnter name for the duplicated program:", `${program.title} (Copy)`);
+    const copyName = prompt(
+      "Duplicate Program\n\nEnter name for the duplicated program:",
+      `${program.title} (Copy)`,
+    );
     if (copyName === null) return;
-    
+
     const finalName = copyName.trim();
     if (!finalName) {
       toast.error("Program name cannot be empty.");
@@ -1733,7 +1852,7 @@ function Admin() {
         setShowProgDeleteConfirm(false);
         setIsProgDetailsOpen(false);
         if (programsList.length === 1 && progPage > 1) {
-          setProgPage(p => p - 1);
+          setProgPage((p) => p - 1);
         } else {
           loadProgramsList();
         }
@@ -1774,10 +1893,25 @@ function Admin() {
       const langChanged = progFormLanguage !== (editingProgram.language || "hi");
       const hasNewImage = progFormImageFile !== null;
 
-      const tracksChanged = JSON.stringify(progFormTracks.map(t => t.id)) !== JSON.stringify(editingProgram._originalTrackIds || []);
-      const schedulesChanged = JSON.stringify(progFormSchedules) !== JSON.stringify(editingProgram._originalSchedules || []);
+      const tracksChanged =
+        JSON.stringify(progFormTracks.map((t) => t.id)) !==
+        JSON.stringify(editingProgram._originalTrackIds || []);
+      const schedulesChanged =
+        JSON.stringify(progFormSchedules) !==
+        JSON.stringify(editingProgram._originalSchedules || []);
 
-      return titleChanged || subtitleChanged || descChanged || catChanged || diffChanged || tierChanged || langChanged || hasNewImage || tracksChanged || schedulesChanged;
+      return (
+        titleChanged ||
+        subtitleChanged ||
+        descChanged ||
+        catChanged ||
+        diffChanged ||
+        tierChanged ||
+        langChanged ||
+        hasNewImage ||
+        tracksChanged ||
+        schedulesChanged
+      );
     } else {
       return (
         progFormTitle !== "" ||
@@ -1903,18 +2037,17 @@ function Admin() {
         <div className="flex min-h-dvh">
           {/* Admin Navigation Sidebar */}
           <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-surface p-5 lg:flex">
-            <Link to="/home" className="flex items-center gap-2.5 text-sm font-bold tracking-tight text-foreground">
-              <img
-                src={logoWithoutText}
-                alt=""
-                className="h-8 w-8 object-contain"
-              />
+            <Link
+              to="/home"
+              className="flex items-center gap-2.5 text-sm font-bold tracking-tight text-foreground"
+            >
+              <img src={logoWithoutText} alt="" className="h-8 w-8 object-contain" />
               <span>Krishna Sanjeevani</span>
             </Link>
             <div className="mt-2.5 rounded bg-cat-light px-2 py-1 text-[10px] font-bold text-cat w-max">
               ADMIN CONTROL PANEL
             </div>
-            
+
             <nav aria-label="Admin sections" className="mt-8 space-y-1.5 flex-1">
               {nav.map((n) => (
                 <button
@@ -1925,7 +2058,7 @@ function Admin() {
                     "press flex min-h-11 w-full items-center gap-3.5 rounded-btn px-4 text-sm font-semibold transition-all",
                     section === n.id
                       ? "bg-cat text-cat-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <n.icon className="h-[18px] w-[18px]" />
@@ -1943,13 +2076,19 @@ function Admin() {
             {/* Header toolbar */}
             <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-5">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight capitalize leading-none text-foreground">{section}</h1>
+                <h1 className="text-2xl font-bold tracking-tight capitalize leading-none text-foreground">
+                  {section}
+                </h1>
                 <p className="mt-1.5 text-xs text-muted-foreground font-medium">
-                  {section === "overview" && "Dashboard operational health metrics and activity log."}
-                  {section === "content" && "Content management catalogue and stream encoder console."}
-                  {section === "programs" && "Manage therapeutic programmes and their track sequences."}
+                  {section === "overview" &&
+                    "Dashboard operational health metrics and activity log."}
+                  {section === "content" &&
+                    "Content management catalogue and stream encoder console."}
+                  {section === "programs" &&
+                    "Manage therapeutic programmes and their track sequences."}
                   {section === "users" && "Manage registered users and account access."}
-                  {!["overview", "content", "programs", "users"].includes(section) && "Operations section under construction."}
+                  {!["overview", "content", "programs", "users"].includes(section) &&
+                    "Operations section under construction."}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -1957,8 +2096,12 @@ function Admin() {
                   {user.profile?.fullName ? user.profile.fullName.slice(0, 2).toUpperCase() : "AD"}
                 </span>
                 <div className="hidden sm:block text-left">
-                  <p className="text-xs font-bold leading-tight text-foreground">{user.profile?.fullName || "Admin Ops"}</p>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase font-mono">{user.role}</p>
+                  <p className="text-xs font-bold leading-tight text-foreground">
+                    {user.profile?.fullName || "Admin Ops"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase font-mono">
+                    {user.role}
+                  </p>
                 </div>
               </div>
             </header>
@@ -1989,7 +2132,9 @@ function Admin() {
                 {fetchingOverview ? (
                   <div className="flex min-h-[300px] flex-col items-center justify-center gap-3.5">
                     <Loader2 className="h-8 w-8 animate-spin text-cat" />
-                    <p className="text-xs font-medium text-muted-foreground">Refreshing dashboard data...</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Refreshing dashboard data...
+                    </p>
                   </div>
                 ) : overviewError ? (
                   <div className="rounded-card border border-destructive/20 bg-destructive/5 p-6 text-center space-y-4 max-w-md mx-auto mt-10">
@@ -2008,31 +2153,76 @@ function Admin() {
                     {/* General Overview KPIs */}
                     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                       {[
-                        { label: "Total Users", value: overviewData?.kpis?.totalUsers ?? "—", info: "Registered accounts" },
-                        { label: "Active Listeners (30d)", value: overviewData?.kpis?.activeUsers ?? "—", info: "Stream activity logged" },
-                        { label: "Total Tracks", value: overviewData?.kpis?.totalTracks ?? "—", info: "Catalogue assets count" },
-                        { label: "Total Programs", value: overviewData?.kpis?.totalPrograms ?? "—", info: "Live clinician programs" },
-                        { label: "Total Plays", value: overviewData?.kpis?.totalPlays ?? "—", info: "Streaming sessions logged" },
-                        { label: "Active Subscriptions", value: overviewData?.kpis?.activeSubscriptions ?? "—", info: "Paid subscription logs" },
+                        {
+                          label: "Total Users",
+                          value: overviewData?.kpis?.totalUsers ?? "—",
+                          info: "Registered accounts",
+                        },
+                        {
+                          label: "Active Listeners (30d)",
+                          value: overviewData?.kpis?.activeUsers ?? "—",
+                          info: "Stream activity logged",
+                        },
+                        {
+                          label: "Total Tracks",
+                          value: overviewData?.kpis?.totalTracks ?? "—",
+                          info: "Catalogue assets count",
+                        },
+                        {
+                          label: "Total Programs",
+                          value: overviewData?.kpis?.totalPrograms ?? "—",
+                          info: "Live clinician programs",
+                        },
+                        {
+                          label: "Total Plays",
+                          value: overviewData?.kpis?.totalPlays ?? "—",
+                          info: "Streaming sessions logged",
+                        },
+                        {
+                          label: "Active Subscriptions",
+                          value: overviewData?.kpis?.activeSubscriptions ?? "—",
+                          info: "Paid subscription logs",
+                        },
                       ].map((k) => (
-                        <div key={k.label} className={cn(cardCls, "p-5 relative overflow-hidden group border-border/80 hover:border-cat transition-all duration-300")}>
-                          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{k.label}</p>
-                          <p className="mt-3 text-3xl font-extrabold tracking-tight tabular-nums text-foreground">{k.value}</p>
-                          <p className="mt-1 text-[11px] font-medium text-muted-foreground/80">{k.info}</p>
+                        <div
+                          key={k.label}
+                          className={cn(
+                            cardCls,
+                            "p-5 relative overflow-hidden group border-border/80 hover:border-cat transition-all duration-300",
+                          )}
+                        >
+                          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                            {k.label}
+                          </p>
+                          <p className="mt-3 text-3xl font-extrabold tracking-tight tabular-nums text-foreground">
+                            {k.value}
+                          </p>
+                          <p className="mt-1 text-[11px] font-medium text-muted-foreground/80">
+                            {k.info}
+                          </p>
                         </div>
                       ))}
                     </div>
 
                     <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
                       {/* CMS Dashboard Quick Navigation Card */}
-                      <div className={cn(cardCls, "p-6 border-border/85 flex flex-col justify-between min-h-[220px]")}>
+                      <div
+                        className={cn(
+                          cardCls,
+                          "p-6 border-border/85 flex flex-col justify-between min-h-[220px]",
+                        )}
+                      >
                         <div className="space-y-3.5">
                           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cat/10 text-cat">
                             <Music4 className="h-5 w-5" />
                           </div>
-                          <h3 className="text-lg font-bold tracking-tight text-foreground">Content Management Catalogue (CMS)</h3>
+                          <h3 className="text-lg font-bold tracking-tight text-foreground">
+                            Content Management Catalogue (CMS)
+                          </h3>
                           <p className="text-xs text-muted-foreground leading-relaxed max-w-xl">
-                            Upload therapeutic audio masters, add artwork headers, edit catalog titles, organize raga classifications, and manage track release phases (Drafts, Published, Archived).
+                            Upload therapeutic audio masters, add artwork headers, edit catalog
+                            titles, organize raga classifications, and manage track release phases
+                            (Drafts, Published, Archived).
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-3 mt-6">
@@ -2059,17 +2249,30 @@ function Admin() {
                       </div>
 
                       {/* Live Programs summary */}
-                      <div className={cn(cardCls, "p-6 border-border/85 flex flex-col justify-between")}>
+                      <div
+                        className={cn(
+                          cardCls,
+                          "p-6 border-border/85 flex flex-col justify-between",
+                        )}
+                      >
                         <div>
-                          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Care Programs Summary</h3>
+                          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">
+                            Care Programs Summary
+                          </h3>
                           <div className="space-y-5">
                             <div>
-                              <p className="text-3xl font-extrabold text-foreground font-mono">{totalProgramsCount}</p>
-                              <p className="text-xs text-muted-foreground mt-1">Total Care Programs curated for mothers</p>
+                              <p className="text-3xl font-extrabold text-foreground font-mono">
+                                {totalProgramsCount}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Total Care Programs curated for mothers
+                              </p>
                             </div>
                             <div className="border-t border-border/60 pt-4">
                               <div className="flex items-center justify-between text-xs">
-                                <span className="font-medium text-muted-foreground">Pregnancy Care Stream</span>
+                                <span className="font-medium text-muted-foreground">
+                                  Pregnancy Care Stream
+                                </span>
                                 <span className="font-bold text-cat">Active</span>
                               </div>
                             </div>
@@ -2086,13 +2289,17 @@ function Admin() {
                       <div className="overflow-hidden rounded-md border border-border/40 bg-background/50">
                         <ul className="divide-y divide-border/40">
                           {overviewData?.recentActivity?.map((a: any, idx: number) => (
-                            <li key={a.createdAt + "-" + idx} className="flex items-start gap-4 p-4.5 hover:bg-muted/10 transition-colors">
+                            <li
+                              key={a.createdAt + "-" + idx}
+                              className="flex items-start gap-4 p-4.5 hover:bg-muted/10 transition-colors"
+                            >
                               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-cat-light text-[11px] font-bold text-cat uppercase select-none font-mono">
                                 {a.who ? a.who.slice(0, 2) : "AC"}
                               </span>
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs font-medium text-foreground">
-                                  <span className="font-bold text-foreground/90">{a.who}</span> {a.what}
+                                  <span className="font-bold text-foreground/90">{a.who}</span>{" "}
+                                  {a.what}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground/80 mt-1 font-mono">
                                   {new Date(a.createdAt).toLocaleString()}
@@ -2100,7 +2307,8 @@ function Admin() {
                               </div>
                             </li>
                           ))}
-                          {(!overviewData?.recentActivity || overviewData.recentActivity.length === 0) && (
+                          {(!overviewData?.recentActivity ||
+                            overviewData.recentActivity.length === 0) && (
                             <li className="text-center py-10 text-xs text-muted-foreground font-medium">
                               No recent system activities found.
                             </li>
@@ -2119,15 +2327,46 @@ function Admin() {
                 {/* CMS Stats Cards */}
                 <div className="grid gap-4.5 sm:grid-cols-2 md:grid-cols-5">
                   {[
-                    { label: "Total Tracks", value: trackStats?.total ?? 0, bg: "bg-surface border-border" },
-                    { label: "Published", value: trackStats?.published ?? 0, bg: "bg-success/5 border-success/20 text-success" },
-                    { label: "Drafts", value: trackStats?.draft ?? 0, bg: "bg-surface border-border text-muted-foreground" },
-                    { label: "Processing", value: trackStats?.processing ?? 0, bg: "bg-amber-500/5 border-amber-500/20 text-amber-500" },
-                    { label: "Failed Pipeline", value: trackStats?.failed ?? 0, bg: "bg-destructive/5 border-destructive/20 text-destructive" },
+                    {
+                      label: "Total Tracks",
+                      value: trackStats?.total ?? 0,
+                      bg: "bg-surface border-border",
+                    },
+                    {
+                      label: "Published",
+                      value: trackStats?.published ?? 0,
+                      bg: "bg-success/5 border-success/20 text-success",
+                    },
+                    {
+                      label: "Drafts",
+                      value: trackStats?.draft ?? 0,
+                      bg: "bg-surface border-border text-muted-foreground",
+                    },
+                    {
+                      label: "Processing",
+                      value: trackStats?.processing ?? 0,
+                      bg: "bg-amber-500/5 border-amber-500/20 text-amber-500",
+                    },
+                    {
+                      label: "Failed Pipeline",
+                      value: trackStats?.failed ?? 0,
+                      bg: "bg-destructive/5 border-destructive/20 text-destructive",
+                    },
                   ].map((stat) => (
-                    <div key={stat.label} className={cn(cardCls, "p-4.5 flex flex-col justify-between border-border/80 shadow-none", stat.bg)}>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">{loadingStats ? "..." : stat.value}</p>
+                    <div
+                      key={stat.label}
+                      className={cn(
+                        cardCls,
+                        "p-4.5 flex flex-col justify-between border-border/80 shadow-none",
+                        stat.bg,
+                      )}
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">
+                        {loadingStats ? "..." : stat.value}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -2144,12 +2383,15 @@ function Admin() {
                         className="min-h-11 w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
                       />
                       {query && (
-                        <button onClick={() => setQuery("")} className="text-muted-foreground hover:text-foreground">
+                        <button
+                          onClick={() => setQuery("")}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
                           <X className="h-4 w-4" />
                         </button>
                       )}
                     </div>
-                    
+
                     <button
                       onClick={() => {
                         setEditingTrack(null);
@@ -2171,12 +2413,15 @@ function Admin() {
                         {["All", "Published", "Draft", "Archived"].map((st) => (
                           <button
                             key={st}
-                            onClick={() => { setFilterStatus(st); setPage(1); }}
+                            onClick={() => {
+                              setFilterStatus(st);
+                              setPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               filterStatus === st
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {st}
@@ -2192,12 +2437,15 @@ function Admin() {
                         {["All", "Devotional", "Secular", "Pregnancy"].map((cat) => (
                           <button
                             key={cat}
-                            onClick={() => { setFilterCategory(cat); setPage(1); }}
+                            onClick={() => {
+                              setFilterCategory(cat);
+                              setPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               filterCategory === cat
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {cat}
@@ -2209,17 +2457,22 @@ function Admin() {
                     {/* Sub Tier and Processing status filters */}
                     <div className="flex flex-wrap gap-6">
                       <div className="flex flex-wrap items-center gap-3">
-                        <span className="font-bold text-muted-foreground w-20 sm:w-auto">Subscription:</span>
+                        <span className="font-bold text-muted-foreground w-20 sm:w-auto">
+                          Subscription:
+                        </span>
                         <div className="flex flex-wrap gap-1.5">
                           {["All", "Free", "Premium"].map((tier) => (
                             <button
                               key={tier}
-                              onClick={() => { setFilterTier(tier); setPage(1); }}
+                              onClick={() => {
+                                setFilterTier(tier);
+                                setPage(1);
+                              }}
                               className={cn(
                                 "press rounded-full px-4 py-1.5 font-bold transition-all border",
                                 filterTier === tier
                                   ? "bg-cat border-cat text-cat-foreground"
-                                  : "bg-background border-border text-muted-foreground hover:border-cat"
+                                  : "bg-background border-border text-muted-foreground hover:border-cat",
                               )}
                             >
                               {tier}
@@ -2234,12 +2487,15 @@ function Admin() {
                           {["All", "Ready", "Processing", "Failed"].map((proc) => (
                             <button
                               key={proc}
-                              onClick={() => { setFilterProcessing(proc); setPage(1); }}
+                              onClick={() => {
+                                setFilterProcessing(proc);
+                                setPage(1);
+                              }}
                               className={cn(
                                 "press rounded-full px-4 py-1.5 font-bold transition-all border",
                                 filterProcessing === proc
                                   ? "bg-cat border-cat text-cat-foreground"
-                                  : "bg-background border-border text-muted-foreground hover:border-cat"
+                                  : "bg-background border-border text-muted-foreground hover:border-cat",
                               )}
                             >
                               {proc}
@@ -2255,7 +2511,10 @@ function Admin() {
                         </span>
                         <select
                           value={filterLanguage}
-                          onChange={(e) => { setFilterLanguage(e.target.value); setPage(1); }}
+                          onChange={(e) => {
+                            setFilterLanguage(e.target.value);
+                            setPage(1);
+                          }}
                           className="rounded-btn border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-cat"
                         >
                           <option value="All">All Languages</option>
@@ -2267,7 +2526,12 @@ function Admin() {
                       </div>
 
                       {/* Clear Filters helper button */}
-                      {(query || filterStatus !== "All" || filterCategory !== "All" || filterTier !== "All" || filterProcessing !== "All" || filterLanguage !== "All") && (
+                      {(query ||
+                        filterStatus !== "All" ||
+                        filterCategory !== "All" ||
+                        filterTier !== "All" ||
+                        filterProcessing !== "All" ||
+                        filterLanguage !== "All") && (
                         <button
                           onClick={handleClearFilters}
                           className="press text-xs font-bold text-cat hover:underline flex items-center gap-1 ml-auto"
@@ -2285,15 +2549,33 @@ function Admin() {
                     <table className="w-full min-w-[900px] text-left text-xs border-collapse">
                       <thead className="bg-muted/40 text-[10px] tracking-wider text-muted-foreground uppercase font-bold border-b border-border/60">
                         <tr>
-                          <th scope="col" className="px-5 py-3.5 w-[50px] text-center">Preview</th>
-                          <th scope="col" className="px-5 py-3.5">Track & Artist</th>
-                          <th scope="col" className="px-5 py-3.5">Raga / Subtitle</th>
-                          <th scope="col" className="px-5 py-3.5">Category</th>
-                          <th scope="col" className="px-5 py-3.5">Duration</th>
-                          <th scope="col" className="px-5 py-3.5">Tier</th>
-                          <th scope="col" className="px-5 py-3.5">Transcoder</th>
-                          <th scope="col" className="px-5 py-3.5">Status</th>
-                          <th scope="col" className="px-5 py-3.5 text-right">Actions</th>
+                          <th scope="col" className="px-5 py-3.5 w-[50px] text-center">
+                            Preview
+                          </th>
+                          <th scope="col" className="px-5 py-3.5">
+                            Track & Artist
+                          </th>
+                          <th scope="col" className="px-5 py-3.5">
+                            Raga / Subtitle
+                          </th>
+                          <th scope="col" className="px-5 py-3.5">
+                            Category
+                          </th>
+                          <th scope="col" className="px-5 py-3.5">
+                            Duration
+                          </th>
+                          <th scope="col" className="px-5 py-3.5">
+                            Tier
+                          </th>
+                          <th scope="col" className="px-5 py-3.5">
+                            Transcoder
+                          </th>
+                          <th scope="col" className="px-5 py-3.5">
+                            Status
+                          </th>
+                          <th scope="col" className="px-5 py-3.5 text-right">
+                            Actions
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/50">
@@ -2302,165 +2584,207 @@ function Admin() {
                             <td colSpan={9} className="px-5 py-20 text-center">
                               <div className="flex flex-col items-center gap-3">
                                 <Loader2 className="h-7 w-7 animate-spin text-cat" />
-                                <span className="text-[11px] font-semibold text-muted-foreground">Retrieving tracks...</span>
+                                <span className="text-[11px] font-semibold text-muted-foreground">
+                                  Retrieving tracks...
+                                </span>
                               </div>
                             </td>
                           </tr>
-                        ) : tracksList.map((t) => {
-                          const isCurrentPlaying = playingTrack?.id === t.id;
-                          const isPlayingThisRow = isCurrentPlaying && isAudioPlaying;
+                        ) : (
+                          tracksList.map((t) => {
+                            const isCurrentPlaying = playingTrack?.id === t.id;
+                            const isPlayingThisRow = isCurrentPlaying && isAudioPlaying;
 
-                          return (
-                            <tr key={t.id} className="hover:bg-muted/15 transition-all">
-                              {/* Audio stream play/pause preview toggle */}
-                              <td className="px-5 py-4 text-center">
-                                <button
-                                  onClick={() => handlePreviewToggle(t)}
-                                  disabled={t.processingStatus !== "ready"}
-                                  className={cn(
-                                    "press grid h-8 w-8 place-items-center rounded-full transition-all border shadow-sm",
-                                    t.processingStatus !== "ready"
-                                      ? "bg-muted border-border/30 text-muted-foreground/30 cursor-not-allowed"
-                                      : isPlayingThisRow
-                                      ? "bg-cat border-cat text-cat-foreground scale-105"
-                                      : "bg-surface border-border text-cat hover:bg-cat-light hover:border-cat"
-                                  )}
-                                  aria-label={isPlayingThisRow ? "Pause preview" : "Play preview"}
-                                >
-                                  {isPlayingThisRow ? (
-                                    <Pause className="h-3.5 w-3.5 fill-current" />
-                                  ) : (
-                                    <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
-                                  )}
-                                </button>
-                              </td>
+                            return (
+                              <tr key={t.id} className="hover:bg-muted/15 transition-all">
+                                {/* Audio stream play/pause preview toggle */}
+                                <td className="px-5 py-4 text-center">
+                                  <button
+                                    onClick={() => handlePreviewToggle(t)}
+                                    disabled={t.processingStatus !== "ready"}
+                                    className={cn(
+                                      "press grid h-8 w-8 place-items-center rounded-full transition-all border shadow-sm",
+                                      t.processingStatus !== "ready"
+                                        ? "bg-muted border-border/30 text-muted-foreground/30 cursor-not-allowed"
+                                        : isPlayingThisRow
+                                          ? "bg-cat border-cat text-cat-foreground scale-105"
+                                          : "bg-surface border-border text-cat hover:bg-cat-light hover:border-cat",
+                                    )}
+                                    aria-label={isPlayingThisRow ? "Pause preview" : "Play preview"}
+                                  >
+                                    {isPlayingThisRow ? (
+                                      <Pause className="h-3.5 w-3.5 fill-current" />
+                                    ) : (
+                                      <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
+                                    )}
+                                  </button>
+                                </td>
 
-                              {/* Title, artist & cover artwork thumbnail */}
-                              <td className="px-5 py-4 font-semibold text-foreground">
-                                <div className="flex items-center gap-3">
-                                  {t.thumbnailKey ? (
-                                    <img
-                                      src={getAssetUrl(t.thumbnailKey) || ""}
-                                      alt=""
-                                      className="h-10 w-10 rounded-md object-cover border border-border/60 bg-muted shrink-0"
-                                      onError={(e) => {
-                                        (e.target as HTMLElement).style.display = "none";
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-dashed border-border/60 bg-muted text-muted-foreground/60">
-                                      <FileAudio className="h-4 w-4" />
+                                {/* Title, artist & cover artwork thumbnail */}
+                                <td className="px-5 py-4 font-semibold text-foreground">
+                                  <div className="flex items-center gap-3">
+                                    {t.thumbnailKey ? (
+                                      <img
+                                        src={getAssetUrl(t.thumbnailKey) || ""}
+                                        alt=""
+                                        className="h-10 w-10 rounded-md object-cover border border-border/60 bg-muted shrink-0"
+                                        onError={(e) => {
+                                          (e.target as HTMLElement).style.display = "none";
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-dashed border-border/60 bg-muted text-muted-foreground/60">
+                                        <FileAudio className="h-4 w-4" />
+                                      </div>
+                                    )}
+                                    <div className="min-w-0">
+                                      <p className="font-bold text-foreground truncate max-w-[200px]">
+                                        {t.title}
+                                      </p>
+                                      <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[200px] mt-0.5">
+                                        {t.artist}
+                                      </p>
                                     </div>
-                                  )}
-                                  <div className="min-w-0">
-                                    <p className="font-bold text-foreground truncate max-w-[200px]">{t.title}</p>
-                                    <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[200px] mt-0.5">{t.artist}</p>
                                   </div>
-                                </div>
-                              </td>
+                                </td>
 
-                              <td className="px-5 py-4 text-muted-foreground font-medium">{t.subtitle || "—"}</td>
-                              
-                              <td className="px-5 py-4 font-bold text-muted-foreground uppercase tracking-wider capitalize">
-                                <span className={cn(
-                                  "rounded px-2 py-0.5 text-[10px] font-bold border",
-                                  t.category === "devotional" && "bg-primary/5 text-primary border-primary/20",
-                                  t.category === "secular" && "bg-teal-500/5 text-teal-600 border-teal-500/20",
-                                  t.category === "pregnancy" && "bg-rose-500/5 text-rose-500 border-rose-500/20"
-                                )}>
-                                  {t.category}
-                                </span>
-                              </td>
+                                <td className="px-5 py-4 text-muted-foreground font-medium">
+                                  {t.subtitle || "—"}
+                                </td>
 
-                              <td className="px-5 py-4 tabular-nums font-semibold text-muted-foreground">
-                                {formatDuration(t.duration)}
-                              </td>
-
-                              <td className="px-5 py-4 font-bold capitalize">
-                                <span className={cn(
-                                  "rounded px-2 py-0.5 text-[10px] border font-bold",
-                                  t.tier === "premium" ? "bg-purple-500/5 text-purple-600 border-purple-500/20" : "bg-muted text-muted-foreground border-border"
-                                )}>
-                                  {t.tier}
-                                </span>
-                              </td>
-
-                              {/* Transcode processing status badge */}
-                              <td className="px-5 py-4">
-                                <span className={cn(
-                                  "rounded-full px-2.5 py-1 text-[10px] font-bold border capitalize",
-                                  t.processingStatus === "ready" && "bg-success/5 border-success/20 text-success",
-                                  ["processing", "transcoding", "uploading"].includes(t.processingStatus || "") && "bg-amber-500/5 border-amber-500/20 text-amber-500 animate-pulse",
-                                  t.processingStatus === "uploaded" && "bg-blue-500/5 border-blue-500/20 text-blue-500",
-                                  t.processingStatus === "failed" && "bg-destructive/5 border-destructive/20 text-destructive font-semibold"
-                                )}>
-                                  {t.processingStatus}
-                                </span>
-                              </td>
-
-                              {/* Catalog status badge */}
-                              <td className="px-5 py-4">
-                                <span className={cn(
-                                  "rounded-full px-2.5 py-1 text-[10px] font-bold border capitalize",
-                                  t.publishStatus === "published" && "bg-success/5 border-success/20 text-success",
-                                  t.publishStatus === "draft" && "bg-muted border-border text-muted-foreground",
-                                  t.publishStatus === "archived" && "bg-orange-500/5 border-orange-500/20 text-orange-500"
-                                )}>
-                                  {t.publishStatus}
-                                </span>
-                              </td>
-
-                              {/* Inline action buttons */}
-                              <td className="px-5 py-4 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  <button
-                                    onClick={() => { setSelectedTrack(t); setIsDetailsOpen(true); }}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    title="View full metadata"
+                                <td className="px-5 py-4 font-bold text-muted-foreground uppercase tracking-wider capitalize">
+                                  <span
+                                    className={cn(
+                                      "rounded px-2 py-0.5 text-[10px] font-bold border",
+                                      t.category === "devotional" &&
+                                        "bg-primary/5 text-primary border-primary/20",
+                                      t.category === "secular" &&
+                                        "bg-teal-500/5 text-teal-600 border-teal-500/20",
+                                      t.category === "pregnancy" &&
+                                        "bg-rose-500/5 text-rose-500 border-rose-500/20",
+                                    )}
                                   >
-                                    <Eye className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleOpenEdit(t)}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    title="Edit metadata"
+                                    {t.category}
+                                  </span>
+                                </td>
+
+                                <td className="px-5 py-4 tabular-nums font-semibold text-muted-foreground">
+                                  {formatDuration(t.duration)}
+                                </td>
+
+                                <td className="px-5 py-4 font-bold capitalize">
+                                  <span
+                                    className={cn(
+                                      "rounded px-2 py-0.5 text-[10px] border font-bold",
+                                      t.tier === "premium"
+                                        ? "bg-purple-500/5 text-purple-600 border-purple-500/20"
+                                        : "bg-muted text-muted-foreground border-border",
+                                    )}
                                   >
-                                    <Pencil className="h-4 w-4" />
-                                  </button>
-                                  {t.publishStatus === "draft" ? (
+                                    {t.tier}
+                                  </span>
+                                </td>
+
+                                {/* Transcode processing status badge */}
+                                <td className="px-5 py-4">
+                                  <span
+                                    className={cn(
+                                      "rounded-full px-2.5 py-1 text-[10px] font-bold border capitalize",
+                                      t.processingStatus === "ready" &&
+                                        "bg-success/5 border-success/20 text-success",
+                                      ["processing", "transcoding", "uploading"].includes(
+                                        t.processingStatus || "",
+                                      ) &&
+                                        "bg-amber-500/5 border-amber-500/20 text-amber-500 animate-pulse",
+                                      t.processingStatus === "uploaded" &&
+                                        "bg-blue-500/5 border-blue-500/20 text-blue-500",
+                                      t.processingStatus === "failed" &&
+                                        "bg-destructive/5 border-destructive/20 text-destructive font-semibold",
+                                    )}
+                                  >
+                                    {t.processingStatus}
+                                  </span>
+                                </td>
+
+                                {/* Catalog status badge */}
+                                <td className="px-5 py-4">
+                                  <span
+                                    className={cn(
+                                      "rounded-full px-2.5 py-1 text-[10px] font-bold border capitalize",
+                                      t.publishStatus === "published" &&
+                                        "bg-success/5 border-success/20 text-success",
+                                      t.publishStatus === "draft" &&
+                                        "bg-muted border-border text-muted-foreground",
+                                      t.publishStatus === "archived" &&
+                                        "bg-orange-500/5 border-orange-500/20 text-orange-500",
+                                    )}
+                                  >
+                                    {t.publishStatus}
+                                  </span>
+                                </td>
+
+                                {/* Inline action buttons */}
+                                <td className="px-5 py-4 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
                                     <button
-                                      onClick={() => handlePublish(t)}
-                                      disabled={t.processingStatus !== "ready"}
-                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-success/30 bg-success/5 text-success hover:bg-success/15 disabled:opacity-40 disabled:cursor-not-allowed"
-                                      title="Publish track"
+                                      onClick={() => {
+                                        setSelectedTrack(t);
+                                        setIsDetailsOpen(true);
+                                      }}
+                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                      title="View full metadata"
                                     >
-                                      <CheckCircle className="h-4 w-4" />
+                                      <Eye className="h-4 w-4" />
                                     </button>
-                                  ) : t.publishStatus === "published" ? (
                                     <button
-                                      onClick={() => handleUnpublish(t)}
-                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-amber-600 hover:bg-amber-500/10"
-                                      title="Revert to draft"
+                                      onClick={() => handleOpenEdit(t)}
+                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                      title="Edit metadata"
                                     >
-                                      <Archive className="h-4 w-4" />
+                                      <Pencil className="h-4 w-4" />
                                     </button>
-                                  ) : null}
-                                  <button
-                                    onClick={() => { setTrackToDelete(t); setShowDeleteConfirm(true); }}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15"
-                                    title="Delete track"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                    {t.publishStatus === "draft" ? (
+                                      <button
+                                        onClick={() => handlePublish(t)}
+                                        disabled={t.processingStatus !== "ready"}
+                                        className="press grid h-8 w-8 place-items-center rounded-btn border border-success/30 bg-success/5 text-success hover:bg-success/15 disabled:opacity-40 disabled:cursor-not-allowed"
+                                        title="Publish track"
+                                      >
+                                        <CheckCircle className="h-4 w-4" />
+                                      </button>
+                                    ) : t.publishStatus === "published" ? (
+                                      <button
+                                        onClick={() => handleUnpublish(t)}
+                                        className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-amber-600 hover:bg-amber-500/10"
+                                        title="Revert to draft"
+                                      >
+                                        <Archive className="h-4 w-4" />
+                                      </button>
+                                    ) : null}
+                                    <button
+                                      onClick={() => {
+                                        setTrackToDelete(t);
+                                        setShowDeleteConfirm(true);
+                                      }}
+                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15"
+                                      title="Delete track"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                         {tracksList.length === 0 && !loadingTracks && (
                           <tr>
-                            <td colSpan={9} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
-                              No tracks match your query parameters. Click [ Add Track ] to create one.
+                            <td
+                              colSpan={9}
+                              className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold"
+                            >
+                              No tracks match your query parameters. Click [ Add Track ] to create
+                              one.
                             </td>
                           </tr>
                         )}
@@ -2502,14 +2826,41 @@ function Admin() {
                 {/* CMS Stats Cards */}
                 <div className="grid gap-4.5 sm:grid-cols-2 md:grid-cols-4">
                   {[
-                    { label: "Total Programs", value: programStats?.total ?? 0, bg: "bg-surface border-border" },
-                    { label: "Published", value: programStats?.published ?? 0, bg: "bg-success/5 border-success/20 text-success" },
-                    { label: "Drafts", value: programStats?.draft ?? 0, bg: "bg-surface border-border text-muted-foreground" },
-                    { label: "Archived", value: programStats?.archived ?? 0, bg: "bg-orange-500/5 border-orange-500/20 text-orange-500" },
+                    {
+                      label: "Total Programs",
+                      value: programStats?.total ?? 0,
+                      bg: "bg-surface border-border",
+                    },
+                    {
+                      label: "Published",
+                      value: programStats?.published ?? 0,
+                      bg: "bg-success/5 border-success/20 text-success",
+                    },
+                    {
+                      label: "Drafts",
+                      value: programStats?.draft ?? 0,
+                      bg: "bg-surface border-border text-muted-foreground",
+                    },
+                    {
+                      label: "Archived",
+                      value: programStats?.archived ?? 0,
+                      bg: "bg-orange-500/5 border-orange-500/20 text-orange-500",
+                    },
                   ].map((stat) => (
-                    <div key={stat.label} className={cn(cardCls, "p-4.5 flex flex-col justify-between border-border/80 shadow-none", stat.bg)}>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">{loadingProgramStats ? "..." : stat.value}</p>
+                    <div
+                      key={stat.label}
+                      className={cn(
+                        cardCls,
+                        "p-4.5 flex flex-col justify-between border-border/80 shadow-none",
+                        stat.bg,
+                      )}
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">
+                        {loadingProgramStats ? "..." : stat.value}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -2526,12 +2877,15 @@ function Admin() {
                         className="min-h-11 w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
                       />
                       {progQuery && (
-                        <button onClick={() => setProgQuery("")} className="text-muted-foreground hover:text-foreground">
+                        <button
+                          onClick={() => setProgQuery("")}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
                           <X className="h-4 w-4" />
                         </button>
                       )}
                     </div>
-                    
+
                     <button
                       onClick={() => {
                         setEditingProgram(null);
@@ -2553,12 +2907,15 @@ function Admin() {
                         {["All", "Published", "Draft", "Archived"].map((st) => (
                           <button
                             key={st}
-                            onClick={() => { setProgFilterStatus(st); setProgPage(1); }}
+                            onClick={() => {
+                              setProgFilterStatus(st);
+                              setProgPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               progFilterStatus === st
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {st}
@@ -2574,12 +2931,15 @@ function Admin() {
                         {["All", "Devotional", "Secular", "Pregnancy", "Corporate"].map((cat) => (
                           <button
                             key={cat}
-                            onClick={() => { setProgFilterCategory(cat); setProgPage(1); }}
+                            onClick={() => {
+                              setProgFilterCategory(cat);
+                              setProgPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               progFilterCategory === cat
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {cat}
@@ -2595,12 +2955,15 @@ function Admin() {
                         {["All", "Free", "Premium"].map((tr) => (
                           <button
                             key={tr}
-                            onClick={() => { setProgFilterTier(tr); setProgPage(1); }}
+                            onClick={() => {
+                              setProgFilterTier(tr);
+                              setProgPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               progFilterTier === tr
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {tr}
@@ -2616,12 +2979,15 @@ function Admin() {
                         {["All", "Beginner", "Intermediate", "Advanced"].map((df) => (
                           <button
                             key={df}
-                            onClick={() => { setProgFilterDifficulty(df); setProgPage(1); }}
+                            onClick={() => {
+                              setProgFilterDifficulty(df);
+                              setProgPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               progFilterDifficulty === df
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {df}
@@ -2631,7 +2997,11 @@ function Admin() {
                     </div>
 
                     {/* Clear Filters CTA */}
-                    {(progQuery || progFilterStatus !== "All" || progFilterCategory !== "All" || progFilterTier !== "All" || progFilterDifficulty !== "All") && (
+                    {(progQuery ||
+                      progFilterStatus !== "All" ||
+                      progFilterCategory !== "All" ||
+                      progFilterTier !== "All" ||
+                      progFilterDifficulty !== "All") && (
                       <div className="flex justify-end pt-1">
                         <button
                           onClick={handleClearProgFilters}
@@ -2665,125 +3035,167 @@ function Admin() {
                             <td colSpan={7} className="px-5 py-14 text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <Loader2 className="h-5 w-5 animate-spin text-cat" />
-                                <span className="text-muted-foreground font-medium">Loading programs from D1...</span>
+                                <span className="text-muted-foreground font-medium">
+                                  Loading programs from D1...
+                                </span>
                               </div>
                             </td>
                           </tr>
-                        ) : programsList.map((p) => {
-                          const artUrl = getAssetUrl(p.thumbnailKey);
-                          return (
-                            <tr key={p.id} className="hover:bg-muted/10 transition-colors group">
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-3 max-w-sm">
-                                  {p.thumbnailKey ? (
-                                    <img
-                                      src={artUrl || ""}
-                                      alt=""
-                                      className="h-10 w-10 shrink-0 rounded object-cover border border-border"
-                                    />
-                                  ) : (
-                                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded border border-dashed border-border bg-muted text-muted-foreground/50">
-                                      <ListMusic className="h-5 w-5" />
-                                    </div>
-                                  )}
-                                  <div className="min-w-0">
-                                    <p className="font-bold text-foreground truncate group-hover:text-cat transition-colors">{p.title}</p>
-                                    {p.subtitle && (
-                                      <p className="text-[10px] text-muted-foreground truncate font-medium mt-0.5">{p.subtitle}</p>
+                        ) : (
+                          programsList.map((p) => {
+                            const artUrl = getAssetUrl(p.thumbnailKey);
+                            return (
+                              <tr key={p.id} className="hover:bg-muted/10 transition-colors group">
+                                <td className="px-5 py-4">
+                                  <div className="flex items-center gap-3 max-w-sm">
+                                    {p.thumbnailKey ? (
+                                      <img
+                                        src={artUrl || ""}
+                                        alt=""
+                                        className="h-10 w-10 shrink-0 rounded object-cover border border-border"
+                                      />
+                                    ) : (
+                                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded border border-dashed border-border bg-muted text-muted-foreground/50">
+                                        <ListMusic className="h-5 w-5" />
+                                      </div>
                                     )}
+                                    <div className="min-w-0">
+                                      <p className="font-bold text-foreground truncate group-hover:text-cat transition-colors">
+                                        {p.title}
+                                      </p>
+                                      {p.subtitle && (
+                                        <p className="text-[10px] text-muted-foreground truncate font-medium mt-0.5">
+                                          {p.subtitle}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              </td>
-                              <td className="px-5 py-4 capitalize font-semibold text-muted-foreground">
-                                <span className={cn(
-                                  "rounded px-2 py-0.5 text-[10px] font-bold border",
-                                  p.category === "pregnancy" && "bg-cat-light text-cat border-cat/10",
-                                  p.category === "corporate" && "bg-blue-500/5 text-blue-600 border-blue-500/10",
-                                  p.category === "devotional" && "bg-amber-500/5 text-amber-600 border-amber-500/10",
-                                  p.category === "secular" && "bg-teal-500/5 text-teal-600 border-teal-500/10",
-                                )}>
-                                  {p.category}
-                                </span>
-                              </td>
-                              <td className="px-5 py-4 text-center font-bold text-foreground font-mono">
-                                {p.trackCount}
-                              </td>
-                              <td className="px-5 py-4 text-center font-mono font-medium text-muted-foreground">
-                                {formatDuration(p.estimatedDuration)}
-                              </td>
-                              <td className="px-5 py-4 font-bold capitalize">
-                                <span className={cn(
-                                  p.tier === "premium" ? "text-cat" : "text-muted-foreground"
-                                )}>
-                                  {p.tier}
-                                </span>
-                              </td>
-                              <td className="px-5 py-4">
-                                <span className={cn(
-                                  "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                                  p.status === "published" && "bg-success/5 border-success/20 text-success",
-                                  p.status === "draft" && "bg-muted border-border text-muted-foreground",
-                                  p.status === "archived" && "bg-orange-500/5 border-orange-500/20 text-orange-500"
-                                )}>
-                                  {p.status}
-                                </span>
-                              </td>
-                              <td className="px-5 py-4 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  <button
-                                    onClick={() => handleOpenProgDetails(p)}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    title="View program details"
+                                </td>
+                                <td className="px-5 py-4 capitalize font-semibold text-muted-foreground">
+                                  <span
+                                    className={cn(
+                                      "rounded px-2 py-0.5 text-[10px] font-bold border",
+                                      p.category === "pregnancy" &&
+                                        "bg-cat-light text-cat border-cat/10",
+                                      p.category === "corporate" &&
+                                        "bg-blue-500/5 text-blue-600 border-blue-500/10",
+                                      p.category === "devotional" &&
+                                        "bg-amber-500/5 text-amber-600 border-amber-500/10",
+                                      p.category === "secular" &&
+                                        "bg-teal-500/5 text-teal-600 border-teal-500/10",
+                                    )}
                                   >
-                                    <Eye className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleOpenProgEdit(p)}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    title="Edit program metadata & tracks"
+                                    {p.category}
+                                  </span>
+                                </td>
+                                <td className="px-5 py-4 text-center font-bold text-foreground font-mono">
+                                  {p.trackCount}
+                                </td>
+                                <td className="px-5 py-4 text-center font-mono font-medium text-muted-foreground">
+                                  {formatDuration(p.estimatedDuration)}
+                                </td>
+                                <td className="px-5 py-4 font-bold capitalize">
+                                  <span
+                                    className={cn(
+                                      p.tier === "premium" ? "text-cat" : "text-muted-foreground",
+                                    )}
                                   >
-                                    <Pencil className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleProgramDuplicate(p)}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    title="Duplicate program"
+                                    {p.tier}
+                                  </span>
+                                </td>
+                                <td className="px-5 py-4">
+                                  <span
+                                    className={cn(
+                                      "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                                      p.status === "published" &&
+                                        "bg-success/5 border-success/20 text-success",
+                                      p.status === "draft" &&
+                                        "bg-muted border-border text-muted-foreground",
+                                      p.status === "archived" &&
+                                        "bg-orange-500/5 border-orange-500/20 text-orange-500",
+                                    )}
                                   >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                                  </button>
-                                  {p.status === "draft" ? (
+                                    {p.status}
+                                  </span>
+                                </td>
+                                <td className="px-5 py-4 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
                                     <button
-                                      onClick={() => handleProgramPublish(p)}
-                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-success/30 bg-success/5 text-success hover:bg-success/15"
-                                      title="Publish program"
+                                      onClick={() => handleOpenProgDetails(p)}
+                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                      title="View program details"
                                     >
-                                      <CheckCircle className="h-4 w-4" />
+                                      <Eye className="h-4 w-4" />
                                     </button>
-                                  ) : p.status === "published" ? (
                                     <button
-                                      onClick={() => handleProgramUnpublish(p)}
-                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-amber-600 hover:bg-amber-500/10"
-                                      title="Revert to draft"
+                                      onClick={() => handleOpenProgEdit(p)}
+                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                      title="Edit program metadata & tracks"
                                     >
-                                      <Archive className="h-4 w-4" />
+                                      <Pencil className="h-4 w-4" />
                                     </button>
-                                  ) : null}
-                                  <button
-                                    onClick={() => { setProgramToDelete(p); setShowProgDeleteConfirm(true); }}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15"
-                                    title="Delete program"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                    <button
+                                      onClick={() => handleProgramDuplicate(p)}
+                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                      title="Duplicate program"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="h-4 w-4"
+                                      >
+                                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                      </svg>
+                                    </button>
+                                    {p.status === "draft" ? (
+                                      <button
+                                        onClick={() => handleProgramPublish(p)}
+                                        className="press grid h-8 w-8 place-items-center rounded-btn border border-success/30 bg-success/5 text-success hover:bg-success/15"
+                                        title="Publish program"
+                                      >
+                                        <CheckCircle className="h-4 w-4" />
+                                      </button>
+                                    ) : p.status === "published" ? (
+                                      <button
+                                        onClick={() => handleProgramUnpublish(p)}
+                                        className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-amber-600 hover:bg-amber-500/10"
+                                        title="Revert to draft"
+                                      >
+                                        <Archive className="h-4 w-4" />
+                                      </button>
+                                    ) : null}
+                                    <button
+                                      onClick={() => {
+                                        setProgramToDelete(p);
+                                        setShowProgDeleteConfirm(true);
+                                      }}
+                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15"
+                                      title="Delete program"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                         {programsList.length === 0 && !loadingPrograms && (
                           <tr>
-                            <td colSpan={7} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
-                              No programs match your query parameters. Click [ Create Program ] to curate one.
+                            <td
+                              colSpan={7}
+                              className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold"
+                            >
+                              No programs match your query parameters. Click [ Create Program ] to
+                              curate one.
                             </td>
                           </tr>
                         )}
@@ -2825,14 +3237,41 @@ function Admin() {
                 {/* Users CMS KPI Stats Cards */}
                 <div className="grid gap-4.5 sm:grid-cols-2 md:grid-cols-4">
                   {[
-                    { label: "Total Users", value: userStats?.total ?? 0, bg: "bg-surface border-border" },
-                    { label: "Active Users (30d)", value: userStats?.active ?? 0, bg: "bg-success/5 border-success/20 text-success" },
-                    { label: "New This Month", value: userStats?.newThisMonth ?? 0, bg: "bg-surface border-border text-muted-foreground" },
-                    { label: "Premium Users", value: userStats?.premium ?? 0, bg: "bg-cat-light text-cat border-cat/10" },
+                    {
+                      label: "Total Users",
+                      value: userStats?.total ?? 0,
+                      bg: "bg-surface border-border",
+                    },
+                    {
+                      label: "Active Users (30d)",
+                      value: userStats?.active ?? 0,
+                      bg: "bg-success/5 border-success/20 text-success",
+                    },
+                    {
+                      label: "New This Month",
+                      value: userStats?.newThisMonth ?? 0,
+                      bg: "bg-surface border-border text-muted-foreground",
+                    },
+                    {
+                      label: "Premium Users",
+                      value: userStats?.premium ?? 0,
+                      bg: "bg-cat-light text-cat border-cat/10",
+                    },
                   ].map((stat) => (
-                    <div key={stat.label} className={cn(cardCls, "p-4.5 flex flex-col justify-between border-border/80 shadow-none", stat.bg)}>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">{loadingUserStats ? "..." : stat.value.toLocaleString()}</p>
+                    <div
+                      key={stat.label}
+                      className={cn(
+                        cardCls,
+                        "p-4.5 flex flex-col justify-between border-border/80 shadow-none",
+                        stat.bg,
+                      )}
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">
+                        {loadingUserStats ? "..." : stat.value.toLocaleString()}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -2848,7 +3287,10 @@ function Admin() {
                       className="min-h-11 w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
                     />
                     {userQuery && (
-                      <button onClick={() => setUserQuery("")} className="text-muted-foreground hover:text-foreground">
+                      <button
+                        onClick={() => setUserQuery("")}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
                         <X className="h-4 w-4" />
                       </button>
                     )}
@@ -2863,12 +3305,15 @@ function Admin() {
                         {["All", "Active", "Suspended"].map((st) => (
                           <button
                             key={st}
-                            onClick={() => { setUserFilterStatus(st); setUserPage(1); }}
+                            onClick={() => {
+                              setUserFilterStatus(st);
+                              setUserPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               userFilterStatus === st
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {st}
@@ -2884,12 +3329,15 @@ function Admin() {
                         {["All", "User", "Premium", "Admin"].map((rl) => (
                           <button
                             key={rl}
-                            onClick={() => { setUserFilterRole(rl); setUserPage(1); }}
+                            onClick={() => {
+                              setUserFilterRole(rl);
+                              setUserPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               userFilterRole === rl
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {rl}
@@ -2905,12 +3353,15 @@ function Admin() {
                         {["All", "Free", "Premium"].map((sb) => (
                           <button
                             key={sb}
-                            onClick={() => { setUserFilterTier(sb); setUserPage(1); }}
+                            onClick={() => {
+                              setUserFilterTier(sb);
+                              setUserPage(1);
+                            }}
                             className={cn(
                               "press rounded-full px-4 py-1.5 font-bold transition-all border",
                               userFilterTier === sb
                                 ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
+                                : "bg-background border-border text-muted-foreground hover:border-cat",
                             )}
                           >
                             {sb}
@@ -2920,7 +3371,10 @@ function Admin() {
                     </div>
 
                     {/* Clear Filters CTA */}
-                    {(userQuery || userFilterStatus !== "All" || userFilterRole !== "All" || userFilterTier !== "All") && (
+                    {(userQuery ||
+                      userFilterStatus !== "All" ||
+                      userFilterRole !== "All" ||
+                      userFilterTier !== "All") && (
                       <div className="flex justify-end pt-1">
                         <button
                           onClick={handleClearUserFilters}
@@ -2954,101 +3408,125 @@ function Admin() {
                             <td colSpan={7} className="px-5 py-14 text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <Loader2 className="h-5 w-5 animate-spin text-cat" />
-                                <span className="text-muted-foreground font-medium">Loading users list...</span>
+                                <span className="text-muted-foreground font-medium">
+                                  Loading users list...
+                                </span>
                               </div>
                             </td>
                           </tr>
-                        ) : usersList.map((u) => {
-                          const initials = (u.fullName || u.email || "U").slice(0, 2).toUpperCase();
-                          return (
-                            <tr key={u.id} className="hover:bg-muted/10 transition-colors group">
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-cat/10 text-xs font-bold text-cat border border-cat/10">
-                                    {initials}
+                        ) : (
+                          usersList.map((u) => {
+                            const initials = (u.fullName || u.email || "U")
+                              .slice(0, 2)
+                              .toUpperCase();
+                            return (
+                              <tr key={u.id} className="hover:bg-muted/10 transition-colors group">
+                                <td className="px-5 py-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-cat/10 text-xs font-bold text-cat border border-cat/10">
+                                      {initials}
+                                    </div>
+                                    <span className="font-bold text-foreground truncate max-w-[150px]">
+                                      {u.fullName || "Anonymous User"}
+                                    </span>
                                   </div>
-                                  <span className="font-bold text-foreground truncate max-w-[150px]">{u.fullName || "Anonymous User"}</span>
-                                </div>
-                              </td>
-                              <td className="px-5 py-4 text-muted-foreground font-medium font-mono">
-                                {u.email}
-                              </td>
-                              <td className="px-5 py-4">
-                                <span className={cn(
-                                  "rounded px-2 py-0.5 text-[10px] font-bold border capitalize",
-                                  u.role === "super_admin" && "bg-purple-500/5 text-purple-600 border-purple-500/10",
-                                  u.role === "admin" && "bg-amber-500/5 text-amber-600 border-amber-500/10",
-                                  u.role === "premium" && "bg-cat-light text-cat border-cat/10",
-                                  u.role === "user" && "bg-muted border-border text-muted-foreground",
-                                )}>
-                                  {u.role}
-                                </span>
-                              </td>
-                              <td className="px-5 py-4 capitalize font-semibold text-foreground">
-                                {u.planName ? (
-                                  <span className="text-cat font-bold">{u.planName}</span>
-                                ) : (
-                                  <span className="text-muted-foreground">Free</span>
-                                )}
-                              </td>
-                              <td className="px-5 py-4">
-                                <span className={cn(
-                                  "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                                  u.status === "active" && "bg-success/5 border-success/20 text-success",
-                                  u.status === "suspended" && "bg-destructive/5 border-destructive/20 text-destructive",
-                                )}>
-                                  {u.status === "suspended" ? "suspended" : u.status}
-                                </span>
-                              </td>
-                              <td className="px-5 py-4 text-muted-foreground font-mono">
-                                {formatDate(u.createdAt, { month: "short", day: "numeric", year: "numeric" })}
-                              </td>
-                              <td className="px-5 py-4 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  <button
-                                    onClick={() => handleOpenUserDetails(u)}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    title="View user details profile"
+                                </td>
+                                <td className="px-5 py-4 text-muted-foreground font-medium font-mono">
+                                  {u.email}
+                                </td>
+                                <td className="px-5 py-4">
+                                  <span
+                                    className={cn(
+                                      "rounded px-2 py-0.5 text-[10px] font-bold border capitalize",
+                                      u.role === "super_admin" &&
+                                        "bg-purple-500/5 text-purple-600 border-purple-500/10",
+                                      u.role === "admin" &&
+                                        "bg-amber-500/5 text-amber-600 border-amber-500/10",
+                                      u.role === "premium" && "bg-cat-light text-cat border-cat/10",
+                                      u.role === "user" &&
+                                        "bg-muted border-border text-muted-foreground",
+                                    )}
                                   >
-                                    <Eye className="h-4 w-4" />
-                                  </button>
-                                  {u.role !== "super_admin" && (
-                                    <>
-                                      <button
-                                        onClick={() => handleOpenChangeSubModal(u)}
-                                        className="press min-h-8 rounded-btn border border-cat/20 bg-cat/10 px-2.5 text-[11px] font-bold text-cat hover:bg-cat/20 flex items-center gap-1"
-                                        title="Upgrade or Downgrade User Subscription Tier"
-                                      >
-                                        <Sparkles className="h-3.5 w-3.5" />
-                                        <span>Change Tier</span>
-                                      </button>
-                                      {u.status === "active" ? (
-                                        <button
-                                          onClick={() => handleDeactivate(u)}
-                                          className="press min-h-8 rounded-btn border border-destructive/20 bg-destructive/5 px-2.5 text-[11px] font-bold text-destructive hover:bg-destructive/15"
-                                          title="Deactivate account access"
-                                        >
-                                          Deactivate
-                                        </button>
-                                      ) : u.status === "suspended" ? (
-                                        <button
-                                          onClick={() => handleReactivate(u)}
-                                          className="press min-h-8 rounded-btn border border-success/20 bg-success/5 px-2.5 text-[11px] font-bold text-success hover:bg-success/15"
-                                          title="Reactivate account access"
-                                        >
-                                          Reactivate
-                                        </button>
-                                      ) : null}
-                                    </>
+                                    {u.role}
+                                  </span>
+                                </td>
+                                <td className="px-5 py-4 capitalize font-semibold text-foreground">
+                                  {u.planName ? (
+                                    <span className="text-cat font-bold">{u.planName}</span>
+                                  ) : (
+                                    <span className="text-muted-foreground">Free</span>
                                   )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                </td>
+                                <td className="px-5 py-4">
+                                  <span
+                                    className={cn(
+                                      "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                                      u.status === "active" &&
+                                        "bg-success/5 border-success/20 text-success",
+                                      u.status === "suspended" &&
+                                        "bg-destructive/5 border-destructive/20 text-destructive",
+                                    )}
+                                  >
+                                    {u.status === "suspended" ? "suspended" : u.status}
+                                  </span>
+                                </td>
+                                <td className="px-5 py-4 text-muted-foreground font-mono">
+                                  {formatDate(u.createdAt, {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </td>
+                                <td className="px-5 py-4 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      onClick={() => handleOpenUserDetails(u)}
+                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                      title="View user details profile"
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </button>
+                                    {u.role !== "super_admin" && (
+                                      <>
+                                        <button
+                                          onClick={() => handleOpenChangeSubModal(u)}
+                                          className="press min-h-8 rounded-btn border border-cat/20 bg-cat/10 px-2.5 text-[11px] font-bold text-cat hover:bg-cat/20 flex items-center gap-1"
+                                          title="Upgrade or Downgrade User Subscription Tier"
+                                        >
+                                          <Sparkles className="h-3.5 w-3.5" />
+                                          <span>Change Tier</span>
+                                        </button>
+                                        {u.status === "active" ? (
+                                          <button
+                                            onClick={() => handleDeactivate(u)}
+                                            className="press min-h-8 rounded-btn border border-destructive/20 bg-destructive/5 px-2.5 text-[11px] font-bold text-destructive hover:bg-destructive/15"
+                                            title="Deactivate account access"
+                                          >
+                                            Deactivate
+                                          </button>
+                                        ) : u.status === "suspended" ? (
+                                          <button
+                                            onClick={() => handleReactivate(u)}
+                                            className="press min-h-8 rounded-btn border border-success/20 bg-success/5 px-2.5 text-[11px] font-bold text-success hover:bg-success/15"
+                                            title="Reactivate account access"
+                                          >
+                                            Reactivate
+                                          </button>
+                                        ) : null}
+                                      </>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                         {usersList.length === 0 && !loadingUsers && (
                           <tr>
-                            <td colSpan={7} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
+                            <td
+                              colSpan={7}
+                              className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold"
+                            >
                               No registered users match your query parameters.
                             </td>
                           </tr>
@@ -3091,13 +3569,19 @@ function Admin() {
                 {/* Environmental Billing Configuration Status Card */}
                 <div className="rounded-card border border-border bg-surface p-4 flex flex-wrap items-center justify-between gap-4 shadow-none">
                   <div className="flex items-center gap-3">
-                    <span className={cn(
-                      "inline-flex h-2.5 w-2.5 rounded-full",
-                      (subStats?.paymentMode === "razorpay") ? "bg-success animate-pulse" : "bg-amber-500"
-                    )} />
+                    <span
+                      className={cn(
+                        "inline-flex h-2.5 w-2.5 rounded-full",
+                        subStats?.paymentMode === "razorpay"
+                          ? "bg-success animate-pulse"
+                          : "bg-amber-500",
+                      )}
+                    />
                     <div>
                       <p className="text-xs font-bold text-foreground uppercase tracking-wider">
-                        {subStats?.paymentMode === "razorpay" ? "🟢 RAZORPAY PRODUCTION ACTIVE" : "🟡 MOCK PAYMENT MODE ACTIVE"}
+                        {subStats?.paymentMode === "razorpay"
+                          ? "🟢 RAZORPAY PRODUCTION ACTIVE"
+                          : "🟡 MOCK PAYMENT MODE ACTIVE"}
                       </p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
                         {subStats?.paymentMode === "razorpay"
@@ -3117,14 +3601,41 @@ function Admin() {
                 {/* Billing KPI Cards */}
                 <div className="grid gap-4.5 sm:grid-cols-2 md:grid-cols-4">
                   {[
-                    { label: "Active Subscriptions", value: subStats?.activeSubscriptions ?? 0, bg: "bg-surface border-border" },
-                    { label: "Standard Subscribers", value: subStats?.standardSubscribers ?? 0, bg: "bg-surface border-border text-muted-foreground" },
-                    { label: "Premium Subscribers", value: subStats?.premiumSubscribers ?? 0, bg: "bg-cat-light text-cat border-cat/10" },
-                    { label: "Expiring Soon (7d)", value: subStats?.expiringSoon ?? 0, bg: "bg-destructive/5 border-destructive/20 text-destructive" },
+                    {
+                      label: "Active Subscriptions",
+                      value: subStats?.activeSubscriptions ?? 0,
+                      bg: "bg-surface border-border",
+                    },
+                    {
+                      label: "Standard Subscribers",
+                      value: subStats?.standardSubscribers ?? 0,
+                      bg: "bg-surface border-border text-muted-foreground",
+                    },
+                    {
+                      label: "Premium Subscribers",
+                      value: subStats?.premiumSubscribers ?? 0,
+                      bg: "bg-cat-light text-cat border-cat/10",
+                    },
+                    {
+                      label: "Expiring Soon (7d)",
+                      value: subStats?.expiringSoon ?? 0,
+                      bg: "bg-destructive/5 border-destructive/20 text-destructive",
+                    },
                   ].map((stat) => (
-                    <div key={stat.label} className={cn(cardCls, "p-4.5 flex flex-col justify-between border-border/80 shadow-none", stat.bg)}>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">{loadingSubStats ? "..." : stat.value.toLocaleString()}</p>
+                    <div
+                      key={stat.label}
+                      className={cn(
+                        cardCls,
+                        "p-4.5 flex flex-col justify-between border-border/80 shadow-none",
+                        stat.bg,
+                      )}
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">
+                        {loadingSubStats ? "..." : stat.value.toLocaleString()}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -3143,7 +3654,7 @@ function Admin() {
                         "px-4 py-2 border-b-2 transition-all press",
                         subSection === tab.id
                           ? "border-cat text-cat font-extrabold"
-                          : "border-transparent text-muted-foreground hover:text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {tab.label}
@@ -3165,7 +3676,10 @@ function Admin() {
                           className="min-h-11 w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
                         />
                         {subSearch && (
-                          <button onClick={() => setSubSearch("")} className="text-muted-foreground hover:text-foreground">
+                          <button
+                            onClick={() => setSubSearch("")}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
                             <X className="h-4 w-4" />
                           </button>
                         )}
@@ -3179,12 +3693,15 @@ function Admin() {
                             {["All", "Active", "Pending", "Expired", "Canceled"].map((st) => (
                               <button
                                 key={st}
-                                onClick={() => { setSubFilterStatus(st); setSubPage(1); }}
+                                onClick={() => {
+                                  setSubFilterStatus(st);
+                                  setSubPage(1);
+                                }}
                                 className={cn(
                                   "press rounded-full px-4 py-1.5 font-bold transition-all border",
                                   subFilterStatus === st
                                     ? "bg-cat border-cat text-cat-foreground"
-                                    : "bg-background border-border text-muted-foreground hover:border-cat"
+                                    : "bg-background border-border text-muted-foreground hover:border-cat",
                                 )}
                               >
                                 {st}
@@ -3200,12 +3717,15 @@ function Admin() {
                             {["All", "Free", "Standard", "Premium"].map((p) => (
                               <button
                                 key={p}
-                                onClick={() => { setSubFilterPlan(p); setSubPage(1); }}
+                                onClick={() => {
+                                  setSubFilterPlan(p);
+                                  setSubPage(1);
+                                }}
                                 className={cn(
                                   "press rounded-full px-4 py-1.5 font-bold transition-all border",
                                   subFilterPlan === p
                                     ? "bg-cat border-cat text-cat-foreground"
-                                    : "bg-background border-border text-muted-foreground hover:border-cat"
+                                    : "bg-background border-border text-muted-foreground hover:border-cat",
                                 )}
                               >
                                 {p}
@@ -3217,7 +3737,9 @@ function Admin() {
                     </div>
 
                     {/* Table grid */}
-                    <section className={cn(cardCls, "overflow-hidden border-border/80 shadow-none")}>
+                    <section
+                      className={cn(cardCls, "overflow-hidden border-border/80 shadow-none")}
+                    >
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                           <thead>
@@ -3236,80 +3758,100 @@ function Admin() {
                                 <td colSpan={6} className="px-5 py-14 text-center">
                                   <div className="flex items-center justify-center gap-2">
                                     <Loader2 className="h-5 w-5 animate-spin text-cat" />
-                                    <span className="text-muted-foreground font-medium">Loading subscriptions list...</span>
+                                    <span className="text-muted-foreground font-medium">
+                                      Loading subscriptions list...
+                                    </span>
                                   </div>
                                 </td>
                               </tr>
-                            ) : subsList.map((s) => (
-                              <tr key={s.id} className="hover:bg-muted/10 transition-colors group font-sans">
-                                <td className="px-5 py-4">
-                                  <div>
-                                    <p className="font-bold text-foreground">{s.fullName || "Anonymous"}</p>
-                                    <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[180px]">{s.email}</p>
-                                  </div>
-                                </td>
-                                <td className="px-5 py-4 capitalize font-bold text-cat">
-                                  {s.planName || s.planId}
-                                </td>
-                                <td className="px-5 py-4">
-                                  <span className={cn(
-                                    "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                                    s.status === "active" && "bg-success/5 border-success/20 text-success",
-                                    s.status === "trial" && "bg-blue-500/5 border-blue-500/20 text-blue-600",
-                                    s.status === "canceled" && "bg-destructive/5 border-destructive/20 text-destructive",
-                                    ["expired", "pending"].includes(s.status) && "bg-muted border-border text-muted-foreground",
-                                  )}>
-                                    {s.status}
-                                  </span>
-                                </td>
-                                <td className="px-5 py-4 text-muted-foreground font-mono">
-                                  {formatDate(s.currentPeriodStart)}
-                                </td>
-                                <td className="px-5 py-4 text-muted-foreground font-mono">
-                                  {formatDate(s.currentPeriodEnd)}
-                                </td>
-                                <td className="px-5 py-4 text-right">
-                                  <div className="flex items-center justify-end gap-1.5">
-                                    <button
-                                      onClick={() => handleOpenSubDetails(s)}
-                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                      title="View billing audit details"
+                            ) : (
+                              subsList.map((s) => (
+                                <tr
+                                  key={s.id}
+                                  className="hover:bg-muted/10 transition-colors group font-sans"
+                                >
+                                  <td className="px-5 py-4">
+                                    <div>
+                                      <p className="font-bold text-foreground">
+                                        {s.fullName || "Anonymous"}
+                                      </p>
+                                      <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[180px]">
+                                        {s.email}
+                                      </p>
+                                    </div>
+                                  </td>
+                                  <td className="px-5 py-4 capitalize font-bold text-cat">
+                                    {s.planName || s.planId}
+                                  </td>
+                                  <td className="px-5 py-4">
+                                    <span
+                                      className={cn(
+                                        "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                                        s.status === "active" &&
+                                          "bg-success/5 border-success/20 text-success",
+                                        s.status === "trial" &&
+                                          "bg-blue-500/5 border-blue-500/20 text-blue-600",
+                                        s.status === "canceled" &&
+                                          "bg-destructive/5 border-destructive/20 text-destructive",
+                                        ["expired", "pending"].includes(s.status) &&
+                                          "bg-muted border-border text-muted-foreground",
+                                      )}
                                     >
-                                      <Eye className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleOpenChangeSubModal(s)}
-                                      className="press min-h-8 rounded-btn border border-cat/20 bg-cat/10 px-2.5 text-[11px] font-bold text-cat hover:bg-cat/20 flex items-center gap-1"
-                                      title="Upgrade or Downgrade Subscription Tier"
-                                    >
-                                      <Sparkles className="h-3.5 w-3.5" />
-                                      <span>Change Tier</span>
-                                    </button>
-                                    {s.status === "active" && (
-                                      <>
-                                        <button
-                                          onClick={() => handleExtendSub(s)}
-                                          className="press min-h-8 rounded-btn border border-success/20 bg-success/5 px-2.5 text-[11px] font-bold text-success hover:bg-success/15"
-                                          title="Extend subscription period days"
-                                        >
-                                          Extend
-                                        </button>
-                                        <button
-                                          onClick={() => handleCancelSub(s)}
-                                          className="press min-h-8 rounded-btn border border-destructive/20 bg-destructive/5 px-2.5 text-[11px] font-bold text-destructive hover:bg-destructive/15"
-                                          title="Cancel active subscription"
-                                        >
-                                          Cancel
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
+                                      {s.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-5 py-4 text-muted-foreground font-mono">
+                                    {formatDate(s.currentPeriodStart)}
+                                  </td>
+                                  <td className="px-5 py-4 text-muted-foreground font-mono">
+                                    {formatDate(s.currentPeriodEnd)}
+                                  </td>
+                                  <td className="px-5 py-4 text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <button
+                                        onClick={() => handleOpenSubDetails(s)}
+                                        className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                        title="View billing audit details"
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleOpenChangeSubModal(s)}
+                                        className="press min-h-8 rounded-btn border border-cat/20 bg-cat/10 px-2.5 text-[11px] font-bold text-cat hover:bg-cat/20 flex items-center gap-1"
+                                        title="Upgrade or Downgrade Subscription Tier"
+                                      >
+                                        <Sparkles className="h-3.5 w-3.5" />
+                                        <span>Change Tier</span>
+                                      </button>
+                                      {s.status === "active" && (
+                                        <>
+                                          <button
+                                            onClick={() => handleExtendSub(s)}
+                                            className="press min-h-8 rounded-btn border border-success/20 bg-success/5 px-2.5 text-[11px] font-bold text-success hover:bg-success/15"
+                                            title="Extend subscription period days"
+                                          >
+                                            Extend
+                                          </button>
+                                          <button
+                                            onClick={() => handleCancelSub(s)}
+                                            className="press min-h-8 rounded-btn border border-destructive/20 bg-destructive/5 px-2.5 text-[11px] font-bold text-destructive hover:bg-destructive/15"
+                                            title="Cancel active subscription"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
                             {subsList.length === 0 && !loadingSubs && (
                               <tr>
-                                <td colSpan={6} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
+                                <td
+                                  colSpan={6}
+                                  className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold"
+                                >
                                   No subscriptions match your query parameter filters.
                                 </td>
                               </tr>
@@ -3351,58 +3893,94 @@ function Admin() {
                       {loadingPlans ? (
                         <div className="col-span-full text-center py-14">
                           <Loader2 className="h-6 w-6 animate-spin text-cat mx-auto" />
-                          <p className="text-xs text-muted-foreground mt-2 font-medium">Loading catalog plans configuration...</p>
+                          <p className="text-xs text-muted-foreground mt-2 font-medium">
+                            Loading catalog plans configuration...
+                          </p>
                         </div>
-                      ) : plansList.map((p) => (
-                        <div key={p.id} className={cn(cardCls, "p-6 flex flex-col justify-between space-y-6 shadow-none border-border/80 bg-surface/50 hover:bg-surface transition-all")}>
-                          <div>
-                            <div className="flex items-center justify-between border-b border-border/50 pb-3">
-                              <h4 className="text-sm font-black uppercase tracking-wider text-foreground">{p.name}</h4>
-                              <span className={cn(
-                                "rounded px-1.5 py-0.5 text-[9px] font-bold border",
-                                p.isActive === 1 ? "bg-success/5 border-success/15 text-success" : "bg-muted border-border text-muted-foreground"
-                              )}>
-                                {p.isActive === 1 ? "Active" : "Inactive"}
-                              </span>
-                            </div>
-                            <div className="mt-4 flex items-baseline gap-1">
-                              <span className="text-3xl font-extrabold tracking-tight text-foreground">₹{p.price / 100}</span>
-                              <span className="text-xs text-muted-foreground font-semibold font-sans">/ {p.interval}</span>
-                            </div>
-
-                            <ul className="mt-5 space-y-2 text-xs font-semibold text-muted-foreground/90 font-sans border-t border-border/40 pt-4.5">
-                              {p.id === "free" && (
-                                <>
-                                  <li className="flex items-center gap-2">✓ Basic therapeutic track catalog</li>
-                                  <li className="flex items-center gap-2">✓ Standard audio playback</li>
-                                </>
-                              )}
-                              {p.id === "standard" && (
-                                <>
-                                  <li className="flex items-center gap-2">✓ Standard catalogue tracks access</li>
-                                  <li className="flex items-center gap-2">✓ Complete progress statistics logs</li>
-                                  <li className="flex items-center gap-2">✓ Standard therapeutic programs</li>
-                                </>
-                              )}
-                              {p.id === "premium" && (
-                                <>
-                                  <li className="flex items-center gap-2">✓ Full premium catalogue unlocked</li>
-                                  <li className="flex items-center gap-2">✓ Pregnancy programs sequence tracker</li>
-                                  <li className="flex items-center gap-2">✓ Comprehensive clinical history logs</li>
-                                </>
-                              )}
-                            </ul>
-                          </div>
-
-                          <button
-                            onClick={() => handleOpenEditPlan(p)}
-                            className="press w-full min-h-10 text-xs font-bold border border-border bg-surface hover:bg-muted text-foreground rounded-btn flex items-center justify-center gap-1.5"
+                      ) : (
+                        plansList.map((p) => (
+                          <div
+                            key={p.id}
+                            className={cn(
+                              cardCls,
+                              "p-6 flex flex-col justify-between space-y-6 shadow-none border-border/80 bg-surface/50 hover:bg-surface transition-all",
+                            )}
                           >
-                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                            Edit Configuration
-                          </button>
-                        </div>
-                      ))}
+                            <div>
+                              <div className="flex items-center justify-between border-b border-border/50 pb-3">
+                                <h4 className="text-sm font-black uppercase tracking-wider text-foreground">
+                                  {p.name}
+                                </h4>
+                                <span
+                                  className={cn(
+                                    "rounded px-1.5 py-0.5 text-[9px] font-bold border",
+                                    p.isActive === 1
+                                      ? "bg-success/5 border-success/15 text-success"
+                                      : "bg-muted border-border text-muted-foreground",
+                                  )}
+                                >
+                                  {p.isActive === 1 ? "Active" : "Inactive"}
+                                </span>
+                              </div>
+                              <div className="mt-4 flex items-baseline gap-1">
+                                <span className="text-3xl font-extrabold tracking-tight text-foreground">
+                                  ₹{p.price / 100}
+                                </span>
+                                <span className="text-xs text-muted-foreground font-semibold font-sans">
+                                  / {p.interval}
+                                </span>
+                              </div>
+
+                              <ul className="mt-5 space-y-2 text-xs font-semibold text-muted-foreground/90 font-sans border-t border-border/40 pt-4.5">
+                                {p.id === "free" && (
+                                  <>
+                                    <li className="flex items-center gap-2">
+                                      ✓ Basic therapeutic track catalog
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                      ✓ Standard audio playback
+                                    </li>
+                                  </>
+                                )}
+                                {p.id === "standard" && (
+                                  <>
+                                    <li className="flex items-center gap-2">
+                                      ✓ Standard catalogue tracks access
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                      ✓ Complete progress statistics logs
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                      ✓ Standard therapeutic programs
+                                    </li>
+                                  </>
+                                )}
+                                {p.id === "premium" && (
+                                  <>
+                                    <li className="flex items-center gap-2">
+                                      ✓ Full premium catalogue unlocked
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                      ✓ Pregnancy programs sequence tracker
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                      ✓ Comprehensive clinical history logs
+                                    </li>
+                                  </>
+                                )}
+                              </ul>
+                            </div>
+
+                            <button
+                              onClick={() => handleOpenEditPlan(p)}
+                              className="press w-full min-h-10 text-xs font-bold border border-border bg-surface hover:bg-muted text-foreground rounded-btn flex items-center justify-center gap-1.5"
+                            >
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                              Edit Configuration
+                            </button>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
@@ -3411,7 +3989,12 @@ function Admin() {
                 {subSection === "payments" && (
                   <div className="space-y-6">
                     {/* Search toolbar */}
-                    <div className={cn(cardCls, "p-5 border-border/80 shadow-none flex flex-wrap items-center justify-between gap-4")}>
+                    <div
+                      className={cn(
+                        cardCls,
+                        "p-5 border-border/80 shadow-none flex flex-wrap items-center justify-between gap-4",
+                      )}
+                    >
                       <div className="flex items-center gap-2.5 rounded-field border border-border bg-background px-3.5 max-w-md w-full focus-within:ring-2 focus-within:ring-cat">
                         <Search className="h-4 w-4 text-muted-foreground" />
                         <input
@@ -3421,7 +4004,10 @@ function Admin() {
                           className="min-h-11 w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
                         />
                         {paySearch && (
-                          <button onClick={() => setPaySearch("")} className="text-muted-foreground hover:text-foreground">
+                          <button
+                            onClick={() => setPaySearch("")}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
                             <X className="h-4 w-4" />
                           </button>
                         )}
@@ -3433,12 +4019,23 @@ function Admin() {
                           {["All", "Completed", "Pending", "Failed"].map((st) => (
                             <button
                               key={st}
-                              onClick={() => { setPayFilterStatus(st === "Completed" ? "completed" : st === "Failed" ? "failed" : st); setPayPage(1); }}
+                              onClick={() => {
+                                setPayFilterStatus(
+                                  st === "Completed"
+                                    ? "completed"
+                                    : st === "Failed"
+                                      ? "failed"
+                                      : st,
+                                );
+                                setPayPage(1);
+                              }}
                               className={cn(
                                 "press rounded-full px-4 py-1.5 font-bold transition-all border",
-                                (payFilterStatus === st || (st === "Completed" && payFilterStatus === "completed") || (st === "Failed" && payFilterStatus === "failed"))
+                                payFilterStatus === st ||
+                                  (st === "Completed" && payFilterStatus === "completed") ||
+                                  (st === "Failed" && payFilterStatus === "failed")
                                   ? "bg-cat border-cat text-cat-foreground"
-                                  : "bg-background border-border text-muted-foreground hover:border-cat"
+                                  : "bg-background border-border text-muted-foreground hover:border-cat",
                               )}
                             >
                               {st}
@@ -3449,7 +4046,9 @@ function Admin() {
                     </div>
 
                     {/* Table grid */}
-                    <section className={cn(cardCls, "overflow-hidden border-border/80 shadow-none")}>
+                    <section
+                      className={cn(cardCls, "overflow-hidden border-border/80 shadow-none")}
+                    >
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                           <thead>
@@ -3468,48 +4067,77 @@ function Admin() {
                                 <td colSpan={6} className="px-5 py-14 text-center">
                                   <div className="flex items-center justify-center gap-2">
                                     <Loader2 className="h-5 w-5 animate-spin text-cat" />
-                                    <span className="text-muted-foreground font-medium">Loading transactions list...</span>
+                                    <span className="text-muted-foreground font-medium">
+                                      Loading transactions list...
+                                    </span>
                                   </div>
                                 </td>
                               </tr>
-                            ) : paymentsList.map((p) => (
-                              <tr key={p.id} className="hover:bg-muted/10 transition-colors group font-sans">
-                                <td className="px-5 py-4">
-                                  <div>
-                                    <p className="font-bold text-foreground font-mono text-[10px]">{p.id}</p>
-                                    <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[200px]" title={p.orderId}>{p.orderId}</p>
-                                  </div>
-                                </td>
-                                <td className="px-5 py-4">
-                                  <div>
-                                    <p className="font-bold text-foreground">{p.fullName || "Anonymous"}</p>
-                                    <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[150px]">{p.email}</p>
-                                  </div>
-                                </td>
-                                <td className="px-5 py-4 capitalize font-semibold text-foreground">
-                                  {p.planName}
-                                </td>
-                                <td className="px-5 py-4 font-bold text-foreground">
-                                  ₹{p.amount / 100}
-                                </td>
-                                <td className="px-5 py-4">
-                                  <span className={cn(
-                                    "rounded px-1.5 py-0.5 text-[10px] font-bold border capitalize",
-                                    p.status === "completed" && "bg-success/5 border-success/15 text-success",
-                                    p.status === "pending" && "bg-muted border-border text-muted-foreground",
-                                    p.status === "failed" && "bg-destructive/5 border-destructive/15 text-destructive",
-                                  )}>
-                                    {p.status === "completed" ? "Success" : p.status}
-                                  </span>
-                                </td>
-                                <td className="px-5 py-4 text-muted-foreground font-mono">
-                                  {new Date(p.createdAt).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
-                                </td>
-                              </tr>
-                            ))}
+                            ) : (
+                              paymentsList.map((p) => (
+                                <tr
+                                  key={p.id}
+                                  className="hover:bg-muted/10 transition-colors group font-sans"
+                                >
+                                  <td className="px-5 py-4">
+                                    <div>
+                                      <p className="font-bold text-foreground font-mono text-[10px]">
+                                        {p.id}
+                                      </p>
+                                      <p
+                                        className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[200px]"
+                                        title={p.orderId}
+                                      >
+                                        {p.orderId}
+                                      </p>
+                                    </div>
+                                  </td>
+                                  <td className="px-5 py-4">
+                                    <div>
+                                      <p className="font-bold text-foreground">
+                                        {p.fullName || "Anonymous"}
+                                      </p>
+                                      <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[150px]">
+                                        {p.email}
+                                      </p>
+                                    </div>
+                                  </td>
+                                  <td className="px-5 py-4 capitalize font-semibold text-foreground">
+                                    {p.planName}
+                                  </td>
+                                  <td className="px-5 py-4 font-bold text-foreground">
+                                    ₹{p.amount / 100}
+                                  </td>
+                                  <td className="px-5 py-4">
+                                    <span
+                                      className={cn(
+                                        "rounded px-1.5 py-0.5 text-[10px] font-bold border capitalize",
+                                        p.status === "completed" &&
+                                          "bg-success/5 border-success/15 text-success",
+                                        p.status === "pending" &&
+                                          "bg-muted border-border text-muted-foreground",
+                                        p.status === "failed" &&
+                                          "bg-destructive/5 border-destructive/15 text-destructive",
+                                      )}
+                                    >
+                                      {p.status === "completed" ? "Success" : p.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-5 py-4 text-muted-foreground font-mono">
+                                    {new Date(p.createdAt).toLocaleString(undefined, {
+                                      dateStyle: "short",
+                                      timeStyle: "short",
+                                    })}
+                                  </td>
+                                </tr>
+                              ))
+                            )}
                             {paymentsList.length === 0 && !loadingPayments && (
                               <tr>
-                                <td colSpan={6} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
+                                <td
+                                  colSpan={6}
+                                  className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold"
+                                >
                                   No transaction records found.
                                 </td>
                               </tr>
@@ -3565,7 +4193,7 @@ function Admin() {
                           "press rounded-full px-4 py-1.5 transition-all border",
                           analyticsPeriod === p.id
                             ? "bg-cat border-cat text-cat-foreground"
-                            : "bg-surface border-border text-muted-foreground hover:border-cat"
+                            : "bg-surface border-border text-muted-foreground hover:border-cat",
                         )}
                       >
                         {p.label}
@@ -3575,7 +4203,9 @@ function Admin() {
 
                   {/* Export Options pills */}
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Export CSV:</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Export CSV:
+                    </span>
                     <div className="flex flex-wrap gap-1">
                       {[
                         { id: "listening", label: "Listening Logs" },
@@ -3598,14 +4228,19 @@ function Admin() {
                 {loadingAnalytics ? (
                   <div className="flex flex-col items-center justify-center py-24 gap-3">
                     <Loader2 className="h-8 w-8 animate-spin text-cat" />
-                    <p className="text-xs text-muted-foreground font-medium">Aggregating platform events from D1...</p>
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Aggregating platform events from D1...
+                    </p>
                   </div>
                 ) : !analyticsData || analyticsData.overview.totalPlays === 0 ? (
                   <div className="rounded-card border border-border bg-surface p-12 text-center space-y-3">
                     <BarChart3 className="h-10 w-10 text-muted-foreground/60 mx-auto" />
-                    <h3 className="text-sm font-bold text-foreground">No analytics available yet</h3>
+                    <h3 className="text-sm font-bold text-foreground">
+                      No analytics available yet
+                    </h3>
                     <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
-                      Platform analytics will populate here dynamically once users start playing audio tracks, subscribing to plans, and configuring pregnancy schedules.
+                      Platform analytics will populate here dynamically once users start playing
+                      audio tracks, subscribing to plans, and configuring pregnancy schedules.
                     </p>
                   </div>
                 ) : (
@@ -3613,16 +4248,48 @@ function Admin() {
                     {/* Overview KPI Cards */}
                     <div className="grid gap-4.5 sm:grid-cols-2 md:grid-cols-4">
                       {[
-                        { label: "Active Engagement", value: analyticsData.overview.activeUsers, suffix: " users", bg: "bg-surface border-border" },
-                        { label: "Total Played Tracks", value: analyticsData.overview.totalPlays, suffix: " plays", bg: "bg-surface border-border text-muted-foreground" },
-                        { label: "Cumulative Listening Time", value: analyticsData.overview.listeningTimeHours, suffix: " hrs", bg: "bg-cat-light text-cat border-cat/10" },
-                        { label: "Completion Ratio", value: analyticsData.overview.completionRate, suffix: "% rate", bg: "bg-success/5 border-success/20 text-success" },
+                        {
+                          label: "Active Engagement",
+                          value: analyticsData.overview.activeUsers,
+                          suffix: " users",
+                          bg: "bg-surface border-border",
+                        },
+                        {
+                          label: "Total Played Tracks",
+                          value: analyticsData.overview.totalPlays,
+                          suffix: " plays",
+                          bg: "bg-surface border-border text-muted-foreground",
+                        },
+                        {
+                          label: "Cumulative Listening Time",
+                          value: analyticsData.overview.listeningTimeHours,
+                          suffix: " hrs",
+                          bg: "bg-cat-light text-cat border-cat/10",
+                        },
+                        {
+                          label: "Completion Ratio",
+                          value: analyticsData.overview.completionRate,
+                          suffix: "% rate",
+                          bg: "bg-success/5 border-success/20 text-success",
+                        },
                       ].map((stat) => (
-                        <div key={stat.label} className={cn(cardCls, "p-4.5 flex flex-col justify-between border-border/80 shadow-none", stat.bg)}>
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                        <div
+                          key={stat.label}
+                          className={cn(
+                            cardCls,
+                            "p-4.5 flex flex-col justify-between border-border/80 shadow-none",
+                            stat.bg,
+                          )}
+                        >
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            {stat.label}
+                          </p>
                           <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">
                             {stat.value.toLocaleString()}
-                            <span className="text-xs font-semibold text-muted-foreground/80 lowercase"> {stat.suffix}</span>
+                            <span className="text-xs font-semibold text-muted-foreground/80 lowercase">
+                              {" "}
+                              {stat.suffix}
+                            </span>
                           </p>
                         </div>
                       ))}
@@ -3631,43 +4298,69 @@ function Admin() {
                     <div className="grid gap-6 md:grid-cols-2">
                       {/* CARD 1: User Growth statistics */}
                       <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/85")}>
-                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">User Registration & Retention</h4>
-                        
+                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                          User Registration & Retention
+                        </h4>
+
                         <div className="grid grid-cols-3 gap-3 text-center border-b border-border/50 pb-4">
                           {[
-                            { label: "New Registered", value: analyticsData.users.newRegistrations },
+                            {
+                              label: "New Registered",
+                              value: analyticsData.users.newRegistrations,
+                            },
                             { label: "Active Users", value: analyticsData.users.activeUsers },
                             { label: "Returning Users", value: analyticsData.users.returningUsers },
                           ].map((c) => (
-                            <div key={c.label} className="bg-background/40 p-2.5 rounded border border-border/60">
-                              <p className="text-[9px] font-semibold text-muted-foreground uppercase">{c.label}</p>
-                              <p className="text-lg font-extrabold text-foreground mt-1 tabular-nums">{c.value}</p>
+                            <div
+                              key={c.label}
+                              className="bg-background/40 p-2.5 rounded border border-border/60"
+                            >
+                              <p className="text-[9px] font-semibold text-muted-foreground uppercase">
+                                {c.label}
+                              </p>
+                              <p className="text-lg font-extrabold text-foreground mt-1 tabular-nums">
+                                {c.value}
+                              </p>
                             </div>
                           ))}
                         </div>
 
                         {/* Visual Growth Area SVG representation */}
                         <div className="space-y-2">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Registration Growth trend</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Registration Growth trend
+                          </p>
                           <div className="h-32 w-full bg-background/30 rounded border border-border/60 flex items-end p-2 justify-between gap-1 relative overflow-hidden select-none">
-                            {(analyticsData.users.userGrowthTrend || []).map((t: any, idx: number) => {
-                              const maxVal = Math.max(...(analyticsData.users.userGrowthTrend || []).map((v: any) => v.count), 1);
-                              const heightPct = (t.count / maxVal) * 80;
-                              return (
-                                <div key={idx} className="flex-1 flex flex-col items-center group h-full justify-end">
+                            {(analyticsData.users.userGrowthTrend || []).map(
+                              (t: any, idx: number) => {
+                                const maxVal = Math.max(
+                                  ...(analyticsData.users.userGrowthTrend || []).map(
+                                    (v: any) => v.count,
+                                  ),
+                                  1,
+                                );
+                                const heightPct = (t.count / maxVal) * 80;
+                                return (
                                   <div
-                                    style={{ height: `${Math.max(4, heightPct)}%` }}
-                                    className="w-full bg-cat rounded-t transition-all hover:bg-cat-hover"
-                                    title={`${t.date}: ${t.count} registrations`}
-                                  />
-                                  <span className="text-[8px] text-muted-foreground font-mono mt-1 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-1 bg-surface px-1 border rounded shadow-xs">
-                                    {t.date}: {t.count}
-                                  </span>
-                                </div>
-                              );
-                            })}
+                                    key={idx}
+                                    className="flex-1 flex flex-col items-center group h-full justify-end"
+                                  >
+                                    <div
+                                      style={{ height: `${Math.max(4, heightPct)}%` }}
+                                      className="w-full bg-cat rounded-t transition-all hover:bg-cat-hover"
+                                      title={`${t.date}: ${t.count} registrations`}
+                                    />
+                                    <span className="text-[8px] text-muted-foreground font-mono mt-1 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-1 bg-surface px-1 border rounded shadow-xs">
+                                      {t.date}: {t.count}
+                                    </span>
+                                  </div>
+                                );
+                              },
+                            )}
                             {(analyticsData.users.userGrowthTrend || []).length === 0 && (
-                              <p className="text-[10px] text-muted-foreground font-semibold m-auto">No growth data in this range</p>
+                              <p className="text-[10px] text-muted-foreground font-semibold m-auto">
+                                No growth data in this range
+                              </p>
                             )}
                           </div>
                         </div>
@@ -3675,41 +4368,64 @@ function Admin() {
 
                       {/* CARD 2: Listening trends & Category preferences */}
                       <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/85")}>
-                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Listening Hours Trends</h4>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                          Listening Hours Trends
+                        </h4>
                         <div className="h-32 w-full bg-background/30 rounded border border-border/60 flex items-end p-2 justify-between gap-1 relative overflow-hidden select-none">
-                          {(analyticsData.listening.listeningTrend || []).map((t: any, idx: number) => {
-                            const maxVal = Math.max(...(analyticsData.listening.listeningTrend || []).map((v: any) => v.hours), 1);
-                            const heightPct = (t.hours / maxVal) * 80;
-                            return (
-                              <div key={idx} className="flex-1 flex flex-col items-center group h-full justify-end">
+                          {(analyticsData.listening.listeningTrend || []).map(
+                            (t: any, idx: number) => {
+                              const maxVal = Math.max(
+                                ...(analyticsData.listening.listeningTrend || []).map(
+                                  (v: any) => v.hours,
+                                ),
+                                1,
+                              );
+                              const heightPct = (t.hours / maxVal) * 80;
+                              return (
                                 <div
-                                  style={{ height: `${Math.max(4, heightPct)}%` }}
-                                  className="w-full bg-success/60 rounded-t transition-all hover:bg-success/80"
-                                  title={`${t.date}: ${t.hours} hours listened (${t.plays} plays)`}
-                                />
-                                <span className="text-[8px] text-muted-foreground font-mono mt-1 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-1 bg-surface px-1 border rounded shadow-xs">
-                                  {t.date}: {t.hours} hrs ({t.plays} plays)
-                                </span>
-                              </div>
-                            );
-                          })}
+                                  key={idx}
+                                  className="flex-1 flex flex-col items-center group h-full justify-end"
+                                >
+                                  <div
+                                    style={{ height: `${Math.max(4, heightPct)}%` }}
+                                    className="w-full bg-success/60 rounded-t transition-all hover:bg-success/80"
+                                    title={`${t.date}: ${t.hours} hours listened (${t.plays} plays)`}
+                                  />
+                                  <span className="text-[8px] text-muted-foreground font-mono mt-1 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-1 bg-surface px-1 border rounded shadow-xs">
+                                    {t.date}: {t.hours} hrs ({t.plays} plays)
+                                  </span>
+                                </div>
+                              );
+                            },
+                          )}
                           {(analyticsData.listening.listeningTrend || []).length === 0 && (
-                            <p className="text-[10px] text-muted-foreground font-semibold m-auto">No listening events in this range</p>
+                            <p className="text-[10px] text-muted-foreground font-semibold m-auto">
+                              No listening events in this range
+                            </p>
                           )}
                         </div>
 
                         {/* Category Preference distribution */}
                         <div className="space-y-3.5">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Listening by Category Preference</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Listening by Category Preference
+                          </p>
                           <div className="space-y-2">
                             {(analyticsData.categoryDistribution || []).map((c: any) => {
-                              const maxPlays = Math.max(...(analyticsData.categoryDistribution || []).map((v: any) => v.plays), 1);
+                              const maxPlays = Math.max(
+                                ...(analyticsData.categoryDistribution || []).map(
+                                  (v: any) => v.plays,
+                                ),
+                                1,
+                              );
                               const pctWidth = (c.plays / maxPlays) * 100;
                               return (
                                 <div key={c.category} className="space-y-1 text-xs">
                                   <div className="flex justify-between font-semibold">
                                     <span className="capitalize">{c.category}</span>
-                                    <span className="text-muted-foreground">{c.plays} plays · {c.durationHours} hrs</span>
+                                    <span className="text-muted-foreground">
+                                      {c.plays} plays · {c.durationHours} hrs
+                                    </span>
                                   </div>
                                   <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                                     <div
@@ -3721,7 +4437,9 @@ function Admin() {
                               );
                             })}
                             {(analyticsData.categoryDistribution || []).length === 0 && (
-                              <p className="text-[10px] text-muted-foreground font-semibold">No category statistics available.</p>
+                              <p className="text-[10px] text-muted-foreground font-semibold">
+                                No category statistics available.
+                              </p>
                             )}
                           </div>
                         </div>
@@ -3730,8 +4448,15 @@ function Admin() {
 
                     <div className="grid gap-6 md:grid-cols-2">
                       {/* CARD 3: Popular Tracks ranking */}
-                      <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/85 overflow-hidden")}>
-                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Top 10 Popular Tracks</h4>
+                      <div
+                        className={cn(
+                          cardCls,
+                          "p-5 space-y-4 shadow-none border-border/85 overflow-hidden",
+                        )}
+                      >
+                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                          Top 10 Popular Tracks
+                        </h4>
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse text-xs">
                             <thead>
@@ -3745,15 +4470,25 @@ function Admin() {
                               {(analyticsData.popularTracks || []).map((t: any, idx: number) => (
                                 <tr key={idx} className="hover:bg-muted/10 transition-colors">
                                   <td className="px-3 py-3">
-                                    <div className="font-bold text-foreground leading-snug">{t.title}</div>
-                                    <div className="text-[10px] text-muted-foreground mt-0.5">{t.artist}</div>
+                                    <div className="font-bold text-foreground leading-snug">
+                                      {t.title}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                                      {t.artist}
+                                    </div>
                                   </td>
-                                  <td className="px-3 py-3 text-center font-mono font-bold text-foreground">{t.plays.toLocaleString()}</td>
+                                  <td className="px-3 py-3 text-center font-mono font-bold text-foreground">
+                                    {t.plays.toLocaleString()}
+                                  </td>
                                   <td className="px-3 py-3 text-right">
-                                    <span className={cn(
-                                      "rounded px-1.5 py-0.5 text-[10px] font-bold font-mono border",
-                                      t.completionRate >= 75 ? "bg-success/5 border-success/15 text-success" : "bg-muted border-border text-muted-foreground"
-                                    )}>
+                                    <span
+                                      className={cn(
+                                        "rounded px-1.5 py-0.5 text-[10px] font-bold font-mono border",
+                                        t.completionRate >= 75
+                                          ? "bg-success/5 border-success/15 text-success"
+                                          : "bg-muted border-border text-muted-foreground",
+                                      )}
+                                    >
                                       {t.completionRate}%
                                     </span>
                                   </td>
@@ -3761,7 +4496,12 @@ function Admin() {
                               ))}
                               {(analyticsData.popularTracks || []).length === 0 && (
                                 <tr>
-                                  <td colSpan={3} className="px-3 py-8 text-center text-muted-foreground font-semibold">No track plays registered.</td>
+                                  <td
+                                    colSpan={3}
+                                    className="px-3 py-8 text-center text-muted-foreground font-semibold"
+                                  >
+                                    No track plays registered.
+                                  </td>
                                 </tr>
                               )}
                             </tbody>
@@ -3770,8 +4510,15 @@ function Admin() {
                       </div>
 
                       {/* CARD 4: Program Performance starts vs completions */}
-                      <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/85 overflow-hidden")}>
-                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Program Performance Ranking</h4>
+                      <div
+                        className={cn(
+                          cardCls,
+                          "p-5 space-y-4 shadow-none border-border/85 overflow-hidden",
+                        )}
+                      >
+                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                          Program Performance Ranking
+                        </h4>
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse text-xs">
                             <thead>
@@ -3782,23 +4529,41 @@ function Admin() {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-border/40">
-                              {(analyticsData.programPerformance || []).map((p: any, idx: number) => (
-                                <tr key={idx} className="hover:bg-muted/10 transition-colors">
-                                  <td className="px-3 py-3 font-bold text-foreground truncate max-w-[200px]" title={p.title}>{p.title}</td>
-                                  <td className="px-3 py-3 text-center font-mono font-bold text-foreground">{p.starts.toLocaleString()}</td>
-                                  <td className="px-3 py-3 text-right">
-                                    <span className={cn(
-                                      "rounded px-1.5 py-0.5 text-[10px] font-bold font-mono border",
-                                      p.completionRate >= 75 ? "bg-success/5 border-success/15 text-success" : "bg-muted border-border text-muted-foreground"
-                                    )}>
-                                      {p.completionRate}%
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))}
+                              {(analyticsData.programPerformance || []).map(
+                                (p: any, idx: number) => (
+                                  <tr key={idx} className="hover:bg-muted/10 transition-colors">
+                                    <td
+                                      className="px-3 py-3 font-bold text-foreground truncate max-w-[200px]"
+                                      title={p.title}
+                                    >
+                                      {p.title}
+                                    </td>
+                                    <td className="px-3 py-3 text-center font-mono font-bold text-foreground">
+                                      {p.starts.toLocaleString()}
+                                    </td>
+                                    <td className="px-3 py-3 text-right">
+                                      <span
+                                        className={cn(
+                                          "rounded px-1.5 py-0.5 text-[10px] font-bold font-mono border",
+                                          p.completionRate >= 75
+                                            ? "bg-success/5 border-success/15 text-success"
+                                            : "bg-muted border-border text-muted-foreground",
+                                        )}
+                                      >
+                                        {p.completionRate}%
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ),
+                              )}
                               {(analyticsData.programPerformance || []).length === 0 && (
                                 <tr>
-                                  <td colSpan={3} className="px-3 py-8 text-center text-muted-foreground font-semibold">No program starts registered.</td>
+                                  <td
+                                    colSpan={3}
+                                    className="px-3 py-8 text-center text-muted-foreground font-semibold"
+                                  >
+                                    No program starts registered.
+                                  </td>
                                 </tr>
                               )}
                             </tbody>
@@ -3811,34 +4576,60 @@ function Admin() {
                       {/* CARD 5: Pregnancy analytics */}
                       <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/85")}>
                         <h4 className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4 text-cat animate-pulse" /> Pregnancy Wellness Analytics
+                          <Calendar className="h-4 w-4 text-cat animate-pulse" /> Pregnancy Wellness
+                          Analytics
                         </h4>
-                        
+
                         <div className="grid grid-cols-3 gap-2.5 text-center">
                           {[
-                            { label: "Active Pregnancy Users", value: analyticsData.pregnancy.activeUsers },
-                            { label: "Programs Started", value: analyticsData.pregnancy.programsStarted },
-                            { label: "Programs Completed", value: analyticsData.pregnancy.programsCompleted },
+                            {
+                              label: "Active Pregnancy Users",
+                              value: analyticsData.pregnancy.activeUsers,
+                            },
+                            {
+                              label: "Programs Started",
+                              value: analyticsData.pregnancy.programsStarted,
+                            },
+                            {
+                              label: "Programs Completed",
+                              value: analyticsData.pregnancy.programsCompleted,
+                            },
                           ].map((p) => (
-                            <div key={p.label} className="bg-background/40 p-2.5 rounded border border-border/60">
-                              <p className="text-[9px] font-semibold text-muted-foreground uppercase leading-tight">{p.label}</p>
-                              <p className="text-base font-extrabold text-foreground mt-1 tabular-nums">{p.value}</p>
+                            <div
+                              key={p.label}
+                              className="bg-background/40 p-2.5 rounded border border-border/60"
+                            >
+                              <p className="text-[9px] font-semibold text-muted-foreground uppercase leading-tight">
+                                {p.label}
+                              </p>
+                              <p className="text-base font-extrabold text-foreground mt-1 tabular-nums">
+                                {p.value}
+                              </p>
                             </div>
                           ))}
                         </div>
 
                         {/* Gestational Weeks Engagement bar chart */}
                         <div className="space-y-3.5 pt-2">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Most Active Gestational Weeks (Plays)</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Most Active Gestational Weeks (Plays)
+                          </p>
                           <div className="space-y-2">
                             {(analyticsData.pregnancy.weekEngagement || []).map((w: any) => {
-                              const maxPlays = Math.max(...(analyticsData.pregnancy.weekEngagement || []).map((v: any) => v.plays), 1);
+                              const maxPlays = Math.max(
+                                ...(analyticsData.pregnancy.weekEngagement || []).map(
+                                  (v: any) => v.plays,
+                                ),
+                                1,
+                              );
                               const pctWidth = (w.plays / maxPlays) * 100;
                               return (
                                 <div key={w.week} className="space-y-1 text-xs">
                                   <div className="flex justify-between font-semibold">
                                     <span>Week {w.week}</span>
-                                    <span className="text-muted-foreground">{w.plays} plays engagement</span>
+                                    <span className="text-muted-foreground">
+                                      {w.plays} plays engagement
+                                    </span>
                                   </div>
                                   <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                                     <div
@@ -3850,7 +4641,9 @@ function Admin() {
                               );
                             })}
                             {(analyticsData.pregnancy.weekEngagement || []).length === 0 && (
-                              <p className="text-[10px] text-muted-foreground font-semibold">No gestational week events registered in this period.</p>
+                              <p className="text-[10px] text-muted-foreground font-semibold">
+                                No gestational week events registered in this period.
+                              </p>
                             )}
                           </div>
                         </div>
@@ -3858,25 +4651,45 @@ function Admin() {
 
                       {/* CARD 6: Subscription Growth Trends & plan distributions */}
                       <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/85")}>
-                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Subscriptions Growth trends</h4>
-                        
+                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                          Subscriptions Growth trends
+                        </h4>
+
                         <div className="grid grid-cols-4 gap-1.5 text-center">
                           {[
-                            { label: "Active", value: analyticsData.subscriptions.activeSubscriptions },
+                            {
+                              label: "Active",
+                              value: analyticsData.subscriptions.activeSubscriptions,
+                            },
                             { label: "New", value: analyticsData.subscriptions.newSubscriptions },
-                            { label: "Expired", value: analyticsData.subscriptions.expiredSubscriptions },
-                            { label: "Canceled", value: analyticsData.subscriptions.cancelledSubscriptions },
+                            {
+                              label: "Expired",
+                              value: analyticsData.subscriptions.expiredSubscriptions,
+                            },
+                            {
+                              label: "Canceled",
+                              value: analyticsData.subscriptions.cancelledSubscriptions,
+                            },
                           ].map((s) => (
-                            <div key={s.label} className="bg-background/40 p-2 rounded border border-border/50">
-                              <p className="text-[8px] font-bold text-muted-foreground uppercase">{s.label}</p>
-                              <p className="text-sm font-extrabold text-foreground mt-1.5 tabular-nums">{s.value}</p>
+                            <div
+                              key={s.label}
+                              className="bg-background/40 p-2 rounded border border-border/50"
+                            >
+                              <p className="text-[8px] font-bold text-muted-foreground uppercase">
+                                {s.label}
+                              </p>
+                              <p className="text-sm font-extrabold text-foreground mt-1.5 tabular-nums">
+                                {s.value}
+                              </p>
                             </div>
                           ))}
                         </div>
 
                         {/* Plan distributions progress metrics */}
                         <div className="space-y-3.5 pt-2">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Plan Distribution share (Active)</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Plan Distribution share (Active)
+                          </p>
                           <div className="space-y-2">
                             {(analyticsData.subscriptions.planDistribution || []).map((p: any) => {
                               const total = analyticsData.subscriptions.activeSubscriptions || 1;
@@ -3885,7 +4698,9 @@ function Admin() {
                                 <div key={p.planId} className="space-y-1 text-xs">
                                   <div className="flex justify-between font-semibold">
                                     <span className="capitalize">{p.planId} plan</span>
-                                    <span className="text-muted-foreground">{p.count} accounts ({Math.round(pctWidth)}%)</span>
+                                    <span className="text-muted-foreground">
+                                      {p.count} accounts ({Math.round(pctWidth)}%)
+                                    </span>
                                   </div>
                                   <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                                     <div
@@ -3897,7 +4712,9 @@ function Admin() {
                               );
                             })}
                             {(analyticsData.subscriptions.planDistribution || []).length === 0 && (
-                              <p className="text-[10px] text-muted-foreground font-semibold">No active subscriptions registered in this period.</p>
+                              <p className="text-[10px] text-muted-foreground font-semibold">
+                                No active subscriptions registered in this period.
+                              </p>
                             )}
                           </div>
                         </div>
@@ -3905,18 +4722,31 @@ function Admin() {
                         {/* Favorites activity audit */}
                         <div className="border-t border-border/40 pt-4 space-y-2.5">
                           <div className="flex justify-between text-xs font-bold">
-                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Total favorites added</span>
-                            <span className="text-foreground">{analyticsData.favorites.totalFavorites.toLocaleString()} favorites</span>
+                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
+                              Total favorites added
+                            </span>
+                            <span className="text-foreground">
+                              {analyticsData.favorites.totalFavorites.toLocaleString()} favorites
+                            </span>
                           </div>
-                          
+
                           {/* Top favorited list */}
                           <div className="space-y-1">
-                            {(analyticsData.favorites.topFavoritedTracks || []).slice(0, 3).map((f: any, idx: number) => (
-                              <div key={idx} className="flex justify-between text-[11px] font-semibold text-muted-foreground group">
-                                <span className="truncate max-w-[200px] text-foreground group-hover:text-cat transition-colors font-sans">{idx + 1}. {f.title}</span>
-                                <span className="font-mono text-[10px] shrink-0">{f.favoritesCount} saves</span>
-                              </div>
-                            ))}
+                            {(analyticsData.favorites.topFavoritedTracks || [])
+                              .slice(0, 3)
+                              .map((f: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex justify-between text-[11px] font-semibold text-muted-foreground group"
+                                >
+                                  <span className="truncate max-w-[200px] text-foreground group-hover:text-cat transition-colors font-sans">
+                                    {idx + 1}. {f.title}
+                                  </span>
+                                  <span className="font-mono text-[10px] shrink-0">
+                                    {f.favoritesCount} saves
+                                  </span>
+                                </div>
+                              ))}
                           </div>
                         </div>
                       </div>
@@ -3932,7 +4762,10 @@ function Admin() {
                 {/* Header */}
                 <div className="border-b border-border/40 pb-4 select-none">
                   <h3 className="text-base font-bold text-foreground">Admin settings</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Manage application configuration, defaults, system preferences, and infrastructure health.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Manage application configuration, defaults, system preferences, and
+                    infrastructure health.
+                  </p>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-3">
@@ -3940,8 +4773,10 @@ function Admin() {
                   <div className="md:col-span-2 space-y-6">
                     {/* General Settings */}
                     <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/80")}>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">General Application Settings</h4>
-                      
+                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                        General Application Settings
+                      </h4>
+
                       <div className="grid gap-4.5 sm:grid-cols-2">
                         <label className="block">
                           <span className={labelCls}>Application Name</span>
@@ -3990,8 +4825,13 @@ function Admin() {
 
                     {/* Content Default Settings */}
                     <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/80")}>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">CMS Content defaults</h4>
-                      <p className="text-[10px] text-muted-foreground">Configure initial values pre-populated when creating new therapeutic audio tracks.</p>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                        CMS Content defaults
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground">
+                        Configure initial values pre-populated when creating new therapeutic audio
+                        tracks.
+                      </p>
 
                       <div className="grid gap-4 sm:grid-cols-2">
                         <label className="block">
@@ -4050,10 +4890,19 @@ function Admin() {
                       <div className="flex justify-end pt-2">
                         <button
                           onClick={() => {
-                            localStorage.setItem("ks_settings_default_visibility", settingsDefaultVisibility);
-                            localStorage.setItem("ks_settings_default_difficulty", settingsDefaultDifficulty);
+                            localStorage.setItem(
+                              "ks_settings_default_visibility",
+                              settingsDefaultVisibility,
+                            );
+                            localStorage.setItem(
+                              "ks_settings_default_difficulty",
+                              settingsDefaultDifficulty,
+                            );
                             localStorage.setItem("ks_settings_default_tier", settingsDefaultTier);
-                            localStorage.setItem("ks_settings_default_category", settingsDefaultCategory);
+                            localStorage.setItem(
+                              "ks_settings_default_category",
+                              settingsDefaultCategory,
+                            );
                             toast.success("Content creation defaults updated successfully.");
                           }}
                           className="press inline-flex min-h-10 items-center justify-center rounded-btn bg-primary px-4.5 text-xs font-bold text-primary-foreground hover:bg-primary-hover shadow-sm"
@@ -4065,8 +4914,12 @@ function Admin() {
 
                     {/* Pregnancy Settings */}
                     <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/80")}>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Pregnancy engine configurations</h4>
-                      <p className="text-[10px] text-muted-foreground">Adjust recommendation rules for the pregnancy trimester playback schedules.</p>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                        Pregnancy engine configurations
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground">
+                        Adjust recommendation rules for the pregnancy trimester playback schedules.
+                      </p>
 
                       <div className="flex items-center gap-3 rounded-md border border-border p-3.5 bg-background/30 select-none">
                         <input
@@ -4076,7 +4929,10 @@ function Admin() {
                           onChange={(e) => setSettingsPregnancyEnabled(e.target.checked)}
                           className="h-4 w-4 rounded border-border text-cat focus:ring-cat"
                         />
-                        <label htmlFor="settingsPregnancyEnabled" className="text-xs font-bold text-foreground cursor-pointer">
+                        <label
+                          htmlFor="settingsPregnancyEnabled"
+                          className="text-xs font-bold text-foreground cursor-pointer"
+                        >
                           Enable Gestational Schedule Engine
                         </label>
                       </div>
@@ -4096,18 +4952,25 @@ function Admin() {
                       <div className="grid grid-cols-2 gap-4 text-xs">
                         <div className="rounded-md border border-border p-3.5 bg-background/40">
                           <p className="font-bold text-muted-foreground">Gestational Week Range</p>
-                          <p className="text-base font-extrabold text-foreground mt-1">1 — 40 weeks</p>
+                          <p className="text-base font-extrabold text-foreground mt-1">
+                            1 — 40 weeks
+                          </p>
                         </div>
                         <div className="rounded-md border border-border p-3.5 bg-background/40">
                           <p className="font-bold text-muted-foreground">Schedule Modules</p>
-                          <p className="text-base font-extrabold text-foreground mt-1">9 Months seeded</p>
+                          <p className="text-base font-extrabold text-foreground mt-1">
+                            9 Months seeded
+                          </p>
                         </div>
                       </div>
 
                       <div className="flex justify-end pt-2">
                         <button
                           onClick={() => {
-                            localStorage.setItem("ks_settings_pregnancy_enabled", String(settingsPregnancyEnabled));
+                            localStorage.setItem(
+                              "ks_settings_pregnancy_enabled",
+                              String(settingsPregnancyEnabled),
+                            );
                             localStorage.setItem("ks_settings_pregnancy_rec", settingsPregnancyRec);
                             toast.success("Pregnancy engine defaults updated successfully.");
                           }}
@@ -4120,32 +4983,46 @@ function Admin() {
 
                     {/* Subscriptions Environment */}
                     <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/80")}>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Subscriptions & Payment provider</h4>
-                      
+                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                        Subscriptions & Payment provider
+                      </h4>
+
                       <div className="rounded-md border border-border p-4 bg-muted/15 flex items-start gap-3 text-xs leading-relaxed">
                         <div className="grid h-6 w-6 place-items-center rounded-full bg-amber-500/10 text-amber-500 font-extrabold select-none shrink-0 mt-0.5">
                           !
                         </div>
                         <div>
-                          <p className="font-bold text-foreground capitalize">Running provider environment</p>
+                          <p className="font-bold text-foreground capitalize">
+                            Running provider environment
+                          </p>
                           <div className="mt-1.5 flex items-center gap-1.5">
                             <span className="rounded bg-amber-500/10 border border-amber-500/20 text-amber-600 px-2 py-0.5 text-[9px] font-black uppercase">
-                              🟡 {subStats?.paymentMode ? subStats.paymentMode.toUpperCase() : "MOCK PAYMENT ACTIVE"}
+                              🟡{" "}
+                              {subStats?.paymentMode
+                                ? subStats.paymentMode.toUpperCase()
+                                : "MOCK PAYMENT ACTIVE"}
                             </span>
                           </div>
                           <p className="text-muted-foreground mt-2 font-medium">
-                            The application is currently running in mock transaction simulation mode. Production Razorpay api integrations are disabled.
+                            The application is currently running in mock transaction simulation
+                            mode. Production Razorpay api integrations are disabled.
                           </p>
                         </div>
                       </div>
 
                       <div className="rounded-md border border-border/70 bg-background p-4 text-[10px] text-muted-foreground font-mono leading-relaxed space-y-1.5">
-                        <p className="font-bold text-foreground text-xs font-sans">🔑 Cloudflare secrets protection active</p>
+                        <p className="font-bold text-foreground text-xs font-sans">
+                          🔑 Cloudflare secrets protection active
+                        </p>
                         <p>RAZORPAY_KEY_SECRET: •••••••••••••••••••••••••• (Protected Binding)</p>
-                        <p>RAZORPAY_WEBHOOK_SECRET: •••••••••••••••••••••••••• (Protected Binding)</p>
+                        <p>
+                          RAZORPAY_WEBHOOK_SECRET: •••••••••••••••••••••••••• (Protected Binding)
+                        </p>
                         <p>JWT_ACCESS_SECRET: •••••••••••••••••••••••••• (Protected Binding)</p>
                         <p className="font-sans font-semibold text-[9px] text-amber-600 pt-1">
-                          Note: Sensitive encryption keys and integration secret hashes are locked at worker runtime. They cannot be retrieved or mutated via the admin panel.
+                          Note: Sensitive encryption keys and integration secret hashes are locked
+                          at worker runtime. They cannot be retrieved or mutated via the admin
+                          panel.
                         </p>
                       </div>
                     </div>
@@ -4156,7 +5033,9 @@ function Admin() {
                     {/* System Health */}
                     <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/80")}>
                       <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Infrastructure Health</h4>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                          Infrastructure Health
+                        </h4>
                         <button
                           onClick={loadSystemHealth}
                           disabled={loadingHealth}
@@ -4175,12 +5054,19 @@ function Admin() {
                           { id: "hls", label: "HLS Processing engine", active: true },
                           { id: "auth", label: "Authentication services", active: true },
                         ].map((srv) => (
-                          <div key={srv.id} className="flex items-center justify-between rounded border border-border/50 p-2.5 bg-background/20 text-xs font-sans">
+                          <div
+                            key={srv.id}
+                            className="flex items-center justify-between rounded border border-border/50 p-2.5 bg-background/20 text-xs font-sans"
+                          >
                             <span className="font-semibold text-foreground">{srv.label}</span>
-                            <span className={cn(
-                              "rounded px-1.5 py-0.5 text-[9px] font-extrabold uppercase border",
-                              srv.active ? "bg-success/5 border-success/15 text-success" : "bg-destructive/5 border-destructive/15 text-destructive"
-                            )}>
+                            <span
+                              className={cn(
+                                "rounded px-1.5 py-0.5 text-[9px] font-extrabold uppercase border",
+                                srv.active
+                                  ? "bg-success/5 border-success/15 text-success"
+                                  : "bg-destructive/5 border-destructive/15 text-destructive",
+                              )}
+                            >
                               {srv.active ? "Operational" : "Offline"}
                             </span>
                           </div>
@@ -4190,15 +5076,19 @@ function Admin() {
 
                     {/* Storage Info */}
                     <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/80")}>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">R2 Storage information</h4>
-                      
+                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                        R2 Storage information
+                      </h4>
+
                       <div className="space-y-3.5 text-xs">
                         <div className="flex justify-between border-b border-border/50 pb-2">
                           <span className="font-semibold text-muted-foreground">Active Bucket</span>
                           <span className="font-bold text-foreground">bhajan</span>
                         </div>
                         <div className="flex justify-between border-b border-border/50 pb-2">
-                          <span className="font-semibold text-muted-foreground">Binding Status</span>
+                          <span className="font-semibold text-muted-foreground">
+                            Binding Status
+                          </span>
                           <span className="font-bold text-success">🟢 Connected</span>
                         </div>
                         <div className="flex justify-between border-b border-border/50 pb-2">
@@ -4207,7 +5097,9 @@ function Admin() {
                         </div>
                         <div className="flex justify-between border-b border-border/50 pb-2">
                           <span className="font-semibold text-muted-foreground">Processed HLS</span>
-                          <span className="font-bold text-foreground">Protected segment tickets</span>
+                          <span className="font-bold text-foreground">
+                            Protected segment tickets
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="font-semibold text-muted-foreground">Public Access</span>
@@ -4218,8 +5110,10 @@ function Admin() {
 
                     {/* Admin Preferences */}
                     <div className={cn(cardCls, "p-5 space-y-4 shadow-none border-border/80")}>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Admin UI Preferences</h4>
-                      
+                      <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                        Admin UI Preferences
+                      </h4>
+
                       <label className="block">
                         <span className={labelCls}>Dashboard Refresh</span>
                         <select
@@ -4254,7 +5148,10 @@ function Admin() {
                             onChange={(e) => setSettingsShowNotify(e.target.checked)}
                             className="h-4 w-4 rounded border-border text-cat focus:ring-cat"
                           />
-                          <label htmlFor="settingsShowNotify" className="text-xs font-bold text-foreground cursor-pointer">
+                          <label
+                            htmlFor="settingsShowNotify"
+                            className="text-xs font-bold text-foreground cursor-pointer"
+                          >
                             Show Transcoding notifications
                           </label>
                         </div>
@@ -4267,7 +5164,10 @@ function Admin() {
                             onChange={(e) => setSettingsShowConfirm(e.target.checked)}
                             className="h-4 w-4 rounded border-border text-cat focus:ring-cat"
                           />
-                          <label htmlFor="settingsShowConfirm" className="text-xs font-bold text-foreground cursor-pointer">
+                          <label
+                            htmlFor="settingsShowConfirm"
+                            className="text-xs font-bold text-foreground cursor-pointer"
+                          >
                             Show Confirmation Dialogs
                           </label>
                         </div>
@@ -4277,9 +5177,18 @@ function Admin() {
                         <button
                           onClick={() => {
                             localStorage.setItem("ks_settings_admin_refresh", settingsAdminRefresh);
-                            localStorage.setItem("ks_settings_admin_page_size", String(settingsAdminPageSize));
-                            localStorage.setItem("ks_settings_show_notify", String(settingsShowNotify));
-                            localStorage.setItem("ks_settings_show_confirm", String(settingsShowConfirm));
+                            localStorage.setItem(
+                              "ks_settings_admin_page_size",
+                              String(settingsAdminPageSize),
+                            );
+                            localStorage.setItem(
+                              "ks_settings_show_notify",
+                              String(settingsShowNotify),
+                            );
+                            localStorage.setItem(
+                              "ks_settings_show_confirm",
+                              String(settingsShowConfirm),
+                            );
                             toast.success("Admin dashboard preferences saved.");
                           }}
                           className="press inline-flex min-h-10 items-center justify-center rounded-btn bg-primary px-4.5 text-xs font-bold text-primary-foreground hover:bg-primary-hover shadow-sm"
@@ -4290,14 +5199,25 @@ function Admin() {
                     </div>
 
                     {/* Danger Zone */}
-                    <div className={cn(cardCls, "p-5 border-destructive/30 space-y-4 shadow-none bg-destructive/5")}>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-destructive">Danger Zone</h4>
-                      
+                    <div
+                      className={cn(
+                        cardCls,
+                        "p-5 border-destructive/30 space-y-4 shadow-none bg-destructive/5",
+                      )}
+                    >
+                      <h4 className="text-xs font-black uppercase tracking-wider text-destructive">
+                        Danger Zone
+                      </h4>
+
                       <div className="space-y-3.5">
                         <div className="flex items-center justify-between border-b border-destructive/15 pb-3">
                           <div>
-                            <p className="text-xs font-bold text-foreground">Clear simulated events</p>
-                            <p className="text-[9px] text-muted-foreground mt-0.5">Flush analytics play history simulator data.</p>
+                            <p className="text-xs font-bold text-foreground">
+                              Clear simulated events
+                            </p>
+                            <p className="text-[9px] text-muted-foreground mt-0.5">
+                              Flush analytics play history simulator data.
+                            </p>
                           </div>
                           <button
                             onClick={() => {
@@ -4312,7 +5232,9 @@ function Admin() {
                         <div className="flex items-center justify-between pt-1">
                           <div>
                             <p className="text-xs font-bold text-foreground">Reset configuration</p>
-                            <p className="text-[9px] text-muted-foreground mt-0.5">Restore all dashboard default parameters.</p>
+                            <p className="text-[9px] text-muted-foreground mt-0.5">
+                              Restore all dashboard default parameters.
+                            </p>
                           </div>
                           <button
                             onClick={() => {
@@ -4327,7 +5249,7 @@ function Admin() {
                               localStorage.removeItem("ks_settings_admin_page_size");
                               localStorage.removeItem("ks_settings_show_notify");
                               localStorage.removeItem("ks_settings_show_confirm");
-                              
+
                               setSettingsSupportEmail("support@krishnasanjeevani.org");
                               setSettingsDefaultVisibility("draft");
                               setSettingsDefaultDifficulty("beginner");
@@ -4339,7 +5261,7 @@ function Admin() {
                               setSettingsAdminPageSize(25);
                               setSettingsShowNotify(true);
                               setSettingsShowConfirm(true);
-                              
+
                               toast.success("Dashboard settings restored to initial seeds.");
                             }}
                             className="press rounded-btn border border-destructive/20 bg-surface px-3 py-1.5 text-[10px] font-black text-destructive hover:bg-destructive/5"
@@ -4355,7 +5277,9 @@ function Admin() {
                 {/* About Information */}
                 <footer className="border-t border-border/50 pt-5 text-[10px] text-muted-foreground leading-relaxed flex flex-wrap justify-between gap-4 font-mono select-none">
                   <div>
-                    <p className="font-sans font-bold text-foreground">Krishna Sanjeevani Operations Console</p>
+                    <p className="font-sans font-bold text-foreground">
+                      Krishna Sanjeevani Operations Console
+                    </p>
                     <p className="mt-0.5">Deployment node: Cloudflare Edge Worker</p>
                     <p>Database context: Cloudflare D1 SQL Server</p>
                   </div>
@@ -4374,12 +5298,13 @@ function Admin() {
         {isFormOpen && (
           <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-300">
             <div className="w-full max-w-2xl bg-surface h-full flex flex-col shadow-2xl relative border-l border-border animate-in slide-in-from-right duration-300">
-              
               {/* Drawer Header */}
               <header className="flex items-center justify-between border-b border-border/80 p-5 bg-muted/25 select-none">
                 <div>
                   <h3 className="text-base font-bold text-foreground">
-                    {editingTrack ? "Edit Track — " + editingTrack.title : "Add New Therapeutic Track"}
+                    {editingTrack
+                      ? "Edit Track — " + editingTrack.title
+                      : "Add New Therapeutic Track"}
                   </h3>
                   <p className="text-[11px] text-muted-foreground font-medium mt-1">
                     Provide precise metadata, upload files, and check encoding parameters.
@@ -4397,10 +5322,11 @@ function Admin() {
               {/* Drawer Form Body */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 <form className="grid gap-5 sm:grid-cols-2" onSubmit={(e) => e.preventDefault()}>
-                  
                   {/* Title */}
                   <label className="sm:col-span-2 block">
-                    <span className={labelCls}>Track Title <span className="text-destructive font-bold">*</span></span>
+                    <span className={labelCls}>
+                      Track Title <span className="text-destructive font-bold">*</span>
+                    </span>
                     <input
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
@@ -4422,7 +5348,9 @@ function Admin() {
 
                   {/* Artist */}
                   <label className="block">
-                    <span className={labelCls}>Artist Name <span className="text-destructive font-bold">*</span></span>
+                    <span className={labelCls}>
+                      Artist Name <span className="text-destructive font-bold">*</span>
+                    </span>
                     <input
                       value={formArtist}
                       onChange={(e) => setFormArtist(e.target.value)}
@@ -4488,14 +5416,14 @@ function Admin() {
                                 setFormSelectedTags((prev) =>
                                   prev.includes(tag.id)
                                     ? prev.filter((id) => id !== tag.id)
-                                    : [...prev, tag.id]
+                                    : [...prev, tag.id],
                                 );
                               }}
                               className={cn(
                                 "press px-3.5 py-1.5 rounded-full border text-[11px] font-bold transition-all",
                                 isSelected
                                   ? "bg-cat text-cat-foreground border-cat shadow-sm"
-                                  : "bg-surface text-muted-foreground border-border hover:border-cat"
+                                  : "bg-surface text-muted-foreground border-border hover:border-cat",
                               )}
                             >
                               {tag.name}
@@ -4525,7 +5453,9 @@ function Admin() {
                             className="h-12 w-12 rounded object-cover border border-border"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-[10px] text-muted-foreground truncate font-mono">Current: {editingTrack.thumbnailKey.split("/").pop()}</p>
+                            <p className="text-[10px] text-muted-foreground truncate font-mono">
+                              Current: {editingTrack.thumbnailKey.split("/").pop()}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -4557,7 +5487,9 @@ function Admin() {
                         <div className="flex items-center gap-3 rounded-md border border-border/60 bg-muted/20 p-2">
                           <FileAudio className="h-10 w-10 text-cat shrink-0" />
                           <div className="min-w-0 flex-1">
-                            <p className="text-[10px] text-muted-foreground truncate font-mono">HLS Ready: {editingTrack.playlistKey}</p>
+                            <p className="text-[10px] text-muted-foreground truncate font-mono">
+                              HLS Ready: {editingTrack.playlistKey}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -4567,7 +5499,11 @@ function Admin() {
                         className="press flex min-h-11 w-full items-center justify-between gap-3 rounded-field border border-dashed border-border bg-background px-3.5 text-xs text-muted-foreground hover:border-cat"
                       >
                         <span className="truncate">
-                          {formAudioFile ? formAudioFile.name : editingTrack ? "Replace existing audio (optional)" : "Choose MP3 audio file"}
+                          {formAudioFile
+                            ? formAudioFile.name
+                            : editingTrack
+                              ? "Replace existing audio (optional)"
+                              : "Choose MP3 audio file"}
                         </span>
                         <Upload className="h-4 w-4 shrink-0 text-muted-foreground/75" />
                       </button>
@@ -4600,14 +5536,16 @@ function Admin() {
                       )}
                       Transcode Engine Status
                     </h4>
-                    <p className="text-xs font-semibold text-foreground leading-relaxed">{formStatusMessage}</p>
-                    
+                    <p className="text-xs font-semibold text-foreground leading-relaxed">
+                      {formStatusMessage}
+                    </p>
+
                     {formStatus !== "success" && formStatus !== "error" && (
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-border">
                         <div className="h-full bg-cat animate-pulse w-3/4" />
                       </div>
                     )}
-                    
+
                     {(formStatus === "success" || formStatus === "error") && (
                       <button
                         onClick={() => setFormStatus("idle")}
@@ -4633,7 +5571,9 @@ function Admin() {
                   <>
                     <button
                       type="button"
-                      disabled={formStatus !== "idle" && formStatus !== "success" && formStatus !== "error"}
+                      disabled={
+                        formStatus !== "idle" && formStatus !== "success" && formStatus !== "error"
+                      }
                       onClick={() => handleFormSubmit(false)}
                       className="press min-h-11 rounded-btn border border-border bg-surface px-5 text-xs font-bold hover:bg-muted transition-colors disabled:opacity-40"
                     >
@@ -4641,7 +5581,9 @@ function Admin() {
                     </button>
                     <button
                       type="button"
-                      disabled={formStatus !== "idle" && formStatus !== "success" && formStatus !== "error"}
+                      disabled={
+                        formStatus !== "idle" && formStatus !== "success" && formStatus !== "error"
+                      }
                       onClick={() => handleFormSubmit(true)}
                       className="press min-h-11 rounded-btn bg-primary px-5.5 text-xs font-bold text-primary-foreground hover:bg-primary-hover disabled:opacity-40 shadow-sm"
                     >
@@ -4651,7 +5593,9 @@ function Admin() {
                 ) : (
                   <button
                     type="button"
-                    disabled={formStatus !== "idle" && formStatus !== "success" && formStatus !== "error"}
+                    disabled={
+                      formStatus !== "idle" && formStatus !== "success" && formStatus !== "error"
+                    }
                     onClick={() => handleFormSubmit(editingTrack.publishStatus === "published")}
                     className="press min-h-11 rounded-btn bg-primary px-5.5 text-xs font-bold text-primary-foreground hover:bg-primary-hover disabled:opacity-40 shadow-sm"
                   >
@@ -4667,12 +5611,13 @@ function Admin() {
         {isDetailsOpen && selectedTrack && (
           <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-300">
             <div className="w-full max-w-lg bg-surface h-full flex flex-col shadow-2xl relative border-l border-border animate-in slide-in-from-right duration-300">
-              
               {/* Header */}
               <header className="flex items-center justify-between border-b border-border/80 p-5 bg-muted/25 select-none">
                 <div>
                   <h3 className="text-base font-bold text-foreground">Audio Track Details</h3>
-                  <p className="text-[10px] text-muted-foreground font-semibold font-mono mt-0.5">ID: {selectedTrack.id}</p>
+                  <p className="text-[10px] text-muted-foreground font-semibold font-mono mt-0.5">
+                    ID: {selectedTrack.id}
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsDetailsOpen(false)}
@@ -4685,7 +5630,6 @@ function Admin() {
 
               {/* Body */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                
                 {/* Visual Header */}
                 <div className="flex items-start gap-4">
                   {selectedTrack.thumbnailKey ? (
@@ -4700,28 +5644,45 @@ function Admin() {
                     </div>
                   )}
                   <div>
-                    <h4 className="text-lg font-bold text-foreground leading-snug">{selectedTrack.title}</h4>
-                    <p className="text-xs font-semibold text-muted-foreground font-mono mt-1">{selectedTrack.artist}</p>
+                    <h4 className="text-lg font-bold text-foreground leading-snug">
+                      {selectedTrack.title}
+                    </h4>
+                    <p className="text-xs font-semibold text-muted-foreground font-mono mt-1">
+                      {selectedTrack.artist}
+                    </p>
                     {selectedTrack.subtitle && (
-                      <p className="text-xs text-muted-foreground/80 mt-1 font-medium italic">Raga: {selectedTrack.subtitle}</p>
+                      <p className="text-xs text-muted-foreground/80 mt-1 font-medium italic">
+                        Raga: {selectedTrack.subtitle}
+                      </p>
                     )}
-                    
+
                     {/* Status badges */}
                     <div className="flex flex-wrap gap-1.5 mt-3 select-none">
-                      <span className={cn(
-                        "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                        selectedTrack.publishStatus === "published" && "bg-success/5 border-success/20 text-success",
-                        selectedTrack.publishStatus === "draft" && "bg-muted border-border text-muted-foreground",
-                        selectedTrack.publishStatus === "archived" && "bg-orange-500/5 border-orange-500/20 text-orange-500"
-                      )}>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                          selectedTrack.publishStatus === "published" &&
+                            "bg-success/5 border-success/20 text-success",
+                          selectedTrack.publishStatus === "draft" &&
+                            "bg-muted border-border text-muted-foreground",
+                          selectedTrack.publishStatus === "archived" &&
+                            "bg-orange-500/5 border-orange-500/20 text-orange-500",
+                        )}
+                      >
                         Catalog: {selectedTrack.publishStatus}
                       </span>
-                      <span className={cn(
-                        "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                        selectedTrack.processingStatus === "ready" && "bg-success/5 border-success/20 text-success",
-                        selectedTrack.processingStatus === "failed" && "bg-destructive/5 border-destructive/20 text-destructive",
-                        ["processing", "transcoding", "uploading"].includes(selectedTrack.processingStatus || "") && "bg-amber-500/5 border-amber-500/20 text-amber-500"
-                      )}>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                          selectedTrack.processingStatus === "ready" &&
+                            "bg-success/5 border-success/20 text-success",
+                          selectedTrack.processingStatus === "failed" &&
+                            "bg-destructive/5 border-destructive/20 text-destructive",
+                          ["processing", "transcoding", "uploading"].includes(
+                            selectedTrack.processingStatus || "",
+                          ) && "bg-amber-500/5 border-amber-500/20 text-amber-500",
+                        )}
+                      >
                         Transcoder: {selectedTrack.processingStatus}
                       </span>
                     </div>
@@ -4731,26 +5692,44 @@ function Admin() {
                 {/* Primary Stats parameters info grid */}
                 <div className="grid grid-cols-2 gap-4 border-t border-b border-border/60 py-4.5 text-xs">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Category Theme</p>
-                    <p className="mt-1 font-bold text-foreground capitalize">{selectedTrack.category}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Category Theme
+                    </p>
+                    <p className="mt-1 font-bold text-foreground capitalize">
+                      {selectedTrack.category}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Subscription Tier</p>
-                    <p className="mt-1 font-bold text-foreground capitalize">{selectedTrack.tier}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Subscription Tier
+                    </p>
+                    <p className="mt-1 font-bold text-foreground capitalize">
+                      {selectedTrack.tier}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Language Code</p>
-                    <p className="mt-1 font-bold text-foreground font-mono">{selectedTrack.language.toUpperCase()}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Language Code
+                    </p>
+                    <p className="mt-1 font-bold text-foreground font-mono">
+                      {selectedTrack.language.toUpperCase()}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Play Duration</p>
-                    <p className="mt-1 font-bold text-foreground font-mono">{formatDuration(selectedTrack.duration)}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Play Duration
+                    </p>
+                    <p className="mt-1 font-bold text-foreground font-mono">
+                      {formatDuration(selectedTrack.duration)}
+                    </p>
                   </div>
                 </div>
 
                 {/* Description */}
                 <div className="space-y-2 text-xs">
-                  <h4 className="font-bold text-muted-foreground uppercase tracking-wider">Catalog Description</h4>
+                  <h4 className="font-bold text-muted-foreground uppercase tracking-wider">
+                    Catalog Description
+                  </h4>
                   <p className="text-foreground leading-relaxed whitespace-pre-line bg-muted/10 p-3.5 rounded-md border border-border/50">
                     {selectedTrack.description || "No description provided for this catalog asset."}
                   </p>
@@ -4759,10 +5738,15 @@ function Admin() {
                 {/* Purpose classification tags list */}
                 {selectedTrack.purposeTags && selectedTrack.purposeTags.length > 0 && (
                   <div className="space-y-2 text-xs">
-                    <h4 className="font-bold text-muted-foreground uppercase tracking-wider">Purpose Classification</h4>
+                    <h4 className="font-bold text-muted-foreground uppercase tracking-wider">
+                      Purpose Classification
+                    </h4>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedTrack.purposeTags.map((tag: any) => (
-                        <span key={tag.id} className="rounded-full bg-cat-light px-3 py-1 text-[11px] font-bold text-cat border border-cat/15 shadow-sm">
+                        <span
+                          key={tag.id}
+                          className="rounded-full bg-cat-light px-3 py-1 text-[11px] font-bold text-cat border border-cat/15 shadow-sm"
+                        >
                           {tag.name}
                         </span>
                       ))}
@@ -4772,15 +5756,25 @@ function Admin() {
 
                 {/* Storage keys (R2 Paths for auditable checks) */}
                 <div className="space-y-3.5 border-t border-border/60 pt-5 text-xs font-medium">
-                  <h4 className="font-bold text-muted-foreground uppercase tracking-wider">R2 Asset Audit References</h4>
+                  <h4 className="font-bold text-muted-foreground uppercase tracking-wider">
+                    R2 Asset Audit References
+                  </h4>
                   <div className="space-y-2.5 bg-background p-3.5 rounded-md border border-border/60 font-mono text-[10px]">
                     <div>
-                      <p className="font-bold text-muted-foreground uppercase tracking-wider">Playlist Key (HLS m3u8)</p>
-                      <p className="mt-1 text-foreground break-all">{selectedTrack.playlistKey || "None"}</p>
+                      <p className="font-bold text-muted-foreground uppercase tracking-wider">
+                        Playlist Key (HLS m3u8)
+                      </p>
+                      <p className="mt-1 text-foreground break-all">
+                        {selectedTrack.playlistKey || "None"}
+                      </p>
                     </div>
                     <div>
-                      <p className="font-bold text-muted-foreground uppercase tracking-wider">Cover Art Image Key</p>
-                      <p className="mt-1 text-foreground break-all">{selectedTrack.thumbnailKey || "None"}</p>
+                      <p className="font-bold text-muted-foreground uppercase tracking-wider">
+                        Cover Art Image Key
+                      </p>
+                      <p className="mt-1 text-foreground break-all">
+                        {selectedTrack.thumbnailKey || "None"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -4794,7 +5788,9 @@ function Admin() {
                   {selectedTrack.updatedAt && (
                     <div className="flex items-center gap-2">
                       <Clock className="h-3.5 w-3.5 shrink-0" />
-                      <span>Last Updated: {new Date(selectedTrack.updatedAt).toLocaleString()}</span>
+                      <span>
+                        Last Updated: {new Date(selectedTrack.updatedAt).toLocaleString()}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -4818,7 +5814,10 @@ function Admin() {
                   )}
                 </button>
                 <button
-                  onClick={() => { setIsDetailsOpen(false); handleOpenEdit(selectedTrack); }}
+                  onClick={() => {
+                    setIsDetailsOpen(false);
+                    handleOpenEdit(selectedTrack);
+                  }}
                   className="press inline-flex min-h-11 items-center justify-center rounded-btn border border-border bg-surface px-4.5 text-xs font-bold text-foreground hover:bg-muted transition-colors shadow-sm"
                 >
                   <Pencil className="mr-1.5 h-4 w-4" /> Edit Metadata
@@ -4853,7 +5852,8 @@ function Admin() {
                 <h3 className="text-base font-bold text-foreground">Unsaved Changes</h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                You have unsaved changes in this track editor form. Are you sure you want to discard your edits and leave?
+                You have unsaved changes in this track editor form. Are you sure you want to discard
+                your edits and leave?
               </p>
               <div className="flex justify-end gap-2.5 pt-2">
                 <button
@@ -4885,12 +5885,16 @@ function Admin() {
                 <h3 className="text-base font-bold text-foreground">Confirm Track Deletion</h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Are you sure you want to delete track <span className="font-bold text-foreground">"{trackToDelete.title}"</span>?
-                This operation soft-deletes the track record, removing it from catalogue lookups.
+                Are you sure you want to delete track{" "}
+                <span className="font-bold text-foreground">"{trackToDelete.title}"</span>? This
+                operation soft-deletes the track record, removing it from catalogue lookups.
               </p>
               <div className="flex justify-end gap-2.5 pt-2">
                 <button
-                  onClick={() => { setTrackToDelete(null); setShowDeleteConfirm(false); }}
+                  onClick={() => {
+                    setTrackToDelete(null);
+                    setShowDeleteConfirm(false);
+                  }}
                   className="press min-h-10 rounded-btn border border-border bg-surface px-4.5 text-xs font-bold hover:bg-muted"
                 >
                   Cancel
@@ -4913,7 +5917,9 @@ function Admin() {
               <header className="flex items-center justify-between border-b border-border/80 p-5 bg-muted/25 select-none">
                 <div>
                   <h3 className="text-base font-bold text-foreground">Program Details</h3>
-                  <p className="text-[11px] text-muted-foreground font-medium mt-1">Full curation specifications and components.</p>
+                  <p className="text-[11px] text-muted-foreground font-medium mt-1">
+                    Full curation specifications and components.
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsProgDetailsOpen(false)}
@@ -4937,17 +5943,26 @@ function Admin() {
                     </div>
                   )}
                   <div>
-                    <h4 className="text-lg font-bold text-foreground leading-snug">{selectedProgram.title}</h4>
+                    <h4 className="text-lg font-bold text-foreground leading-snug">
+                      {selectedProgram.title}
+                    </h4>
                     {selectedProgram.subtitle && (
-                      <p className="text-xs text-muted-foreground mt-1 font-medium">{selectedProgram.subtitle}</p>
+                      <p className="text-xs text-muted-foreground mt-1 font-medium">
+                        {selectedProgram.subtitle}
+                      </p>
                     )}
                     <div className="flex gap-2 mt-3 select-none">
-                      <span className={cn(
-                        "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                        selectedProgram.status === "published" && "bg-success/5 border-success/20 text-success",
-                        selectedProgram.status === "draft" && "bg-muted border-border text-muted-foreground",
-                        selectedProgram.status === "archived" && "bg-orange-500/5 border-orange-500/20 text-orange-500"
-                      )}>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                          selectedProgram.status === "published" &&
+                            "bg-success/5 border-success/20 text-success",
+                          selectedProgram.status === "draft" &&
+                            "bg-muted border-border text-muted-foreground",
+                          selectedProgram.status === "archived" &&
+                            "bg-orange-500/5 border-orange-500/20 text-orange-500",
+                        )}
+                      >
                         Status: {selectedProgram.status}
                       </span>
                     </div>
@@ -4956,25 +5971,43 @@ function Admin() {
 
                 <div className="grid grid-cols-2 gap-4 border-t border-b border-border/60 py-4.5 text-xs">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Category</p>
-                    <p className="mt-1 font-bold text-foreground capitalize">{selectedProgram.category}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Category
+                    </p>
+                    <p className="mt-1 font-bold text-foreground capitalize">
+                      {selectedProgram.category}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Subscription Tier</p>
-                    <p className="mt-1 font-bold text-foreground capitalize">{selectedProgram.tier}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Subscription Tier
+                    </p>
+                    <p className="mt-1 font-bold text-foreground capitalize">
+                      {selectedProgram.tier}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Difficulty</p>
-                    <p className="mt-1 font-bold text-foreground capitalize">{selectedProgram.difficulty}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Difficulty
+                    </p>
+                    <p className="mt-1 font-bold text-foreground capitalize">
+                      {selectedProgram.difficulty}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Curation Duration</p>
-                    <p className="mt-1 font-bold text-foreground font-mono">{formatDuration(selectedProgram.estimatedDuration)}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Curation Duration
+                    </p>
+                    <p className="mt-1 font-bold text-foreground font-mono">
+                      {formatDuration(selectedProgram.estimatedDuration)}
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-2 text-xs">
-                  <h4 className="font-bold text-muted-foreground uppercase tracking-wider">Description</h4>
+                  <h4 className="font-bold text-muted-foreground uppercase tracking-wider">
+                    Description
+                  </h4>
                   <p className="text-foreground leading-relaxed whitespace-pre-line bg-muted/10 p-3.5 rounded-md border border-border/50">
                     {selectedProgram.description || "No description provided."}
                   </p>
@@ -5003,12 +6036,17 @@ function Admin() {
                               <td className="px-4 py-2">Week {s.week}</td>
                               <td className="px-4 py-2">Day {s.day}</td>
                               <td className="px-4 py-2">{s.unlockAfterDays || 0}</td>
-                              <td className="px-4 py-2 text-right capitalize text-cat font-bold">{s.isRequired ? "Yes" : "No"}</td>
+                              <td className="px-4 py-2 text-right capitalize text-cat font-bold">
+                                {s.isRequired ? "Yes" : "No"}
+                              </td>
                             </tr>
                           ))}
                           {selectedProgramSchedules.length === 0 && (
                             <tr>
-                              <td colSpan={5} className="px-4 py-4 text-center text-muted-foreground font-sans">
+                              <td
+                                colSpan={5}
+                                className="px-4 py-4 text-center text-muted-foreground font-sans"
+                              >
                                 Not scheduled in pregnancy schedule path yet.
                               </td>
                             </tr>
@@ -5020,40 +6058,59 @@ function Admin() {
                 )}
 
                 <div className="space-y-3 border-t border-border/60 pt-5 text-xs">
-                  <h4 className="font-bold text-muted-foreground uppercase tracking-wider">Assigned Playlist Tracks ({selectedProgramTracks.length})</h4>
+                  <h4 className="font-bold text-muted-foreground uppercase tracking-wider">
+                    Assigned Playlist Tracks ({selectedProgramTracks.length})
+                  </h4>
                   <div className="space-y-2">
                     {loadingSelectedProgramTracks ? (
                       <div className="flex items-center justify-center p-4">
                         <Loader2 className="h-5 w-5 animate-spin text-cat" />
                       </div>
-                    ) : selectedProgramTracks.map((t, idx) => (
-                      <div key={t.id} className="flex items-center gap-3 rounded-md border border-border/70 p-3 bg-background/50 hover:border-cat transition-colors group">
-                        <span className="text-[11px] font-bold font-mono text-muted-foreground w-6">{(idx + 1).toString().padStart(2, "0")}</span>
-                        {t.thumbnailKey ? (
-                          <img src={getAssetUrl(t.thumbnailKey) || ""} className="h-8 w-8 rounded object-cover border border-border" alt="" />
-                        ) : (
-                          <div className="grid h-8 w-8 place-items-center rounded border border-dashed border-border bg-muted text-muted-foreground/45"><FileAudio className="h-4 w-4" /></div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-foreground truncate">{t.title}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">{t.artist}</p>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground font-mono mr-2">{formatDuration(t.duration)}</span>
-                        <button
-                          onClick={() => handlePreviewToggle(t)}
-                          disabled={t.processingStatus !== "ready"}
-                          className="press grid h-7 w-7 place-items-center rounded bg-cat/10 text-cat disabled:opacity-30"
+                    ) : (
+                      selectedProgramTracks.map((t, idx) => (
+                        <div
+                          key={t.id}
+                          className="flex items-center gap-3 rounded-md border border-border/70 p-3 bg-background/50 hover:border-cat transition-colors group"
                         >
-                          {playingTrack?.id === t.id && isAudioPlaying ? (
-                            <Pause className="h-3 w-3 fill-current" />
+                          <span className="text-[11px] font-bold font-mono text-muted-foreground w-6">
+                            {(idx + 1).toString().padStart(2, "0")}
+                          </span>
+                          {t.thumbnailKey ? (
+                            <img
+                              src={getAssetUrl(t.thumbnailKey) || ""}
+                              className="h-8 w-8 rounded object-cover border border-border"
+                              alt=""
+                            />
                           ) : (
-                            <Play className="h-3 w-3 fill-current" />
+                            <div className="grid h-8 w-8 place-items-center rounded border border-dashed border-border bg-muted text-muted-foreground/45">
+                              <FileAudio className="h-4 w-4" />
+                            </div>
                           )}
-                        </button>
-                      </div>
-                    ))}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-foreground truncate">{t.title}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">{t.artist}</p>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground font-mono mr-2">
+                            {formatDuration(t.duration)}
+                          </span>
+                          <button
+                            onClick={() => handlePreviewToggle(t)}
+                            disabled={t.processingStatus !== "ready"}
+                            className="press grid h-7 w-7 place-items-center rounded bg-cat/10 text-cat disabled:opacity-30"
+                          >
+                            {playingTrack?.id === t.id && isAudioPlaying ? (
+                              <Pause className="h-3 w-3 fill-current" />
+                            ) : (
+                              <Play className="h-3 w-3 fill-current" />
+                            )}
+                          </button>
+                        </div>
+                      ))
+                    )}
                     {selectedProgramTracks.length === 0 && !loadingSelectedProgramTracks && (
-                      <p className="text-center py-6 text-muted-foreground font-medium">No tracks assigned to this care program.</p>
+                      <p className="text-center py-6 text-muted-foreground font-medium">
+                        No tracks assigned to this care program.
+                      </p>
                     )}
                   </div>
                 </div>
@@ -5061,7 +6118,10 @@ function Admin() {
 
               <footer className="border-t border-border/80 p-5 bg-muted/25 flex gap-2 items-center justify-end select-none">
                 <button
-                  onClick={() => { setIsProgDetailsOpen(false); handleOpenProgEdit(selectedProgram); }}
+                  onClick={() => {
+                    setIsProgDetailsOpen(false);
+                    handleOpenProgEdit(selectedProgram);
+                  }}
                   className="press inline-flex min-h-11 items-center justify-center rounded-btn border border-border bg-surface px-4.5 text-xs font-bold text-foreground hover:bg-muted shadow-sm"
                 >
                   <Pencil className="mr-1.5 h-4 w-4" /> Edit Program
@@ -5093,10 +6153,13 @@ function Admin() {
               <header className="flex items-center justify-between border-b border-border/80 p-5 bg-muted/25 select-none">
                 <div>
                   <h3 className="text-base font-bold text-foreground">
-                    {editingProgram ? "Edit Program — " + editingProgram.title : "Create Therapeutic Program"}
+                    {editingProgram
+                      ? "Edit Program — " + editingProgram.title
+                      : "Create Therapeutic Program"}
                   </h3>
                   <p className="text-[11px] text-muted-foreground font-medium mt-1">
-                    Configure metadata parameters, sequence tracks, and configure gestational timelines.
+                    Configure metadata parameters, sequence tracks, and configure gestational
+                    timelines.
                   </p>
                 </div>
                 <button
@@ -5110,7 +6173,9 @@ function Admin() {
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 <form className="grid gap-5 sm:grid-cols-2" onSubmit={(e) => e.preventDefault()}>
                   <label className="sm:col-span-2 block">
-                    <span className={labelCls}>Program Title <span className="text-destructive font-bold">*</span></span>
+                    <span className={labelCls}>
+                      Program Title <span className="text-destructive font-bold">*</span>
+                    </span>
                     <input
                       value={progFormTitle}
                       onChange={(e) => setProgFormTitle(e.target.value)}
@@ -5200,7 +6265,9 @@ function Admin() {
                             className="h-12 w-12 rounded object-cover border border-border"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-[10px] text-muted-foreground truncate font-mono">Current: {progFormThumbnailKey.split("/").pop()}</p>
+                            <p className="text-[10px] text-muted-foreground truncate font-mono">
+                              Current: {progFormThumbnailKey.split("/").pop()}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -5210,7 +6277,9 @@ function Admin() {
                         className="press flex min-h-11 w-full items-center justify-between gap-3 rounded-field border border-dashed border-border bg-background px-3.5 text-xs text-muted-foreground hover:border-cat"
                       >
                         <span className="truncate">
-                          {progFormImageFile ? progFormImageFile.name : "Choose JPG, PNG or WEBP artwork"}
+                          {progFormImageFile
+                            ? progFormImageFile.name
+                            : "Choose JPG, PNG or WEBP artwork"}
                         </span>
                         <Upload className="h-4 w-4 shrink-0 text-muted-foreground/75" />
                       </button>
@@ -5271,7 +6340,9 @@ function Admin() {
                               <td className="px-4 py-1.5">Week {s.week}</td>
                               <td className="px-4 py-1.5">Day {s.day}</td>
                               <td className="px-4 py-1.5">{s.unlockAfterDays || 0}</td>
-                              <td className="px-4 py-1.5 text-cat font-bold">{s.isRequired ? "Yes" : "No"}</td>
+                              <td className="px-4 py-1.5 text-cat font-bold">
+                                {s.isRequired ? "Yes" : "No"}
+                              </td>
                               <td className="px-4 py-1.5 text-right space-x-1.5">
                                 <button
                                   type="button"
@@ -5290,7 +6361,9 @@ function Admin() {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => setProgFormSchedules(prev => prev.filter((_, i) => i !== idx))}
+                                  onClick={() =>
+                                    setProgFormSchedules((prev) => prev.filter((_, i) => i !== idx))
+                                  }
                                   className="text-destructive hover:text-destructive/80 text-[10px] font-sans font-bold"
                                 >
                                   Remove
@@ -5300,8 +6373,12 @@ function Admin() {
                           ))}
                           {progFormSchedules.length === 0 && (
                             <tr>
-                              <td colSpan={6} className="px-4 py-4 text-center text-muted-foreground font-sans italic">
-                                Click Add Schedule Link to place this program in the daily pregnancy timeline.
+                              <td
+                                colSpan={6}
+                                className="px-4 py-4 text-center text-muted-foreground font-sans italic"
+                              >
+                                Click Add Schedule Link to place this program in the daily pregnancy
+                                timeline.
                               </td>
                             </tr>
                           )}
@@ -5322,12 +6399,14 @@ function Admin() {
                         setLoadingReadyTracks(true);
                         setIsTrackSelectorOpen(true);
                         setTrackSelectorSearch("");
-                        api.tracks.listAdmin({ limit: 100, processingStatus: "ready" }).then(res => {
-                          if (res.success && res.data) {
-                            setAllReadyTracks(res.data.data || []);
-                          }
-                          setLoadingReadyTracks(false);
-                        });
+                        api.tracks
+                          .listAdmin({ limit: 100, processingStatus: "ready" })
+                          .then((res) => {
+                            if (res.success && res.data) {
+                              setAllReadyTracks(res.data.data || []);
+                            }
+                            setLoadingReadyTracks(false);
+                          });
                       }}
                       className="press text-[11px] font-bold text-cat hover:underline flex items-center gap-1"
                     >
@@ -5345,7 +6424,11 @@ function Admin() {
                           {(idx + 1).toString().padStart(2, "0")}
                         </span>
                         {t.thumbnailKey ? (
-                          <img src={getAssetUrl(t.thumbnailKey) || ""} className="h-8 w-8 rounded object-cover border border-border" alt="" />
+                          <img
+                            src={getAssetUrl(t.thumbnailKey) || ""}
+                            className="h-8 w-8 rounded object-cover border border-border"
+                            alt=""
+                          />
                         ) : (
                           <div className="grid h-8 w-8 place-items-center rounded border border-dashed border-border bg-muted text-muted-foreground/45">
                             <FileAudio className="h-4 w-4" />
@@ -5355,8 +6438,10 @@ function Admin() {
                           <p className="font-bold text-foreground truncate">{t.title}</p>
                           <p className="text-[10px] text-muted-foreground truncate">{t.artist}</p>
                         </div>
-                        <span className="text-[10px] text-muted-foreground font-mono mr-2">{formatDuration(t.duration)}</span>
-                        
+                        <span className="text-[10px] text-muted-foreground font-mono mr-2">
+                          {formatDuration(t.duration)}
+                        </span>
+
                         <div className="flex gap-1 select-none">
                           <button
                             type="button"
@@ -5392,7 +6477,9 @@ function Admin() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => setProgFormTracks(prev => prev.filter(item => item.id !== t.id))}
+                            onClick={() =>
+                              setProgFormTracks((prev) => prev.filter((item) => item.id !== t.id))
+                            }
                             className="press grid h-7 w-7 place-items-center rounded border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15 ml-1.5"
                             title="Remove track"
                           >
@@ -5403,26 +6490,49 @@ function Admin() {
                     ))}
                     {progFormTracks.length === 0 && (
                       <p className="text-center py-8 text-xs text-muted-foreground font-semibold border border-dashed border-border rounded-md bg-muted/10">
-                        No tracks added to program list. Curate your experience using [ Add Tracks ].
+                        No tracks added to program list. Curate your experience using [ Add Tracks
+                        ].
                       </p>
                     )}
                   </div>
                 </div>
 
                 <div className="rounded-card border border-border bg-muted/20 p-4.5 space-y-3.5 text-xs">
-                  <h4 className="font-bold text-foreground">Program Curation Prerequisite Checklist</h4>
+                  <h4 className="font-bold text-foreground">
+                    Program Curation Prerequisite Checklist
+                  </h4>
                   <div className="grid grid-cols-2 gap-3.5 text-[11px] font-bold border-b border-border/60 pb-3">
-                    <div>Total Curation Tracks: <span className="text-cat font-mono">{progFormTracks.length}</span></div>
-                    <div>Total Play Duration: <span className="text-cat font-mono">{formatDuration(progFormTracks.reduce((sum, t) => sum + (t.duration || 0), 0))}</span></div>
+                    <div>
+                      Total Curation Tracks:{" "}
+                      <span className="text-cat font-mono">{progFormTracks.length}</span>
+                    </div>
+                    <div>
+                      Total Play Duration:{" "}
+                      <span className="text-cat font-mono">
+                        {formatDuration(
+                          progFormTracks.reduce((sum, t) => sum + (t.duration || 0), 0),
+                        )}
+                      </span>
+                    </div>
                   </div>
 
                   <ul className="space-y-2 select-none">
                     {[
                       { label: "Valid Program title", pass: progFormTitle.trim().length > 0 },
                       { label: "Valid description", pass: progFormDescription.trim().length > 0 },
-                      { label: "Cover Artwork artwork thumbnail set", pass: progFormThumbnailKey.length > 0 || progFormImageFile !== null },
+                      {
+                        label: "Cover Artwork artwork thumbnail set",
+                        pass: progFormThumbnailKey.length > 0 || progFormImageFile !== null,
+                      },
                       { label: "At least one track assigned", pass: progFormTracks.length > 0 },
-                      { label: "All assigned tracks are Ready", pass: progFormTracks.length > 0 && !progFormTracks.some(t => ["failed", "processing", "transcoding"].includes(t.processingStatus)) }
+                      {
+                        label: "All assigned tracks are Ready",
+                        pass:
+                          progFormTracks.length > 0 &&
+                          !progFormTracks.some((t) =>
+                            ["failed", "processing", "transcoding"].includes(t.processingStatus),
+                          ),
+                      },
                     ].map((item, idx) => (
                       <li key={idx} className="flex items-center gap-2 font-medium">
                         {item.pass ? (
@@ -5430,7 +6540,9 @@ function Admin() {
                         ) : (
                           <span className="text-destructive font-bold font-mono">✗</span>
                         )}
-                        <span className={item.pass ? "text-foreground" : "text-muted-foreground"}>{item.label}</span>
+                        <span className={item.pass ? "text-foreground" : "text-muted-foreground"}>
+                          {item.label}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -5438,15 +6550,20 @@ function Admin() {
               </div>
 
               {progFormStatus !== "idle" && (
-                <div className={cn(
-                  "p-4 text-xs font-bold text-center border-t border-b",
-                  progFormStatus === "saving" && "bg-muted text-muted-foreground",
-                  progFormStatus === "uploading_image" && "bg-cat-light text-cat border-cat/10",
-                  progFormStatus === "success" && "bg-success/5 border-success/20 text-success",
-                  progFormStatus === "error" && "bg-destructive/5 border-destructive/20 text-destructive",
-                )}>
+                <div
+                  className={cn(
+                    "p-4 text-xs font-bold text-center border-t border-b",
+                    progFormStatus === "saving" && "bg-muted text-muted-foreground",
+                    progFormStatus === "uploading_image" && "bg-cat-light text-cat border-cat/10",
+                    progFormStatus === "success" && "bg-success/5 border-success/20 text-success",
+                    progFormStatus === "error" &&
+                      "bg-destructive/5 border-destructive/20 text-destructive",
+                  )}
+                >
                   <div className="flex items-center justify-center gap-2">
-                    {["saving", "uploading_image"].includes(progFormStatus) && <Loader2 className="h-4 w-4 animate-spin text-cat" />}
+                    {["saving", "uploading_image"].includes(progFormStatus) && (
+                      <Loader2 className="h-4 w-4 animate-spin text-cat" />
+                    )}
                     <span>{progFormStatusMessage}</span>
                   </div>
                 </div>
@@ -5471,7 +6588,12 @@ function Admin() {
                 <button
                   type="button"
                   onClick={() => handleProgramFormSubmit(true)}
-                  disabled={progFormStatus !== "idle" || !progFormTitle.trim() || progFormTracks.length === 0 || !(progFormThumbnailKey.length > 0 || progFormImageFile !== null)}
+                  disabled={
+                    progFormStatus !== "idle" ||
+                    !progFormTitle.trim() ||
+                    progFormTracks.length === 0 ||
+                    !(progFormThumbnailKey.length > 0 || progFormImageFile !== null)
+                  }
                   className="press inline-flex min-h-11 items-center justify-center rounded-btn bg-primary px-5.5 text-xs font-bold text-primary-foreground hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
                 >
                   Publish Program
@@ -5510,40 +6632,52 @@ function Admin() {
                   <div className="flex items-center justify-center py-10">
                     <Loader2 className="h-5 w-5 animate-spin text-cat" />
                   </div>
-                ) : filteredReadyTracks.map((t) => {
-                  const isChecked = trackSelectorSelectedIds.includes(t.id);
-                  return (
-                    <label
-                      key={t.id}
-                      className="flex items-center gap-3.5 py-2.5 px-2 hover:bg-muted/10 cursor-pointer rounded transition-colors select-none"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setTrackSelectorSelectedIds(prev => [...prev, t.id]);
-                          } else {
-                            setTrackSelectorSelectedIds(prev => prev.filter(id => id !== t.id));
-                          }
-                        }}
-                        className="rounded border-border text-cat focus:ring-cat h-3.5 w-3.5 cursor-pointer"
-                      />
-                      {t.thumbnailKey ? (
-                        <img src={getAssetUrl(t.thumbnailKey) || ""} className="h-8 w-8 rounded object-cover border border-border" alt="" />
-                      ) : (
-                        <div className="grid h-8 w-8 place-items-center rounded border border-dashed border-border bg-muted text-muted-foreground/50">
-                          <FileAudio className="h-4 w-4" />
+                ) : (
+                  filteredReadyTracks.map((t) => {
+                    const isChecked = trackSelectorSelectedIds.includes(t.id);
+                    return (
+                      <label
+                        key={t.id}
+                        className="flex items-center gap-3.5 py-2.5 px-2 hover:bg-muted/10 cursor-pointer rounded transition-colors select-none"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setTrackSelectorSelectedIds((prev) => [...prev, t.id]);
+                            } else {
+                              setTrackSelectorSelectedIds((prev) =>
+                                prev.filter((id) => id !== t.id),
+                              );
+                            }
+                          }}
+                          className="rounded border-border text-cat focus:ring-cat h-3.5 w-3.5 cursor-pointer"
+                        />
+                        {t.thumbnailKey ? (
+                          <img
+                            src={getAssetUrl(t.thumbnailKey) || ""}
+                            className="h-8 w-8 rounded object-cover border border-border"
+                            alt=""
+                          />
+                        ) : (
+                          <div className="grid h-8 w-8 place-items-center rounded border border-dashed border-border bg-muted text-muted-foreground/50">
+                            <FileAudio className="h-4 w-4" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-foreground text-xs truncate leading-snug">
+                            {t.title}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">{t.artist}</p>
                         </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="font-bold text-foreground text-xs truncate leading-snug">{t.title}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{t.artist}</p>
-                      </div>
-                      <span className="text-[10px] font-mono text-muted-foreground">{formatDuration(t.duration)}</span>
-                    </label>
-                  );
-                })}
+                        <span className="text-[10px] font-mono text-muted-foreground">
+                          {formatDuration(t.duration)}
+                        </span>
+                      </label>
+                    );
+                  })
+                )}
                 {filteredReadyTracks.length === 0 && !loadingReadyTracks && (
                   <p className="text-center py-10 text-xs text-muted-foreground font-semibold">
                     No matching ready tracks available to add.
@@ -5562,8 +6696,10 @@ function Admin() {
                 <button
                   type="button"
                   onClick={() => {
-                    const selectedTracks = allReadyTracks.filter(t => trackSelectorSelectedIds.includes(t.id));
-                    setProgFormTracks(prev => [...prev, ...selectedTracks]);
+                    const selectedTracks = allReadyTracks.filter((t) =>
+                      trackSelectorSelectedIds.includes(t.id),
+                    );
+                    setProgFormTracks((prev) => [...prev, ...selectedTracks]);
                     setIsTrackSelectorOpen(false);
                     setTrackSelectorSelectedIds([]);
                   }}
@@ -5584,7 +6720,9 @@ function Admin() {
               <div className="flex items-center gap-3 border-b border-border pb-3">
                 <Calendar className="h-5 w-5 text-cat" />
                 <h3 className="text-base font-bold text-foreground">
-                  {editingScheduleIndex !== null ? "Edit Schedule Entry" : "Add Pregnancy Schedule Link"}
+                  {editingScheduleIndex !== null
+                    ? "Edit Schedule Entry"
+                    : "Add Pregnancy Schedule Link"}
                 </h3>
               </div>
 
@@ -5596,7 +6734,9 @@ function Admin() {
                     min={1}
                     max={9}
                     value={schedFormMonth}
-                    onChange={(e) => setSchedFormMonth(Math.max(1, Math.min(9, parseInt(e.target.value) || 1)))}
+                    onChange={(e) =>
+                      setSchedFormMonth(Math.max(1, Math.min(9, parseInt(e.target.value) || 1)))
+                    }
                     className={fieldCls}
                   />
                 </label>
@@ -5608,7 +6748,9 @@ function Admin() {
                     min={1}
                     max={40}
                     value={schedFormWeek}
-                    onChange={(e) => setSchedFormWeek(Math.max(1, Math.min(40, parseInt(e.target.value) || 1)))}
+                    onChange={(e) =>
+                      setSchedFormWeek(Math.max(1, Math.min(40, parseInt(e.target.value) || 1)))
+                    }
                     className={fieldCls}
                   />
                 </label>
@@ -5620,7 +6762,9 @@ function Admin() {
                     min={1}
                     max={7}
                     value={schedFormDay}
-                    onChange={(e) => setSchedFormDay(Math.max(1, Math.min(7, parseInt(e.target.value) || 1)))}
+                    onChange={(e) =>
+                      setSchedFormDay(Math.max(1, Math.min(7, parseInt(e.target.value) || 1)))
+                    }
                     className={fieldCls}
                   />
                 </label>
@@ -5643,7 +6787,9 @@ function Admin() {
                     onChange={(e) => setSchedFormRequired(e.target.checked)}
                     className="rounded border-border text-cat focus:ring-cat h-4.5 w-4.5 cursor-pointer"
                   />
-                  <span className="font-semibold text-foreground">Mark as Required daily program</span>
+                  <span className="font-semibold text-foreground">
+                    Mark as Required daily program
+                  </span>
                 </label>
               </div>
 
@@ -5670,7 +6816,7 @@ function Admin() {
                       updated[editingScheduleIndex] = newEntry;
                       setProgFormSchedules(updated);
                     } else {
-                      setProgFormSchedules(prev => [...prev, newEntry]);
+                      setProgFormSchedules((prev) => [...prev, newEntry]);
                     }
                     setIsScheduleModalOpen(false);
                   }}
@@ -5692,7 +6838,8 @@ function Admin() {
                 <h3 className="text-base font-bold text-foreground">Unsaved Changes</h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                You have unsaved changes in this program editor form. Are you sure you want to discard your edits and leave?
+                You have unsaved changes in this program editor form. Are you sure you want to
+                discard your edits and leave?
               </p>
               <div className="flex justify-end gap-2.5 pt-2">
                 <button
@@ -5724,12 +6871,18 @@ function Admin() {
                 <h3 className="text-base font-bold text-foreground">Delete care program?</h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Are you sure you want to delete <span className="font-bold text-foreground">"{programToDelete.title}"</span>?
-                This program has {programToDelete.trackCount || 0} tracks. Deleting it soft-deletes the program but does NOT delete the assigned tracks themselves, as they may belong to other curation sequences.
+                Are you sure you want to delete{" "}
+                <span className="font-bold text-foreground">"{programToDelete.title}"</span>? This
+                program has {programToDelete.trackCount || 0} tracks. Deleting it soft-deletes the
+                program but does NOT delete the assigned tracks themselves, as they may belong to
+                other curation sequences.
               </p>
               <div className="flex justify-end gap-2.5 pt-2">
                 <button
-                  onClick={() => { setProgramToDelete(null); setShowProgDeleteConfirm(false); }}
+                  onClick={() => {
+                    setProgramToDelete(null);
+                    setShowProgDeleteConfirm(false);
+                  }}
                   className="press min-h-10 rounded-btn border border-border bg-surface px-4.5 text-xs font-bold hover:bg-muted"
                 >
                   Cancel
@@ -5753,7 +6906,9 @@ function Admin() {
               <header className="flex items-center justify-between border-b border-border/80 p-5 bg-muted/25 select-none">
                 <div>
                   <h3 className="text-base font-bold text-foreground">User Profile Details</h3>
-                  <p className="text-[11px] text-muted-foreground font-medium mt-1">Operational view of account access, subscriptions, and history.</p>
+                  <p className="text-[11px] text-muted-foreground font-medium mt-1">
+                    Operational view of account access, subscriptions, and history.
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsUserDetailsOpen(false)}
@@ -5774,27 +6929,43 @@ function Admin() {
                     {/* Identity section */}
                     <div className="flex items-start gap-4.5">
                       <div className="grid h-16 w-16 place-items-center rounded-full bg-cat text-2xl font-black text-cat-foreground border border-cat/25 select-none">
-                        {(selectedUser.user.fullName || selectedUser.user.email || "U").slice(0, 2).toUpperCase()}
+                        {(selectedUser.user.fullName || selectedUser.user.email || "U")
+                          .slice(0, 2)
+                          .toUpperCase()}
                       </div>
                       <div>
-                        <h4 className="text-lg font-bold text-foreground leading-snug">{selectedUser.user.fullName || "Anonymous User"}</h4>
-                        <p className="text-xs text-muted-foreground font-mono mt-0.5">{selectedUser.user.email}</p>
-                        
+                        <h4 className="text-lg font-bold text-foreground leading-snug">
+                          {selectedUser.user.fullName || "Anonymous User"}
+                        </h4>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                          {selectedUser.user.email}
+                        </p>
+
                         <div className="flex flex-wrap gap-1.5 mt-3 select-none">
-                          <span className={cn(
-                            "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                            selectedUser.user.status === "active" && "bg-success/5 border-success/20 text-success",
-                            selectedUser.user.status === "suspended" && "bg-destructive/5 border-destructive/20 text-destructive",
-                          )}>
+                          <span
+                            className={cn(
+                              "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                              selectedUser.user.status === "active" &&
+                                "bg-success/5 border-success/20 text-success",
+                              selectedUser.user.status === "suspended" &&
+                                "bg-destructive/5 border-destructive/20 text-destructive",
+                            )}
+                          >
                             Status: {selectedUser.user.status}
                           </span>
-                          <span className={cn(
-                            "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                            selectedUser.user.role === "super_admin" && "bg-purple-500/5 border-purple-500/20 text-purple-600",
-                            selectedUser.user.role === "admin" && "bg-amber-500/5 border-amber-500/20 text-amber-600",
-                            selectedUser.user.role === "premium" && "bg-cat-light text-cat border-cat/10",
-                            selectedUser.user.role === "user" && "bg-muted border-border text-muted-foreground",
-                          )}>
+                          <span
+                            className={cn(
+                              "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                              selectedUser.user.role === "super_admin" &&
+                                "bg-purple-500/5 border-purple-500/20 text-purple-600",
+                              selectedUser.user.role === "admin" &&
+                                "bg-amber-500/5 border-amber-500/20 text-amber-600",
+                              selectedUser.user.role === "premium" &&
+                                "bg-cat-light text-cat border-cat/10",
+                              selectedUser.user.role === "user" &&
+                                "bg-muted border-border text-muted-foreground",
+                            )}
+                          >
                             Role: {selectedUser.user.role}
                           </span>
                         </div>
@@ -5804,23 +6975,43 @@ function Admin() {
                     {/* Account Audit info */}
                     <div className="grid grid-cols-2 gap-4 border-t border-b border-border/60 py-4.5 text-xs">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">Account ID</p>
-                        <p className="mt-1 font-bold text-foreground font-mono text-[10px] truncate" title={selectedUser.user.id}>{selectedUser.user.id}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">Language preference</p>
-                        <p className="mt-1 font-bold text-foreground capitalize font-mono">{selectedUser.user.language || "English (en)"}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">Joined Date</p>
-                        <p className="mt-1 font-semibold text-muted-foreground">
-                          {new Date(selectedUser.user.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">
+                          Account ID
+                        </p>
+                        <p
+                          className="mt-1 font-bold text-foreground font-mono text-[10px] truncate"
+                          title={selectedUser.user.id}
+                        >
+                          {selectedUser.user.id}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">Last Updated</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">
+                          Language preference
+                        </p>
+                        <p className="mt-1 font-bold text-foreground capitalize font-mono">
+                          {selectedUser.user.language || "English (en)"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">
+                          Joined Date
+                        </p>
                         <p className="mt-1 font-semibold text-muted-foreground">
-                          {new Date(selectedUser.user.updatedAt || selectedUser.user.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                          {new Date(selectedUser.user.createdAt).toLocaleString(undefined, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">
+                          Last Updated
+                        </p>
+                        <p className="mt-1 font-semibold text-muted-foreground">
+                          {new Date(
+                            selectedUser.user.updatedAt || selectedUser.user.createdAt,
+                          ).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
                         </p>
                       </div>
                     </div>
@@ -5840,22 +7031,36 @@ function Admin() {
                         {selectedUser.subscription && (
                           <>
                             <div className="flex justify-between items-center">
-                              <span className="font-semibold text-muted-foreground">Plan Status</span>
-                              <span className={cn(
-                                "rounded px-1.5 py-0.5 text-[10px] font-bold border capitalize",
-                                selectedUser.subscription.status === "active" && "bg-success/5 border-success/15 text-success",
-                                selectedUser.subscription.status === "trial" && "bg-blue-500/5 border-blue-500/15 text-blue-600",
-                                ["canceled", "expired"].includes(selectedUser.subscription.status) && "bg-muted border-border text-muted-foreground",
-                              )}>
+                              <span className="font-semibold text-muted-foreground">
+                                Plan Status
+                              </span>
+                              <span
+                                className={cn(
+                                  "rounded px-1.5 py-0.5 text-[10px] font-bold border capitalize",
+                                  selectedUser.subscription.status === "active" &&
+                                    "bg-success/5 border-success/15 text-success",
+                                  selectedUser.subscription.status === "trial" &&
+                                    "bg-blue-500/5 border-blue-500/15 text-blue-600",
+                                  ["canceled", "expired"].includes(
+                                    selectedUser.subscription.status,
+                                  ) && "bg-muted border-border text-muted-foreground",
+                                )}
+                              >
                                 {selectedUser.subscription.status}
                               </span>
                             </div>
                             <div className="flex justify-between items-center text-[11px] font-mono">
-                              <span className="font-semibold text-muted-foreground font-sans">Start Date</span>
-                              <span>{formatDate(selectedUser.subscription.currentPeriodStart)}</span>
+                              <span className="font-semibold text-muted-foreground font-sans">
+                                Start Date
+                              </span>
+                              <span>
+                                {formatDate(selectedUser.subscription.currentPeriodStart)}
+                              </span>
                             </div>
                             <div className="flex justify-between items-center text-[11px] font-mono">
-                              <span className="font-semibold text-muted-foreground font-sans">Renewal / Expiry</span>
+                              <span className="font-semibold text-muted-foreground font-sans">
+                                Renewal / Expiry
+                              </span>
                               <span>{formatDate(selectedUser.subscription.currentPeriodEnd)}</span>
                             </div>
                           </>
@@ -5874,9 +7079,16 @@ function Admin() {
                           { label: "Tracks Completed", value: selectedUser.stats.tracksCompleted },
                           { label: "Favorites saved", value: selectedUser.stats.favoritesCount },
                         ].map((s) => (
-                          <div key={s.label} className="rounded-md border border-border bg-background p-3 text-center">
-                            <p className="text-[10px] font-semibold text-muted-foreground">{s.label}</p>
-                            <p className="mt-1.5 text-xl font-bold font-mono text-foreground">{s.value.toLocaleString()}</p>
+                          <div
+                            key={s.label}
+                            className="rounded-md border border-border bg-background p-3 text-center"
+                          >
+                            <p className="text-[10px] font-semibold text-muted-foreground">
+                              {s.label}
+                            </p>
+                            <p className="mt-1.5 text-xl font-bold font-mono text-foreground">
+                              {s.value.toLocaleString()}
+                            </p>
                           </div>
                         ))}
                       </div>
@@ -5890,7 +7102,9 @@ function Admin() {
                         </h4>
                         <div className="rounded-md border border-border bg-background/50 p-4 space-y-3">
                           <div className="flex justify-between items-center">
-                            <span className="font-semibold text-muted-foreground">Estimated Due Date (EDD)</span>
+                            <span className="font-semibold text-muted-foreground">
+                              Estimated Due Date (EDD)
+                            </span>
                             <span className="font-bold text-foreground font-mono">
                               {formatDate(selectedUser.user.pregnancyEdd, { dateStyle: "medium" })}
                             </span>
@@ -5901,12 +7115,20 @@ function Admin() {
                             return (
                               <>
                                 <div className="flex justify-between items-center">
-                                  <span className="font-semibold text-muted-foreground">Current Gestational age</span>
-                                  <span className="font-bold text-cat font-mono">Week {info.week}</span>
+                                  <span className="font-semibold text-muted-foreground">
+                                    Current Gestational age
+                                  </span>
+                                  <span className="font-bold text-cat font-mono">
+                                    Week {info.week}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                  <span className="font-semibold text-muted-foreground">Current Trimester</span>
-                                  <span className="font-bold text-foreground">Trimester {info.trimester}</span>
+                                  <span className="font-semibold text-muted-foreground">
+                                    Current Trimester
+                                  </span>
+                                  <span className="font-bold text-foreground">
+                                    Trimester {info.trimester}
+                                  </span>
                                 </div>
                               </>
                             );
@@ -5922,13 +7144,22 @@ function Admin() {
                       </h4>
                       <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                         {selectedUser.history.map((h: any) => (
-                          <div key={h.id} className="flex items-center justify-between p-3.5 rounded-md border border-border bg-background/30 hover:border-cat transition-all group">
+                          <div
+                            key={h.id}
+                            className="flex items-center justify-between p-3.5 rounded-md border border-border bg-background/30 hover:border-cat transition-all group"
+                          >
                             <div className="min-w-0 flex-1">
-                              <p className="font-bold text-foreground truncate">{h.title || "Unknown Track"}</p>
-                              <p className="text-[10px] text-muted-foreground font-medium truncate mt-0.5">{h.artist || "Unknown Artist"}</p>
+                              <p className="font-bold text-foreground truncate">
+                                {h.title || "Unknown Track"}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground font-medium truncate mt-0.5">
+                                {h.artist || "Unknown Artist"}
+                              </p>
                             </div>
                             <div className="text-right ml-4 shrink-0 font-mono text-[10px] text-muted-foreground">
-                              <p className="font-semibold">{formatDuration(h.durationListened)} listened</p>
+                              <p className="font-semibold">
+                                {formatDuration(h.durationListened)} listened
+                              </p>
                               <p className="mt-0.5 text-[9px] font-medium text-muted-foreground/80">
                                 {formatDate(h.createdAt)}
                               </p>
@@ -5936,13 +7167,17 @@ function Admin() {
                           </div>
                         ))}
                         {selectedUser.history.length === 0 && (
-                          <p className="text-center py-6 text-muted-foreground font-semibold">No recent playback history found for this account.</p>
+                          <p className="text-center py-6 text-muted-foreground font-semibold">
+                            No recent playback history found for this account.
+                          </p>
                         )}
                       </div>
                     </div>
                   </>
                 ) : (
-                  <p className="text-center py-10 text-muted-foreground">Failed to load user info profile details.</p>
+                  <p className="text-center py-10 text-muted-foreground">
+                    Failed to load user info profile details.
+                  </p>
                 )}
               </div>
 
@@ -5987,12 +7222,19 @@ function Admin() {
                 <h3 className="text-base font-bold text-foreground">Deactivate User?</h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Are you sure you want to deactivate <span className="font-bold text-foreground">"{userToDeactivate.fullName || userToDeactivate.email}"</span>?
-                The user will no longer be able to log in or access the application until reactivated.
+                Are you sure you want to deactivate{" "}
+                <span className="font-bold text-foreground">
+                  "{userToDeactivate.fullName || userToDeactivate.email}"
+                </span>
+                ? The user will no longer be able to log in or access the application until
+                reactivated.
               </p>
               <div className="flex justify-end gap-2.5 pt-2">
                 <button
-                  onClick={() => { setUserToDeactivate(null); setShowDeactivateConfirm(false); }}
+                  onClick={() => {
+                    setUserToDeactivate(null);
+                    setShowDeactivateConfirm(false);
+                  }}
                   className="press min-h-10 rounded-btn border border-border bg-surface px-4.5 text-xs font-bold hover:bg-muted"
                 >
                   Cancel
@@ -6017,12 +7259,18 @@ function Admin() {
                 <h3 className="text-base font-bold text-foreground">Reactivate User?</h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Are you sure you want to reactivate <span className="font-bold text-foreground">"{userToReactivate.fullName || userToReactivate.email}"</span>?
-                This will restore login access to the user account immediately.
+                Are you sure you want to reactivate{" "}
+                <span className="font-bold text-foreground">
+                  "{userToReactivate.fullName || userToReactivate.email}"
+                </span>
+                ? This will restore login access to the user account immediately.
               </p>
               <div className="flex justify-end gap-2.5 pt-2">
                 <button
-                  onClick={() => { setUserToReactivate(null); setShowReactivateConfirm(false); }}
+                  onClick={() => {
+                    setUserToReactivate(null);
+                    setShowReactivateConfirm(false);
+                  }}
                   className="press min-h-10 rounded-btn border border-border bg-surface px-4.5 text-xs font-bold hover:bg-muted"
                 >
                   Cancel
@@ -6045,8 +7293,12 @@ function Admin() {
               {/* Header */}
               <header className="flex items-center justify-between border-b border-border/80 p-5 bg-muted/25 select-none">
                 <div>
-                  <h3 className="text-base font-bold text-foreground">Subscription Billing Details</h3>
-                  <p className="text-[11px] text-muted-foreground font-medium mt-1">Audit customer subscription settings, transaction logs, and access permissions.</p>
+                  <h3 className="text-base font-bold text-foreground">
+                    Subscription Billing Details
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground font-medium mt-1">
+                    Audit customer subscription settings, transaction logs, and access permissions.
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsSubDetailsOpen(false)}
@@ -6067,86 +7319,146 @@ function Admin() {
                     {/* User profile card */}
                     <div className="flex items-center gap-4 border-b border-border/60 pb-5">
                       <div className="grid h-12 w-12 place-items-center rounded-full bg-cat/10 text-base font-black text-cat select-none">
-                        {(selectedSub.subscription.fullName || selectedSub.subscription.email || "S").slice(0, 2).toUpperCase()}
+                        {(
+                          selectedSub.subscription.fullName ||
+                          selectedSub.subscription.email ||
+                          "S"
+                        )
+                          .slice(0, 2)
+                          .toUpperCase()}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-foreground leading-snug">{selectedSub.subscription.fullName || "Anonymous Subscriber"}</h4>
-                        <p className="text-xs text-muted-foreground font-mono mt-0.5">{selectedSub.subscription.email}</p>
+                        <h4 className="text-sm font-bold text-foreground leading-snug">
+                          {selectedSub.subscription.fullName || "Anonymous Subscriber"}
+                        </h4>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                          {selectedSub.subscription.email}
+                        </p>
                       </div>
                     </div>
 
                     {/* Subscription billing details */}
                     <div className="space-y-3.5 text-xs">
-                      <h4 className="font-bold text-muted-foreground uppercase tracking-wider font-sans">Subscription details</h4>
+                      <h4 className="font-bold text-muted-foreground uppercase tracking-wider font-sans">
+                        Subscription details
+                      </h4>
                       <div className="rounded-md border border-border bg-background/50 p-4.5 space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-muted-foreground">Subscription ID</span>
-                          <span className="font-mono text-[10px] text-foreground font-bold">{selectedSub.subscription.id}</span>
+                          <span className="font-semibold text-muted-foreground">
+                            Subscription ID
+                          </span>
+                          <span className="font-mono text-[10px] text-foreground font-bold">
+                            {selectedSub.subscription.id}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-muted-foreground">Pricing Tier Plan</span>
-                          <span className="font-bold text-cat capitalize">{selectedSub.subscription.planName || selectedSub.subscription.planId}</span>
+                          <span className="font-semibold text-muted-foreground">
+                            Pricing Tier Plan
+                          </span>
+                          <span className="font-bold text-cat capitalize">
+                            {selectedSub.subscription.planName || selectedSub.subscription.planId}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="font-semibold text-muted-foreground">Price Rate</span>
-                          <span className="font-bold text-foreground">₹{selectedSub.subscription.price ? selectedSub.subscription.price / 100 : 0} / month</span>
+                          <span className="font-bold text-foreground">
+                            ₹
+                            {selectedSub.subscription.price
+                              ? selectedSub.subscription.price / 100
+                              : 0}{" "}
+                            / month
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="font-semibold text-muted-foreground">Status</span>
-                          <span className={cn(
-                            "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
-                            selectedSub.subscription.status === "active" && "bg-success/5 border-success/15 text-success",
-                            selectedSub.subscription.status === "trial" && "bg-blue-500/5 border-blue-500/15 text-blue-600",
-                            selectedSub.subscription.status === "canceled" && "bg-destructive/5 border-destructive/20 text-destructive",
-                            ["expired", "pending"].includes(selectedSub.subscription.status) && "bg-muted border-border text-muted-foreground",
-                          )}>
+                          <span
+                            className={cn(
+                              "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                              selectedSub.subscription.status === "active" &&
+                                "bg-success/5 border-success/15 text-success",
+                              selectedSub.subscription.status === "trial" &&
+                                "bg-blue-500/5 border-blue-500/15 text-blue-600",
+                              selectedSub.subscription.status === "canceled" &&
+                                "bg-destructive/5 border-destructive/20 text-destructive",
+                              ["expired", "pending"].includes(selectedSub.subscription.status) &&
+                                "bg-muted border-border text-muted-foreground",
+                            )}
+                          >
                             {selectedSub.subscription.status}
                           </span>
                         </div>
                         <div className="flex justify-between items-center font-mono text-[11px]">
-                          <span className="font-semibold text-muted-foreground font-sans">Current Period Start</span>
-                          <span>{new Date(selectedSub.subscription.currentPeriodStart).toLocaleString()}</span>
+                          <span className="font-semibold text-muted-foreground font-sans">
+                            Current Period Start
+                          </span>
+                          <span>
+                            {new Date(selectedSub.subscription.currentPeriodStart).toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center font-mono text-[11px]">
-                          <span className="font-semibold text-muted-foreground font-sans">Current Period End</span>
-                          <span className="font-bold">{new Date(selectedSub.subscription.currentPeriodEnd).toLocaleString()}</span>
+                          <span className="font-semibold text-muted-foreground font-sans">
+                            Current Period End
+                          </span>
+                          <span className="font-bold">
+                            {new Date(selectedSub.subscription.currentPeriodEnd).toLocaleString()}
+                          </span>
                         </div>
                       </div>
                     </div>
 
                     {/* Dynamic Access Permission Checker */}
                     <div className="space-y-3.5 text-xs">
-                      <h4 className="font-bold text-muted-foreground uppercase tracking-wider font-sans">Verify Access Permissions Rules</h4>
+                      <h4 className="font-bold text-muted-foreground uppercase tracking-wider font-sans">
+                        Verify Access Permissions Rules
+                      </h4>
                       <div className="rounded-md border border-border bg-background p-4.5 space-y-3.5">
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="font-bold text-foreground">Basic Catalogue Access</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">Allows basic relaxation audio streams.</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Allows basic relaxation audio streams.
+                            </p>
                           </div>
-                          <span className="text-success font-bold font-mono text-xs">✓ GRANTED (FREE)</span>
+                          <span className="text-success font-bold font-mono text-xs">
+                            ✓ GRANTED (FREE)
+                          </span>
                         </div>
-                        
+
                         <div className="flex items-start justify-between border-t border-border/50 pt-3">
                           <div>
                             <p className="font-bold text-foreground">Standard Programs & Guides</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">Curated sequence builder programmes.</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Curated sequence builder programmes.
+                            </p>
                           </div>
                           {["standard", "premium"].includes(selectedSub.subscription.planId) ? (
-                            <span className="text-success font-bold font-mono text-xs">✓ GRANTED</span>
+                            <span className="text-success font-bold font-mono text-xs">
+                              ✓ GRANTED
+                            </span>
                           ) : (
-                            <span className="text-destructive font-bold font-mono text-xs">✗ RESTRICTED</span>
+                            <span className="text-destructive font-bold font-mono text-xs">
+                              ✗ RESTRICTED
+                            </span>
                           )}
                         </div>
 
                         <div className="flex items-start justify-between border-t border-border/50 pt-3">
                           <div>
-                            <p className="font-bold text-foreground">Pregnancy Gestational Schedules</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">Trimester specific schedules tracking.</p>
+                            <p className="font-bold text-foreground">
+                              Pregnancy Gestational Schedules
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Trimester specific schedules tracking.
+                            </p>
                           </div>
                           {selectedSub.subscription.planId === "premium" ? (
-                            <span className="text-success font-bold font-mono text-xs">✓ GRANTED (PREMIUM)</span>
+                            <span className="text-success font-bold font-mono text-xs">
+                              ✓ GRANTED (PREMIUM)
+                            </span>
                           ) : (
-                            <span className="text-destructive font-bold font-mono text-xs">✗ RESTRICTED</span>
+                            <span className="text-destructive font-bold font-mono text-xs">
+                              ✗ RESTRICTED
+                            </span>
                           )}
                         </div>
                       </div>
@@ -6154,35 +7466,53 @@ function Admin() {
 
                     {/* Subscription Payments history */}
                     <div className="space-y-3 border-t border-border/60 pt-5 text-xs">
-                      <h4 className="font-bold text-muted-foreground uppercase tracking-wider font-sans">Payment logs history for subscriber</h4>
+                      <h4 className="font-bold text-muted-foreground uppercase tracking-wider font-sans">
+                        Payment logs history for subscriber
+                      </h4>
                       <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                         {selectedSub.paymentsHistory.map((h: any) => (
-                          <div key={h.id} className="flex items-center justify-between p-3.5 rounded-md border border-border bg-background/30 hover:border-cat transition-all group font-sans">
+                          <div
+                            key={h.id}
+                            className="flex items-center justify-between p-3.5 rounded-md border border-border bg-background/30 hover:border-cat transition-all group font-sans"
+                          >
                             <div className="min-w-0 flex-1">
-                              <p className="font-bold text-foreground font-mono text-[10px]">{h.id}</p>
-                              <p className="text-[9px] text-muted-foreground font-mono truncate max-w-[200px] mt-0.5">{h.orderId}</p>
+                              <p className="font-bold text-foreground font-mono text-[10px]">
+                                {h.id}
+                              </p>
+                              <p className="text-[9px] text-muted-foreground font-mono truncate max-w-[200px] mt-0.5">
+                                {h.orderId}
+                              </p>
                             </div>
                             <div className="text-right ml-4 shrink-0 font-mono text-[10px]">
                               <p className="font-bold text-foreground">₹{h.amount / 100}</p>
-                              <span className={cn(
-                                "rounded px-1 text-[9px] font-bold border capitalize inline-block mt-1",
-                                h.status === "completed" && "bg-success/5 border-success/15 text-success",
-                                h.status === "pending" && "bg-muted border-border text-muted-foreground",
-                                h.status === "failed" && "bg-destructive/5 border-destructive/15 text-destructive",
-                              )}>
+                              <span
+                                className={cn(
+                                  "rounded px-1 text-[9px] font-bold border capitalize inline-block mt-1",
+                                  h.status === "completed" &&
+                                    "bg-success/5 border-success/15 text-success",
+                                  h.status === "pending" &&
+                                    "bg-muted border-border text-muted-foreground",
+                                  h.status === "failed" &&
+                                    "bg-destructive/5 border-destructive/15 text-destructive",
+                                )}
+                              >
                                 {h.status === "completed" ? "Success" : h.status}
                               </span>
                             </div>
                           </div>
                         ))}
                         {selectedSub.paymentsHistory.length === 0 && (
-                          <p className="text-center py-6 text-muted-foreground font-semibold">No transactions recorded for this subscription.</p>
+                          <p className="text-center py-6 text-muted-foreground font-semibold">
+                            No transactions recorded for this subscription.
+                          </p>
                         )}
                       </div>
                     </div>
                   </>
                 ) : (
-                  <p className="text-center py-10 text-muted-foreground">Failed to load subscriber details.</p>
+                  <p className="text-center py-10 text-muted-foreground">
+                    Failed to load subscriber details.
+                  </p>
                 )}
               </div>
 
@@ -6222,11 +7552,18 @@ function Admin() {
               {/* Drawer Header */}
               <header className="flex items-center justify-between border-b border-border/80 p-5 bg-muted/25 select-none">
                 <div>
-                  <h3 className="text-base font-bold text-foreground">Edit Pricing Plan — {editingPlan.id.toUpperCase()}</h3>
-                  <p className="text-[11px] text-muted-foreground font-medium mt-1">Configure pricing tier prices, interval details and status.</p>
+                  <h3 className="text-base font-bold text-foreground">
+                    Edit Pricing Plan — {editingPlan.id.toUpperCase()}
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground font-medium mt-1">
+                    Configure pricing tier prices, interval details and status.
+                  </p>
                 </div>
                 <button
-                  onClick={() => { setIsPlanFormOpen(false); setEditingPlan(null); }}
+                  onClick={() => {
+                    setIsPlanFormOpen(false);
+                    setEditingPlan(null);
+                  }}
                   className="press rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <X className="h-5 w-5" />
@@ -6256,7 +7593,9 @@ function Admin() {
                     className={fieldCls}
                     placeholder="Rate amount e.g. 299"
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1">This price will be parsed and stored in paise inside the plans repository.</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    This price will be parsed and stored in paise inside the plans repository.
+                  </p>
                 </label>
 
                 <label className="block">
@@ -6280,7 +7619,10 @@ function Admin() {
                     onChange={(e) => setPlanFormIsActive(e.target.checked)}
                     className="h-4 w-4 rounded border-border text-cat focus:ring-cat"
                   />
-                  <label htmlFor="planFormIsActive" className="text-xs font-bold text-foreground cursor-pointer">
+                  <label
+                    htmlFor="planFormIsActive"
+                    className="text-xs font-bold text-foreground cursor-pointer"
+                  >
                     Enable active configuration for subscription orders
                   </label>
                 </div>
@@ -6290,7 +7632,10 @@ function Admin() {
               <footer className="border-t border-border/80 p-5 bg-muted/25 flex gap-2 items-center justify-end select-none">
                 <button
                   type="button"
-                  onClick={() => { setIsPlanFormOpen(false); setEditingPlan(null); }}
+                  onClick={() => {
+                    setIsPlanFormOpen(false);
+                    setEditingPlan(null);
+                  }}
                   className="press inline-flex min-h-11 items-center justify-center rounded-btn border border-border bg-surface px-5 text-xs font-bold text-foreground hover:bg-muted"
                 >
                   Cancel
@@ -6317,12 +7662,19 @@ function Admin() {
                 <h3 className="text-base font-bold text-foreground">Cancel subscription?</h3>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Are you sure you want to cancel the subscription for <span className="font-bold text-foreground">"{subToCancel.fullName || subToCancel.email}"</span>?
-                This will transition the subscription status to <span className="font-bold text-foreground">canceled</span> immediately.
+                Are you sure you want to cancel the subscription for{" "}
+                <span className="font-bold text-foreground">
+                  "{subToCancel.fullName || subToCancel.email}"
+                </span>
+                ? This will transition the subscription status to{" "}
+                <span className="font-bold text-foreground">canceled</span> immediately.
               </p>
               <div className="flex justify-end gap-2.5 pt-2">
                 <button
-                  onClick={() => { setSubToCancel(null); setShowCancelConfirm(false); }}
+                  onClick={() => {
+                    setSubToCancel(null);
+                    setShowCancelConfirm(false);
+                  }}
                   className="press min-h-10 rounded-btn border border-border bg-surface px-4.5 text-xs font-bold hover:bg-muted"
                 >
                   Close
@@ -6349,7 +7701,11 @@ function Admin() {
 
               <div className="space-y-4 text-xs text-left">
                 <p className="text-muted-foreground">
-                  Shift the current period end date for <span className="font-bold text-foreground">"{subToExtend.fullName || subToExtend.email}"</span> forward.
+                  Shift the current period end date for{" "}
+                  <span className="font-bold text-foreground">
+                    "{subToExtend.fullName || subToExtend.email}"
+                  </span>{" "}
+                  forward.
                 </p>
                 <label className="block">
                   <span className={labelCls}>Days to extend</span>
@@ -6358,7 +7714,9 @@ function Admin() {
                     min={1}
                     max={365}
                     value={extensionDays}
-                    onChange={(e) => setExtensionDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 30)))}
+                    onChange={(e) =>
+                      setExtensionDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 30)))
+                    }
                     className={fieldCls}
                   />
                 </label>
@@ -6366,7 +7724,10 @@ function Admin() {
 
               <div className="flex justify-end gap-2.5 pt-2 select-none">
                 <button
-                  onClick={() => { setSubToExtend(null); setShowExtendConfirm(false); }}
+                  onClick={() => {
+                    setSubToExtend(null);
+                    setShowExtendConfirm(false);
+                  }}
                   className="press min-h-10 rounded-btn border border-border bg-surface px-4.5 text-xs font-bold hover:bg-muted"
                 >
                   Close
@@ -6392,7 +7753,9 @@ function Admin() {
                     <Sparkles className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-foreground">Upgrade / Downgrade Subscription</h3>
+                    <h3 className="text-base font-bold text-foreground">
+                      Upgrade / Downgrade Subscription
+                    </h3>
                     <p className="text-xs text-muted-foreground">Modify tier access for user</p>
                   </div>
                 </div>
@@ -6406,8 +7769,12 @@ function Admin() {
 
               <div className="space-y-4 text-xs">
                 <div className="rounded-xl border border-border/80 bg-muted/30 p-3.5 flex flex-col gap-1">
-                  <span className="font-bold text-foreground text-sm">{targetSubUser.fullName || "Subscriber"}</span>
-                  <span className="font-mono text-muted-foreground text-[11px]">{targetSubUser.email}</span>
+                  <span className="font-bold text-foreground text-sm">
+                    {targetSubUser.fullName || "Subscriber"}
+                  </span>
+                  <span className="font-mono text-muted-foreground text-[11px]">
+                    {targetSubUser.email}
+                  </span>
                 </div>
 
                 <div>
@@ -6445,7 +7812,7 @@ function Admin() {
                             "rounded-btn border py-2 text-xs font-bold transition-all cursor-pointer",
                             subDurationDays === d
                               ? "bg-cat border-cat text-cat-foreground shadow-sm"
-                              : "bg-background border-border text-muted-foreground hover:border-cat"
+                              : "bg-background border-border text-muted-foreground hover:border-cat",
                           )}
                         >
                           {d} Days
@@ -6469,7 +7836,9 @@ function Admin() {
                   className="flex items-center gap-2 rounded-btn bg-cat px-5 py-2 text-xs font-bold text-cat-foreground shadow-lift hover:bg-cat/90 disabled:opacity-50 cursor-pointer"
                 >
                   {savingSubTier && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <span>{selectedPlanTier === "free" ? "Downgrade User to Free" : "Apply Subscription"}</span>
+                  <span>
+                    {selectedPlanTier === "free" ? "Downgrade User to Free" : "Apply Subscription"}
+                  </span>
                 </button>
               </div>
             </div>

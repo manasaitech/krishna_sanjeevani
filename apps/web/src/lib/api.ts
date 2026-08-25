@@ -69,7 +69,7 @@ async function refreshAccessToken(): Promise<boolean> {
 async function request<T = any>(
   path: string,
   options: RequestInit = {},
-  retry = true
+  retry = true,
 ): Promise<ApiResponse<T>> {
   const token = getAccessToken();
   const headers: Record<string, string> = {
@@ -147,15 +147,13 @@ export const api = {
   auth: {
     register: (email: string, password: string, fullName: string) =>
       http.post("/auth/register", { email, password, fullName }),
-    login: (email: string, password: string) =>
-      http.post("/auth/login", { email, password }),
+    login: (email: string, password: string) => http.post("/auth/login", { email, password }),
     logout: () => {
       clearTokens();
       return http.post("/auth/logout");
     },
     me: () => http.get("/auth/me"),
-    changePassword: (password: string) =>
-      http.post("/auth/change-password", { password }),
+    changePassword: (password: string) => http.post("/auth/change-password", { password }),
     googleLogin: (idToken: string, category?: string) =>
       http.post("/auth/google", { idToken, category }),
   },
@@ -206,8 +204,7 @@ export const api = {
     getPregnancySchedules: (id: string) => http.get(`/programs/${id}/pregnancy-schedules`),
     addTrack: (id: string, trackId: string, sequence: number, isRequired = true) =>
       http.post(`/programs/${id}/tracks`, { trackId, sequence, isRequired }),
-    removeTrack: (id: string, trackId: string) =>
-      http.delete(`/programs/${id}/tracks/${trackId}`),
+    removeTrack: (id: string, trackId: string) => http.delete(`/programs/${id}/tracks/${trackId}`),
     reorderTracks: (id: string, trackList: Array<{ trackId: string; sequence: number }>) =>
       http.patch(`/programs/${id}/tracks/reorder`, { tracks: trackList }),
     duplicate: (id: string) => http.post(`/programs/${id}/duplicate`),
@@ -219,8 +216,10 @@ export const api = {
     getToday: () => http.get("/pregnancy/today"),
     getByWeek: (week: number) => http.get(`/pregnancy/week/${week}`),
     getByMonth: (month: number) => http.get(`/pregnancy/month/${month}`),
-    saveUserInfo: (data: { edd?: string | null | undefined; currentWeek?: number | null | undefined }) =>
-      http.post("/pregnancy/user-info", data),
+    saveUserInfo: (data: {
+      edd?: string | null | undefined;
+      currentWeek?: number | null | undefined;
+    }) => http.post("/pregnancy/user-info", data),
     createSchedule: (data: any) => http.post("/pregnancy/schedule", data),
     updateSchedule: (id: string, data: any) => http.patch(`/pregnancy/schedule/${id}`, data),
     removeSchedule: (id: string) => http.delete(`/pregnancy/schedule/${id}`),
@@ -236,7 +235,7 @@ export const api = {
       position: number,
       duration: number,
       completed = false,
-      programId?: string
+      programId?: string,
     ) => http.post("/progress/update", { trackId, position, duration, completed, programId }),
     continueListening: () => http.get("/progress/continue-listening"),
     history: () => http.get("/progress/history"),
@@ -290,15 +289,23 @@ export const api = {
             "Content-Type": "application/octet-stream",
           },
           body: data,
-        }
+        },
       ),
-    multipartComplete: (key: string, uploadId: string, parts: { partNumber: number; etag: string }[], trackId?: string) =>
-      http.post<{ trackId: string; key: string; size: number }>("/storage/upload/audio/multipart/complete", {
-        key,
-        uploadId,
-        parts,
-        trackId,
-      }),
+    multipartComplete: (
+      key: string,
+      uploadId: string,
+      parts: { partNumber: number; etag: string }[],
+      trackId?: string,
+    ) =>
+      http.post<{ trackId: string; key: string; size: number }>(
+        "/storage/upload/audio/multipart/complete",
+        {
+          key,
+          uploadId,
+          parts,
+          trackId,
+        },
+      ),
     multipartAbort: (key: string, uploadId: string) =>
       http.post<void>("/storage/upload/audio/multipart/abort", {
         key,
@@ -346,12 +353,15 @@ export const api = {
     getOverview: () => http.get("/admin/overview"),
     users: {
       listAdmin: (params?: any) => {
-        const query = params ? "?" + new URLSearchParams(
-          Object.entries(params).reduce((acc: any, [k, v]) => {
-            if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
-            return acc;
-          }, {})
-        ).toString() : "";
+        const query = params
+          ? "?" +
+            new URLSearchParams(
+              Object.entries(params).reduce((acc: any, [k, v]) => {
+                if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
+                return acc;
+              }, {}),
+            ).toString()
+          : "";
         return http.get(`/admin/users${query}`);
       },
       getStats: () => http.get("/admin/users/stats"),
@@ -363,38 +373,48 @@ export const api = {
     },
     subscriptions: {
       list: (params?: any) => {
-        const query = params ? "?" + new URLSearchParams(
-          Object.entries(params).reduce((acc: any, [k, v]) => {
-            if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
-            return acc;
-          }, {})
-        ).toString() : "";
+        const query = params
+          ? "?" +
+            new URLSearchParams(
+              Object.entries(params).reduce((acc: any, [k, v]) => {
+                if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
+                return acc;
+              }, {}),
+            ).toString()
+          : "";
         return http.get(`/admin/subscriptions${query}`);
       },
       getStats: () => http.get("/admin/subscriptions/stats"),
       getDetails: (id: string) => http.get(`/admin/subscriptions/${id}`),
       cancel: (id: string) => http.post(`/admin/subscriptions/${id}/cancel`),
-      extend: (id: string, days: number) => http.post(`/admin/subscriptions/${id}/extend`, { days }),
+      extend: (id: string, days: number) =>
+        http.post(`/admin/subscriptions/${id}/extend`, { days }),
       listPlans: () => http.get("/admin/plans"),
       updatePlan: (id: string, body: any) => http.put(`/admin/plans/${id}`, body),
       listPayments: (params?: any) => {
-        const query = params ? "?" + new URLSearchParams(
-          Object.entries(params).reduce((acc: any, [k, v]) => {
-            if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
-            return acc;
-          }, {})
-        ).toString() : "";
+        const query = params
+          ? "?" +
+            new URLSearchParams(
+              Object.entries(params).reduce((acc: any, [k, v]) => {
+                if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
+                return acc;
+              }, {}),
+            ).toString()
+          : "";
         return http.get(`/admin/payments${query}`);
       },
     },
     analytics: {
       getDashboard: (params?: any) => {
-        const query = params ? "?" + new URLSearchParams(
-          Object.entries(params).reduce((acc: any, [k, v]) => {
-            if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
-            return acc;
-          }, {})
-        ).toString() : "";
+        const query = params
+          ? "?" +
+            new URLSearchParams(
+              Object.entries(params).reduce((acc: any, [k, v]) => {
+                if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
+                return acc;
+              }, {}),
+            ).toString()
+          : "";
         return http.get(`/admin/analytics${query}`);
       },
     },

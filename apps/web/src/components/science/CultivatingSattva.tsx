@@ -34,10 +34,11 @@ export function CultivatingSattva() {
               </h2>
 
               <p className="text-base text-muted-foreground leading-relaxed font-sans">
-                In classical Ayurvedic psychology, cultivating <strong className="text-foreground">Sattva (light, clarity, harmony)</strong>{" "}
-                acts as a natural psycho-spiritual balm. Rather than suppressing symptoms with harsh force,
-                purified sound gently dissolves the agitation of Rajas and the inertia of Tamas, restoring
-                the mind to its pristine, unburdened state.
+                In classical Ayurvedic psychology, cultivating{" "}
+                <strong className="text-foreground">Sattva (light, clarity, harmony)</strong> acts
+                as a natural psycho-spiritual balm. Rather than suppressing symptoms with harsh
+                force, purified sound gently dissolves the agitation of Rajas and the inertia of
+                Tamas, restoring the mind to its pristine, unburdened state.
               </p>
 
               {/* Visual Pillar Tiles */}
@@ -51,12 +52,8 @@ export function CultivatingSattva() {
                       <Check className="h-4 w-4" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold font-serif text-foreground">
-                        {p.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5 font-sans">
-                        {p.desc}
-                      </p>
+                      <h4 className="text-sm font-bold font-serif text-foreground">{p.title}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5 font-sans">{p.desc}</p>
                     </div>
                   </div>
                 ))}

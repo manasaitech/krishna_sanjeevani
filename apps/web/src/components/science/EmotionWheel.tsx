@@ -1,5 +1,17 @@
 import { NINE_EMOTIONAL_STATES } from "@/lib/science-data";
-import { Sparkles, Compass, Heart, Smile, Droplets, Flame, Shield, AlertTriangle, Eye, Sparkle, Sun } from "lucide-react";
+import {
+  Sparkles,
+  Compass,
+  Heart,
+  Smile,
+  Droplets,
+  Flame,
+  Shield,
+  AlertTriangle,
+  Eye,
+  Sparkle,
+  Sun,
+} from "lucide-react";
 
 export function EmotionWheel() {
   const bhavaIcons = [Heart, Smile, Droplets, Flame, Shield, AlertTriangle, Eye, Sparkle, Sun];
@@ -29,8 +41,8 @@ export function EmotionWheel() {
           </h2>
 
           <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans">
-            Human consciousness possesses nine enduring emotional archetypes. Through
-            therapeutic raga composition, these emotions are harmonized and sublimated into Sattva.
+            Human consciousness possesses nine enduring emotional archetypes. Through therapeutic
+            raga composition, these emotions are harmonized and sublimated into Sattva.
           </p>
         </div>
 

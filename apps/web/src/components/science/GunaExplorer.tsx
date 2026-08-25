@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { GUNAS_DATA } from "@/lib/science-data";
 import threeGunasImg from "@/assets/three-gunas-diagram.png";
-import { Sparkles, Sun, Flame, Moon, CheckCircle2, ArrowRight, ShieldCheck, Zap } from "lucide-react";
+import {
+  Sparkles,
+  Sun,
+  Flame,
+  Moon,
+  CheckCircle2,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
 
 export function GunaExplorer() {
   const [selectedGuna, setSelectedGuna] = useState<"sattva" | "rajas" | "tamas">("sattva");
@@ -39,7 +48,10 @@ export function GunaExplorer() {
   };
 
   return (
-    <section id="gunas" className="py-20 sm:py-28 bg-surface border-y border-border/80 relative overflow-hidden">
+    <section
+      id="gunas"
+      className="py-20 sm:py-28 bg-surface border-y border-border/80 relative overflow-hidden"
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
@@ -54,8 +66,8 @@ export function GunaExplorer() {
 
           <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans">
             In Ayurvedic psychology and Vedic music therapy, sound is calibrated to modulate the
-            three universal energetic qualities: <strong className="text-foreground">Sattva</strong> (Harmony),{" "}
-            <strong className="text-foreground">Rajas</strong> (Passion), and{" "}
+            three universal energetic qualities: <strong className="text-foreground">Sattva</strong>{" "}
+            (Harmony), <strong className="text-foreground">Rajas</strong> (Passion), and{" "}
             <strong className="text-foreground">Tamas</strong> (Inertia).
           </p>
         </div>
@@ -139,7 +151,9 @@ export function GunaExplorer() {
                         : "bg-background border-border hover:bg-surface text-muted-foreground"
                     }`}
                   >
-                    <IconComponent className={`h-5 w-5 ${isSelected ? visual.accent : "text-muted-foreground"}`} />
+                    <IconComponent
+                      className={`h-5 w-5 ${isSelected ? visual.accent : "text-muted-foreground"}`}
+                    />
                     <span className="text-sm font-bold font-serif text-foreground block">
                       {item.name}
                     </span>
@@ -164,7 +178,8 @@ export function GunaExplorer() {
                     Consciousness Attribute
                   </span>
                   <h3 className="text-xl sm:text-2xl font-bold font-serif text-foreground mt-0.5">
-                    {guna.name} <span className="font-serif text-lg text-cat">({guna.sanskrit})</span>
+                    {guna.name}{" "}
+                    <span className="font-serif text-lg text-cat">({guna.sanskrit})</span>
                   </h3>
                 </div>
 

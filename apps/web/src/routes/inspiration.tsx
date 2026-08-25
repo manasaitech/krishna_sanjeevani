@@ -14,6 +14,8 @@ import {
   prabhupadaImg,
   manuscriptImg,
 } from "@/lib/home-data";
+import { useApp } from "@/lib/app-state";
+import { BASE_URL } from "@/lib/api";
 import {
   Sparkles,
   BookOpen,
@@ -25,6 +27,7 @@ import {
   Volume2,
   ArrowRight,
   Play,
+  Pause,
 } from "lucide-react";
 
 export const Route = createFileRoute("/inspiration")({
@@ -49,8 +52,24 @@ export const Route = createFileRoute("/inspiration")({
 
 function InspirationPage() {
   const audio = useVerseAudio();
+  const { play, current, playing, toggle } = useApp();
   const [showKulasekharaDetails, setShowKulasekharaDetails] = useState(true);
   const [expandedSiksastakam, setExpandedSiksastakam] = useState<number | null>(null);
+
+  const mahamantraTrack = {
+    id: "hare-krishna-mahamantra",
+    title: "Hare Krishna Mahamantra",
+    artist: "Srila Prabhupada Legacy",
+    subtitle: "Spiritual Inspiration Track",
+    duration: 168, // default duration
+    category: "devotional",
+    art: prabhupadaImg,
+    audioUrl: "/audio/hare-krishna-mahamantra.mp3",
+    raga: "Bhairavi",
+    purpose: "Devotion",
+    instructions: "Listen with a prayerful and calm mind.",
+    frequency: "Devotional Sound Vibration",
+  };
 
   const toggleSiksastakam = (index: number) => {
     setExpandedSiksastakam(expandedSiksastakam === index ? null : index);
@@ -81,13 +100,14 @@ function InspirationPage() {
               </h1>
 
               <p className="text-lg sm:text-2xl font-serif italic text-cat font-semibold">
-                The Spiritual Masters, Sanskrit Manuscripts, and Sacred Mantras Guiding Krishna Sanjeevani
+                The Spiritual Masters, Sanskrit Manuscripts, and Sacred Mantras Guiding Krishna
+                Sanjeevani
               </p>
 
               <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-sans pt-1">
                 Krishna Sanjeevani draws its healing philosophy from a rich historical continuum of
-                devotion and sacred sound vibration — spanning 9th-century Alvar royalty, 15th-century
-                divine awakening, and 20th-century global kīrtana outreach.
+                devotion and sacred sound vibration — spanning 9th-century Alvar royalty,
+                15th-century divine awakening, and 20th-century global kīrtana outreach.
               </p>
             </div>
 
@@ -163,7 +183,10 @@ function InspirationPage() {
         </section>
 
         {/* 1. KING KULASEKHARA ALVAR */}
-        <section id="kulasekhara" className="py-20 sm:py-28 bg-surface border-y border-border relative">
+        <section
+          id="kulasekhara"
+          className="py-20 sm:py-28 bg-surface border-y border-border relative"
+        >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               {/* Left Column: Portrait */}
@@ -195,23 +218,34 @@ function InspirationPage() {
                 </h2>
 
                 <p className="text-base text-muted-foreground leading-relaxed font-sans">
-                  The great King Kulasekhara, a devoted monarch and saint of 9th-century South India,
-                  defined Lord Krishna's holy name as the supreme medicine in his celebrated Sanskrit
-                  masterpiece, <strong className="text-foreground">Mukundamālā Stotra</strong>.
+                  The great King Kulasekhara, a devoted monarch and saint of 9th-century South
+                  India, defined Lord Krishna's holy name as the supreme medicine in his celebrated
+                  Sanskrit masterpiece,{" "}
+                  <strong className="text-foreground">Mukundamālā Stotra</strong>.
                 </p>
 
                 <p className="text-base text-muted-foreground leading-relaxed font-sans">
-                  The name <strong className="text-foreground">Krishna Sanjeevani</strong> has its roots
-                  in this ancient poetry that declares sacred sound vibration as the ultimate elixir
-                  capable of healing ailments of body, mind, and existential suffering.
+                  The name <strong className="text-foreground">Krishna Sanjeevani</strong> has its
+                  roots in this ancient poetry that declares sacred sound vibration as the ultimate
+                  elixir capable of healing ailments of body, mind, and existential suffering.
                 </p>
 
                 <div className="pt-2 flex items-center gap-4">
                   <button
-                    onClick={() => audio.play()}
+                    onClick={() => {
+                      if (audio.currentTrackId === "kulasekhara" && audio.isPlaying) {
+                        audio.pause();
+                      } else {
+                        audio.playTrack("kulasekhara");
+                      }
+                    }}
                     className="press inline-flex items-center gap-2 rounded-btn bg-cat px-5 py-2.5 text-sm font-semibold text-cat-foreground shadow-lift hover:brightness-105"
                   >
-                    <Volume2 className="h-4 w-4" />
+                    {audio.currentTrackId === "kulasekhara" && audio.isPlaying ? (
+                      <Pause className="h-4 w-4 fill-cat-foreground" />
+                    ) : (
+                      <Volume2 className="h-4 w-4" />
+                    )}
                     <span>Listen to Verse 24</span>
                   </button>
                   <button
@@ -255,7 +289,11 @@ function InspirationPage() {
                     className="text-xs text-muted-foreground hover:text-cat transition-colors flex items-center gap-1"
                   >
                     <span>{showKulasekharaDetails ? "Collapse" : "Expand"}</span>
-                    {showKulasekharaDetails ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                    {showKulasekharaDetails ? (
+                      <ChevronUp className="h-3.5 w-3.5" />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    )}
                   </button>
                 </div>
 
@@ -285,7 +323,10 @@ function InspirationPage() {
         </section>
 
         {/* 2. LORD CHAITANYA MAHAPRABHU */}
-        <section id="chaitanya" className="py-20 sm:py-28 bg-background border-b border-border relative">
+        <section
+          id="chaitanya"
+          className="py-20 sm:py-28 bg-background border-b border-border relative"
+        >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center mb-10">
               {/* Left Column: Portrait */}
@@ -300,9 +341,7 @@ function InspirationPage() {
                     <span className="text-[11px] uppercase font-bold tracking-widest text-amber-300 font-sans block">
                       15th Century Divine Avatar
                     </span>
-                    <span className="text-base font-bold font-serif">
-                      Śrī Caitanya Mahāprabhu
-                    </span>
+                    <span className="text-base font-bold font-serif">Śrī Caitanya Mahāprabhu</span>
                   </div>
                 </div>
               </div>
@@ -319,14 +358,15 @@ function InspirationPage() {
                 </h2>
 
                 <p className="text-base text-muted-foreground leading-relaxed font-sans">
-                  The 15th-century divine incarnation who dedicated His life to spreading the chanting of
-                  the Hare Krishna Mahamantra as the universal path for inner purification, peace, and
-                  spiritual awakening.
+                  The 15th-century divine incarnation who dedicated His life to spreading the
+                  chanting of the Hare Krishna Mahamantra as the universal path for inner
+                  purification, peace, and spiritual awakening.
                 </p>
 
                 <p className="text-base text-muted-foreground leading-relaxed font-sans">
-                  His teachings provide the spiritual foundation for Krishna Sanjeevani, where the Holy Name
-                  is experienced as a healing force that bathes and refreshes body, mind, and soul.
+                  His teachings provide the spiritual foundation for Krishna Sanjeevani, where the
+                  Holy Name is experienced as a healing force that bathes and refreshes body, mind,
+                  and soul.
                 </p>
               </div>
             </div>
@@ -343,6 +383,27 @@ function InspirationPage() {
                 <p className="text-xs sm:text-sm font-serif italic text-muted-foreground">
                   "{CHAITANYA_SIKSASTAKAM.transliteration}"
                 </p>
+                
+                {/* Play Button for Chaitanya Verse */}
+                <div className="pt-3 flex justify-center">
+                  <button
+                    onClick={() => {
+                      if (audio.currentTrackId === "chaitanya" && audio.isPlaying) {
+                        audio.pause();
+                      } else {
+                        audio.playTrack("chaitanya");
+                      }
+                    }}
+                    className="press inline-flex items-center gap-2 rounded-btn bg-cat px-6 py-2.5 text-sm font-semibold text-cat-foreground shadow-lift hover:brightness-105"
+                  >
+                    {audio.currentTrackId === "chaitanya" && audio.isPlaying ? (
+                      <Pause className="h-4 w-4 fill-cat-foreground" />
+                    ) : (
+                      <Volume2 className="h-4 w-4" />
+                    )}
+                    <span>Listen to Śrī Śikṣāṣṭakam</span>
+                  </button>
+                </div>
               </div>
 
               {/* 8 Expandable Line-by-Line Cards */}
@@ -387,7 +448,10 @@ function InspirationPage() {
         </section>
 
         {/* 3. SRILA PRABHUPADA */}
-        <section id="prabhupada" className="py-20 sm:py-28 bg-surface border-b border-border relative">
+        <section
+          id="prabhupada"
+          className="py-20 sm:py-28 bg-surface border-b border-border relative"
+        >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               {/* Left Portrait */}
@@ -426,7 +490,10 @@ function InspirationPage() {
 
                 <div className="space-y-2.5 pt-1">
                   {PRABHUPADA_LEGACY.points.map((pt, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-foreground/90 font-sans">
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2.5 text-xs sm:text-sm text-foreground/90 font-sans"
+                    >
                       <CheckCircle2 className="h-4 w-4 text-cat shrink-0 mt-0.5" />
                       <span>{pt}</span>
                     </div>
@@ -448,13 +515,28 @@ function InspirationPage() {
                       </span>
                     </div>
                   </div>
-                  <Link
-                    to="/register"
+                  <button
+                    onClick={() => {
+                      if (current?.id === mahamantraTrack.id) {
+                        toggle();
+                      } else {
+                        play(mahamantraTrack);
+                      }
+                    }}
                     className="press inline-flex items-center gap-1.5 rounded-btn bg-cat px-4 py-2 text-xs font-semibold text-cat-foreground shadow-sm hover:brightness-105"
                   >
-                    <Play className="h-3 w-3 fill-cat-foreground" />
-                    <span>Listen</span>
-                  </Link>
+                    {current?.id === mahamantraTrack.id && playing ? (
+                      <>
+                        <Pause className="h-3 w-3 fill-cat-foreground" />
+                        <span>Pause</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-3 w-3 fill-cat-foreground" />
+                        <span>Play Mahamantra</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
@@ -476,7 +558,7 @@ function InspirationPage() {
                 to="/register"
                 className="press inline-flex items-center gap-2 rounded-btn bg-cat px-7 py-3.5 text-sm sm:text-base font-semibold text-cat-foreground shadow-lift hover:brightness-105"
               >
-                <span>Explore the Platform</span>
+                <span>Enter the Sound Sanctuary</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

@@ -1,13 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Play, Sparkles, Loader2, Heart, Waves, Info } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState, useEffect } from "react";
+import { Play, Sparkles, Loader2, Heart, Waves, Info, Clock, Lock } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CardGrid, Chip, Panel, Rail, Section } from "@/components/layout-bits";
 import { ContinueCard, ProgramCard, TrackCard, TrackRow, TrackTile } from "@/components/cards";
 import { useApp } from "@/lib/app-state";
 import { categories, purposes, type Track, type CategoryId } from "@/lib/content";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+import { MockPaymentModal } from "@/components/discover/MockPaymentModal";
 
 export const Route = createFileRoute("/home")({
+  validateSearch: (search: Record<string, unknown>): { search?: string } => {
+    const sVal = search["search"] as string | undefined;
+    return sVal ? { search: sVal } : {};
+  },
   head: () => ({
     meta: [
       { title: "Home — Krishna Sanjeevani" },
@@ -27,6 +34,10 @@ export const Route = createFileRoute("/home")({
 });
 
 function Home() {
+  const { search } = Route.useSearch();
+  const searchQuery = search || "";
+  const navigate = useNavigate();
+
   const {
     category,
     setCategory,
@@ -41,6 +52,168 @@ function Home() {
 
   const [purpose, setPurpose] = useState<string | null>(null);
 
+  // Discover catalog states for search results
+  const [catalog, setCatalog] = useState<any>(null);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+
+  // Subscription modal state
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [subscribingSurawali, setSubscribingSurawali] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (searchQuery) {
+      setCatalogLoading(true);
+      Promise.all([
+        api.discover.getCatalog(),
+        user ? api.discover.listSubscriptions() : Promise.resolve({ success: false, data: [] }),
+      ])
+        .then(([catRes, subRes]) => {
+          if (catRes.success) {
+            setCatalog(catRes.data);
+          }
+          if (subRes.success && subRes.data) {
+            setSubscriptions(
+              subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now()),
+            );
+          }
+        })
+        .catch((err) => console.error("Failed to load search catalog", err))
+        .finally(() => setCatalogLoading(false));
+    }
+  }, [searchQuery, user]);
+
+  // Subscribe Action
+  const handleSubscribeClick = (surawali: any) => {
+    if (!user) {
+      toast.error("Please login to subscribe");
+      navigate({ to: "/login" });
+      return;
+    }
+    setSubscribingSurawali(surawali);
+    setPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = async (txnId: string) => {
+    if (!subscribingSurawali) return;
+    try {
+      const res = await api.discover.subscribe(subscribingSurawali.id, "monthly", txnId);
+      if (res.success) {
+        toast.success(`Successfully subscribed to ${subscribingSurawali.name}!`);
+        // Refresh subscriptions list
+        if (user) {
+          const subRes = await api.discover.listSubscriptions();
+          if (subRes.success && subRes.data) {
+            setSubscriptions(
+              subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now()),
+            );
+          }
+        }
+        window.dispatchEvent(new Event("subscription-updated"));
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to create subscription");
+    } finally {
+      setPaymentModalOpen(false);
+      setSubscribingSurawali(null);
+    }
+  };
+
+  const isSubscribed = (surawaliId: string) => {
+    return subscriptions.some((sub) => sub.surawaliId === surawaliId);
+  };
+
+  const getAilmentName = (id: string) =>
+    catalog?.ailments.find((a: any) => a.id === id)?.name || "";
+  const getSurawaliName = (id: string) =>
+    catalog?.surawalis.find((s: any) => s.id === id)?.name || "";
+  const getTimingName = (id: string) => catalog?.timings.find((t: any) => t.id === id)?.name || "";
+
+  // Play Preview Action (for matching surawalis)
+  const handlePlayPreview = (surawaliName: string, subtext: string, forceSubscribed = false) => {
+    toast.info(`Playing ${forceSubscribed ? "session" : "preview"} for ${surawaliName}`);
+    if (forceSubscribed) {
+      play({
+        id: `mock_${surawaliName}`,
+        title: surawaliName,
+        artist: "Krishna Sanjeevani Therapeutic",
+        subtitle: subtext,
+        duration: 558,
+        category: "secular",
+        playlistKey: "",
+        art: "/govinda-bhakta-pr-seminars-mukund.mp3",
+      } as any);
+      return;
+    }
+
+    const existingTrack = tracks.find((t) =>
+      t.title.toLowerCase().includes(surawaliName.toLowerCase()),
+    );
+    if (existingTrack) {
+      play(existingTrack);
+    } else {
+      play({
+        id: `mock_${surawaliName}`,
+        title: surawaliName,
+        artist: "Krishna Sanjeevani Therapeutic",
+        subtitle: subtext,
+        duration: 558,
+        category: "secular",
+        playlistKey: "",
+        art: "/govinda-bhakta-pr-seminars-mukund.mp3",
+      } as any);
+    }
+  };
+
+  // Filter search results
+  const searchResults = useMemo(() => {
+    const needle = searchQuery.trim().toLowerCase();
+    if (!needle) return { tracks: [], programs: [], surawalis: [] };
+
+    // 1. Matches Tracks
+    const matchedTracks = tracks.filter((t) => {
+      const searchFields = [
+        t.title,
+        t.raga,
+        t.purpose,
+        t.subtitle,
+        ...(t.purposeTags?.map((tag: any) => tag.name) || []),
+      ];
+      return searchFields.filter(Boolean).some((f) => f.toLowerCase().includes(needle));
+    });
+
+    // 2. Matches Programs
+    const matchedPrograms = programs.filter((p) =>
+      [p.title, p.subtitle, p.description]
+        .filter(Boolean)
+        .some((f) => f.toLowerCase().includes(needle)),
+    );
+
+    // 3. Matches Surawali-Disorder from Discover catalog
+    const matchedSurawalis = catalog
+      ? catalog.ailmentSurawalis.filter((m: any) => {
+          const sRecord = catalog.surawalis?.find((s: any) => s.id === m.surawaliId);
+          const aRecord = catalog.ailments?.find((a: any) => a.id === m.ailmentId);
+          if (
+            sRecord?.name?.toLowerCase() === "name of surawali" ||
+            aRecord?.name?.toLowerCase() === "name of disorder"
+          ) {
+            return false;
+          }
+          const sName = sRecord?.name || "";
+          const aName = aRecord?.name || "";
+          return sName.toLowerCase().includes(needle) || aName.toLowerCase().includes(needle);
+        })
+      : [];
+
+    return {
+      tracks: matchedTracks,
+      programs: matchedPrograms,
+      surawalis: matchedSurawalis,
+    };
+  }, [searchQuery, tracks, programs, catalog]);
+
   const catTracks = useMemo(
     () => tracks.filter((t) => t.category === category),
     [category, tracks],
@@ -50,9 +223,10 @@ function Home() {
     if (!purpose) return catTracks;
     return catTracks.filter((t) => {
       const matchesTag = t.purposeTags?.some(
-        (tag: any) => tag.name && tag.name.toLowerCase().trim() === purpose.toLowerCase().trim()
+        (tag: any) => tag.name && tag.name.toLowerCase().trim() === purpose.toLowerCase().trim(),
       );
-      const matchesFallback = t.purpose && t.purpose.toLowerCase().trim() === purpose.toLowerCase().trim();
+      const matchesFallback =
+        t.purpose && t.purpose.toLowerCase().trim() === purpose.toLowerCase().trim();
       return matchesTag || matchesFallback;
     });
   }, [purpose, catTracks]);
@@ -67,22 +241,17 @@ function Home() {
   const byPurpose = (p: string) => {
     return tracks.filter((t) => {
       const matchesTag = t.purposeTags?.some(
-        (tag: any) => tag.name && tag.name.toLowerCase().trim() === p.toLowerCase().trim()
+        (tag: any) => tag.name && tag.name.toLowerCase().trim() === p.toLowerCase().trim(),
       );
-      const matchesFallback = t.purpose && t.purpose.toLowerCase().trim() === p.toLowerCase().trim();
+      const matchesFallback =
+        t.purpose && t.purpose.toLowerCase().trim() === p.toLowerCase().trim();
       return matchesTag || matchesFallback;
     });
   };
 
-  const premiumTracks = useMemo(
-    () => tracks.filter((t) => t.premium),
-    [tracks],
-  );
+  const premiumTracks = useMemo(() => tracks.filter((t) => t.premium), [tracks]);
 
-  const recentlyAdded = useMemo(
-    () => tracks.slice(-4).reverse(),
-    [tracks],
-  );
+  const recentlyAdded = useMemo(() => tracks.slice(-4).reverse(), [tracks]);
 
   const handlePurposeClick = (p: string | null) => {
     setPurpose(p);
@@ -98,6 +267,164 @@ function Home() {
         <div className="flex min-h-[400px] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-cat" />
         </div>
+      </AppShell>
+    );
+  }
+
+  if (searchQuery) {
+    const hasResults =
+      searchResults.tracks.length > 0 ||
+      searchResults.programs.length > 0 ||
+      searchResults.surawalis.length > 0;
+
+    return (
+      <AppShell title={`Search Results`} subtitle={`Showing matches for "${searchQuery}"`}>
+        {catalogLoading ? (
+          <div className="flex min-h-[300px] items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-cat" />
+          </div>
+        ) : !hasResults ? (
+          <div className="rounded-card border border-dashed border-border/80 p-16 text-center space-y-3">
+            <Waves className="h-10 w-10 mx-auto text-muted-foreground/60" />
+            <p className="font-semibold text-foreground text-lg">No results found</p>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+              We couldn't find any ragas, programs, surāwalis, or ailments matching "{searchQuery}".
+              Try searching for "BP", "acidity", "sleep", "Kalyani", or "Bhairavi".
+            </p>
+            <button
+              onClick={() => navigate({ to: "/home", search: {} })}
+              className="press mt-4 rounded-btn border border-border px-5 py-2 text-xs font-semibold hover:bg-secondary"
+            >
+              Clear Search
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-10">
+            {/* 1. Surawalis / Ailments Results */}
+            {searchResults.surawalis.length > 0 && (
+              <Section
+                title="Matched Surāwalis & Ailments"
+                hint={`${searchResults.surawalis.length} therapeutic plans`}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {searchResults.surawalis.map((rec: any) => {
+                    const sName = getSurawaliName(rec.surawaliId);
+                    const aName = getAilmentName(rec.ailmentId);
+                    const tName = getTimingName(rec.timingId);
+                    const subscribed = isSubscribed(rec.surawaliId);
+
+                    return (
+                      <div
+                        key={rec.id}
+                        className="rounded-card border border-border/60 bg-surface p-5 hover:border-cat/60 hover:shadow-soft transition-all duration-300 flex flex-col justify-between"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="inline-flex rounded-full bg-cat-light px-2.5 py-0.5 text-[10px] font-bold text-cat uppercase tracking-wider">
+                              {aName}
+                            </span>
+                            {subscribed && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-[10px] font-bold text-green-700 border border-green-200">
+                                Subscribed
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-display font-semibold text-lg text-stone-900">
+                              {sName}
+                            </h4>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                              <Clock className="h-3.5 w-3.5 text-cat" />
+                              <span>Time: {tName}</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-stone-500 leading-relaxed">
+                            Vedic sound frequency composition calibrated specifically to assist with
+                            the treatment of {aName.toLowerCase()} symptoms.
+                          </p>
+                        </div>
+
+                        <div className="mt-5 pt-4 border-t border-border/60 flex items-center gap-3">
+                          <button
+                            onClick={() => handlePlayPreview(sName, `${aName} therapeutic preview`)}
+                            className="press flex-1 min-h-9 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1.5"
+                          >
+                            <Play className="h-3.5 w-3.5 fill-current" />
+                            <span>Preview</span>
+                          </button>
+
+                          {subscribed ? (
+                            <button
+                              onClick={() =>
+                                handlePlayPreview(sName, `${aName} full session`, true)
+                              }
+                              className="press flex-1 min-h-9 rounded-btn bg-cat text-cat-foreground text-xs font-bold hover:brightness-105 flex items-center justify-center gap-1.5"
+                            >
+                              <Waves className="h-3.5 w-3.5" />
+                              <span>Listen Full</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleSubscribeClick({ id: rec.surawaliId, name: sName })
+                              }
+                              className="press flex-1 min-h-9 rounded-btn bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-hover flex items-center justify-center gap-1"
+                            >
+                              <Lock className="h-3 w-3 mr-1" />
+                              <span>Subscribe</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Section>
+            )}
+
+            {/* 2. Tracks / Ragas Results */}
+            {searchResults.tracks.length > 0 && (
+              <Section
+                title="Matched Ragas & Frequencies"
+                hint={`${searchResults.tracks.length} sessions`}
+              >
+                <CardGrid>
+                  {searchResults.tracks.map((t: Track) => (
+                    <TrackTile key={t.id} track={t} />
+                  ))}
+                </CardGrid>
+              </Section>
+            )}
+
+            {/* 3. Programs Results */}
+            {searchResults.programs.length > 0 && (
+              <Section
+                title="Matched Wellness Programs"
+                hint={`${searchResults.programs.length} programs`}
+              >
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {searchResults.programs.map((p: any) => (
+                    <ProgramCard key={p.id} program={p} wide />
+                  ))}
+                </div>
+              </Section>
+            )}
+          </div>
+        )}
+
+        {/* Mock Payment Checkout Modal */}
+        {paymentModalOpen && subscribingSurawali && (
+          <MockPaymentModal
+            open={paymentModalOpen}
+            onClose={() => {
+              setPaymentModalOpen(false);
+              setSubscribingSurawali(null);
+            }}
+            surawaliName={subscribingSurawali.name}
+            price={299}
+            onSuccess={handlePaymentSuccess}
+          />
+        )}
       </AppShell>
     );
   }
@@ -120,7 +447,8 @@ function Home() {
                   Gestational Week 24, Day 3
                 </p>
                 <p className="text-xs sm:text-sm text-stone-600 max-w-xl leading-relaxed pt-1">
-                  Healthy womb development through circadian acoustic frequencies. Today is an ideal day to balance your Doshas with Bhairavi and Yaman Surāvalis.
+                  Healthy womb development through circadian acoustic frequencies. Today is an ideal
+                  day to balance your Doshas with Bhairavi and Yaman Surāvalis.
                 </p>
               </div>
 
@@ -152,20 +480,36 @@ function Home() {
               {[
                 {
                   title: "Midnight Ragas",
-                  description: "Circadian calming waves to soothe maternal sleep cycles and optimize gestational rest.",
+                  description:
+                    "Circadian calming waves to soothe maternal sleep cycles and optimize gestational rest.",
                   ragaList: "Raga Yaman, Bhairavi",
                   purpose: "Deep Rest & Calm",
-                  trackId: tracks.find(t => t.category === 'pregnancy' && (t.raga?.includes('Yaman') || t.title.includes('Yaman')))?.id || tracks.find(t => t.category === 'pregnancy')?.id || tracks[0]?.id
+                  trackId:
+                    tracks.find(
+                      (t) =>
+                        t.category === "pregnancy" &&
+                        (t.raga?.includes("Yaman") || t.title.includes("Yaman")),
+                    )?.id ||
+                    tracks.find((t) => t.category === "pregnancy")?.id ||
+                    tracks[0]?.id,
                 },
                 {
                   title: "Evening Suravali",
-                  description: "Circadian transition frequencies designed to pacify Pitta and bring emotional stability.",
+                  description:
+                    "Circadian transition frequencies designed to pacify Pitta and bring emotional stability.",
                   ragaList: "Raga Kalyani, Bhairav",
                   purpose: "Dosha Balancing",
-                  trackId: tracks.find(t => t.category === 'pregnancy' && (t.raga?.includes('Kalyani') || t.title.includes('Kalyani')))?.id || tracks.find(t => t.category === 'pregnancy')?.id || tracks[0]?.id
-                }
+                  trackId:
+                    tracks.find(
+                      (t) =>
+                        t.category === "pregnancy" &&
+                        (t.raga?.includes("Kalyani") || t.title.includes("Kalyani")),
+                    )?.id ||
+                    tracks.find((t) => t.category === "pregnancy")?.id ||
+                    tracks[0]?.id,
+                },
               ].map((stream) => {
-                const tr = tracks.find(t => t.id === stream.trackId) || featured;
+                const tr = tracks.find((t) => t.id === stream.trackId) || featured;
                 return (
                   <div
                     key={stream.title}
@@ -183,9 +527,7 @@ function Home() {
                       <h3 className="font-serif text-lg font-bold text-stone-900 group-hover:text-rose-800 transition-colors">
                         {stream.title}
                       </h3>
-                      <p className="text-xs text-stone-500 leading-relaxed">
-                        {stream.description}
-                      </p>
+                      <p className="text-xs text-stone-500 leading-relaxed">{stream.description}</p>
                     </div>
 
                     <div className="mt-5 pt-3 border-t border-border/50 flex items-center justify-between">
@@ -266,7 +608,8 @@ function Home() {
                 Now in your queue
               </p>
               <p className="mt-1.5 text-[13px] leading-relaxed">
-                {(current ?? featured)?.title || "No track playing"} — {(current ?? featured)?.instructions || "Choose a track to begin"}
+                {(current ?? featured)?.title || "No track playing"} —{" "}
+                {(current ?? featured)?.instructions || "Choose a track to begin"}
               </p>
             </div>
           </Panel>
@@ -278,17 +621,22 @@ function Home() {
           {user?.role === "admin" || user?.role === "super_admin" ? (
             <>
               <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                Get started by adding therapeutic tracks and wellness programs via the Admin Panel, or switch your category/theme.
+                Get started by adding therapeutic tracks and wellness programs via the Admin Panel,
+                or switch your category/theme.
               </p>
               <div className="mt-6 flex justify-center gap-4">
-                <Link to="/admin" className="press inline-flex min-h-11 items-center rounded-btn bg-cat text-cat-foreground px-6 text-[14px] font-semibold">
+                <Link
+                  to="/admin"
+                  className="press inline-flex min-h-11 items-center rounded-btn bg-cat text-cat-foreground px-6 text-[14px] font-semibold"
+                >
                   Go to Admin Panel
                 </Link>
               </div>
             </>
           ) : (
             <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-              Your personalized therapeutic listening space is ready. Choose a theme below or select a purpose to begin your wellness journey.
+              Your personalized therapeutic listening space is ready. Choose a theme below or select
+              a purpose to begin your wellness journey.
             </p>
           )}
         </section>
@@ -350,33 +698,40 @@ function Home() {
           </Section>
 
           {/* Explore by Surāwalis */}
-          <Section title="Explore by Surāwalis" hint="Vedic acoustic frequencies for target healing">
+          <Section
+            title="Explore by Surāwalis"
+            hint="Vedic acoustic frequencies for target healing"
+          >
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
               {[
                 {
                   name: "Kalyani Surāwali",
                   description: "For Anxiety relief, Hypertension, and focus.",
                   searchKey: "Kalyani",
-                  image: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=80&w=400"
+                  image:
+                    "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=80&w=400",
                 },
                 {
                   name: "Bhairavi Surāwali",
                   description: "For Insomnia, deep sleep, and meditation.",
                   searchKey: "Bhairavi",
-                  image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&q=80&w=400"
+                  image:
+                    "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&q=80&w=400",
                 },
                 {
                   name: "Yaman Surāwali",
                   description: "For stress relief and evening relaxation.",
                   searchKey: "Yaman",
-                  image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=400"
+                  image:
+                    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=400",
                 },
                 {
                   name: "Todi Surāwali",
                   description: "For focus, concentration, and morning energy.",
                   searchKey: "Todi",
-                  image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=400"
-                }
+                  image:
+                    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=400",
+                },
               ].map((s) => (
                 <Link
                   key={s.name}
@@ -425,7 +780,8 @@ function Home() {
                   <Waves className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2" />
                   <p className="text-[13px] font-semibold text-foreground">Nothing sequenced yet</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    We haven't sequenced a surāvali for this purpose in this theme. Try another filter.
+                    We haven't sequenced a surāvali for this purpose in this theme. Try another
+                    filter.
                   </p>
                 </div>
               ) : (

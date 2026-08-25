@@ -29,7 +29,7 @@ export const categories: Category[] = [
   },
   {
     id: "pregnancy",
-    name: "Garv Sanjeevani",
+    name: "Garbh Sanjeevani",
     tagline: "Soft rose · gentle care",
     description: "Month-wise pregnancy wellness journey.",
     art: artPregnancy,
@@ -50,7 +50,7 @@ export type Track = {
   tier?: string;
   processingStatus?: string;
   publishStatus?: string;
-  
+
   // Backward compatibility properties
   art?: string;
   raga?: string;
@@ -58,6 +58,7 @@ export type Track = {
   frequency?: string;
   instructions?: string;
   purposeTags?: any[];
+  audioUrl?: string;
 };
 
 export type Program = {
@@ -159,12 +160,7 @@ export const notifications = [
   },
 ];
 
-export const recentSearches = [
-  "Raga Neelambari",
-  "Sleep Sequence",
-  "Stress Relief",
-  "Focus",
-];
+export const recentSearches = ["Raga Neelambari", "Sleep Sequence", "Stress Relief", "Focus"];
 
 export const trendingSearches = [
   "Sanjeevani Kalyani",

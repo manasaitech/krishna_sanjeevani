@@ -14,11 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useApp } from "@/lib/app-state";
 import { formatTime } from "@/lib/content";
 import { cn } from "@/lib/utils";
@@ -83,10 +79,7 @@ export function PlayerBar() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-xl">
-      <span
-        aria-hidden="true"
-        className="block h-0.5 w-full bg-border md:hidden"
-      >
+      <span aria-hidden="true" className="block h-0.5 w-full bg-border md:hidden">
         <span
           className="block h-full bg-cat transition-[width] duration-500"
           style={{ width: `${progress}%` }}
@@ -285,9 +278,7 @@ export function PlayerBar() {
                         className="h-10 w-10 shrink-0 rounded-lg object-cover"
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-medium">
-                          {t.title}
-                        </span>
+                        <span className="block truncate text-[13px] font-medium">{t.title}</span>
                         <span className="block truncate text-[11px] text-muted-foreground">
                           {t.raga}
                         </span>

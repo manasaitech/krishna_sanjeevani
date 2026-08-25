@@ -1,6 +1,16 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { Bell, BellRing, Crown, Menu, Search as SearchIcon, Music4, RefreshCw, TrendingUp, Loader2 } from "lucide-react";
+import {
+  Bell,
+  BellRing,
+  Crown,
+  Menu,
+  Search as SearchIcon,
+  Music4,
+  RefreshCw,
+  TrendingUp,
+  Loader2,
+} from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -48,6 +58,25 @@ export function TopBar({
 
   const navigate = useNavigate();
   const active = categories.find((c) => c.id === category);
+
+  const [searchVal, setSearchVal] = useState("");
+  const searchParam = useRouterState({
+    select: (s: any) =>
+      s.location.pathname === "/home" ? (s.location.search as any).search : undefined,
+  });
+
+  useEffect(() => {
+    setSearchVal((searchParam as unknown as string) || "");
+  }, [searchParam]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchVal(val);
+    navigate({
+      to: "/home",
+      search: val ? { search: val } : {},
+      replace: true,
+    });
+  };
 
   const hasUnread = notifications.some((n) => n.unread);
 
@@ -97,7 +126,10 @@ export function TopBar({
           >
             <Menu className="h-5 w-5" />
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] bg-background p-2 [&>button]:bg-surface [&>button]:rounded-full [&>button]:shadow-sm [&>button]:border [&>button]:border-border">
+          <SheetContent
+            side="left"
+            className="w-[300px] bg-background p-2 [&>button]:bg-surface [&>button]:rounded-full [&>button]:shadow-sm [&>button]:border [&>button]:border-border"
+          >
             <SidebarBody onNavigate={() => setMenuOpen(false)} />
           </SheetContent>
         </Sheet>
@@ -124,13 +156,25 @@ export function TopBar({
           )}
         </div>
 
-        <button
-          onClick={() => navigate({ to: "/search" })}
-          className="press hidden min-h-11 w-full max-w-sm items-center gap-3 rounded-field border border-border bg-surface px-4 text-left text-[13px] text-muted-foreground hover:border-cat/40 md:flex"
-        >
-          <SearchIcon className="h-4 w-4 shrink-0" />
-          Search ragas, purposes, programs
-        </button>
+        <div className="relative hidden w-full max-w-sm md:block">
+          <SearchIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            value={searchVal}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search ragas, programs, ailments..."
+            className="w-full min-h-11 pl-11 pr-14 rounded-field border border-border bg-surface text-[13px] outline-none focus-visible:border-cat focus-visible:ring-2 focus-visible:ring-cat/20 transition-all text-foreground"
+          />
+          {searchVal && (
+            <button
+              onClick={() => handleSearchChange("")}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-cat hover:brightness-95 p-1"
+              aria-label="Clear search"
+            >
+              Clear
+            </button>
+          )}
+        </div>
 
         <div className="flex shrink-0 items-center gap-2">
           <DropdownMenu>
@@ -194,7 +238,9 @@ export function TopBar({
                 className="fixed inset-x-4 top-[72px] sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-[calc(100vw-32px)] sm:w-[380px] rounded-card border border-border bg-surface p-4 shadow-lift z-50 animate-rise"
               >
                 <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
-                  <h2 className="font-display text-[15px] font-semibold text-foreground">Notifications</h2>
+                  <h2 className="font-display text-[15px] font-semibold text-foreground">
+                    Notifications
+                  </h2>
                   {hasUnread && (
                     <button
                       onClick={markAllAsRead}
@@ -230,8 +276,12 @@ export function TopBar({
                   ) : notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                       <Bell className="h-8 w-8 text-muted-foreground/60 mb-2" />
-                      <p className="text-[13px] font-semibold text-foreground">You're all caught up!</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">No new notifications.</p>
+                      <p className="text-[13px] font-semibold text-foreground">
+                        You're all caught up!
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        No new notifications.
+                      </p>
                     </div>
                   ) : (
                     <div className="max-h-[360px] overflow-y-auto pr-0.5 -mr-1.5 no-scrollbar space-y-4 py-1">
@@ -257,18 +307,29 @@ export function TopBar({
                                       n.unread
                                         ? "bg-cat-light/40 hover:bg-cat-light/65 border-cat-accent/20"
                                         : "bg-surface hover:bg-secondary/40",
-                                      n.unread && "cursor-pointer"
+                                      n.unread && "cursor-pointer",
                                     )}
                                   >
-                                    <span className={cn(
-                                      "grid h-8 w-8 shrink-0 place-items-center rounded-lg text-cat",
-                                      n.unread ? "bg-cat-light text-cat" : "bg-secondary text-muted-foreground"
-                                    )}>
+                                    <span
+                                      className={cn(
+                                        "grid h-8 w-8 shrink-0 place-items-center rounded-lg text-cat",
+                                        n.unread
+                                          ? "bg-cat-light text-cat"
+                                          : "bg-secondary text-muted-foreground",
+                                      )}
+                                    >
                                       <Icon className="h-4 w-4" />
                                     </span>
                                     <div className="min-w-0 flex-1">
                                       <div className="flex items-start justify-between gap-2">
-                                        <h4 className={cn("text-[13px]", n.unread ? "font-semibold text-foreground" : "font-medium text-foreground/80")}>
+                                        <h4
+                                          className={cn(
+                                            "text-[13px]",
+                                            n.unread
+                                              ? "font-semibold text-foreground"
+                                              : "font-medium text-foreground/80",
+                                          )}
+                                        >
                                           {n.title}
                                         </h4>
                                         <span className="shrink-0 text-[10px] text-muted-foreground">

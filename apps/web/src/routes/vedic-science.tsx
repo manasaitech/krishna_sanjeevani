@@ -22,7 +22,9 @@ import { ScienceCTA } from "@/components/science/ScienceCTA";
 export const Route = createFileRoute("/vedic-science")({
   head: () => ({
     meta: [
-      { title: "Vedic Science — The Psychology & Therapeutics of Sacred Sound | Krishna Sanjeevani" },
+      {
+        title: "Vedic Science — The Psychology & Therapeutics of Sacred Sound | Krishna Sanjeevani",
+      },
       {
         name: "description",
         content:

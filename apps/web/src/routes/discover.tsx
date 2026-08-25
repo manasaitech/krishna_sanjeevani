@@ -1,21 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
-import { 
-  Search, 
-  Sparkles, 
-  Waves, 
-  Calendar, 
-  Activity, 
-  ChevronRight, 
-  Info, 
-  Lock, 
-  Compass, 
+import {
+  Search,
+  Sparkles,
+  Waves,
+  Calendar,
+  Activity,
+  ChevronRight,
+  Info,
+  Lock,
+  Compass,
   CheckCircle2,
   Clock,
   Play,
   RotateCcw,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Heart,
+  Baby,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CardGrid, Panel, Section } from "@/components/layout-bits";
@@ -25,10 +27,15 @@ import { toast } from "sonner";
 import { MockPaymentModal } from "@/components/discover/MockPaymentModal";
 
 export const Route = createFileRoute("/discover")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): {
+    search?: string | undefined;
+    tab?: "pregnancy" | "ailments" | "corporate" | undefined;
+  } => {
     return {
-      search: (search.search as string) || undefined,
-      tab: (search.tab as "ailments" | "pregnancy" | "corporate") || undefined,
+      search: (search["search"] as string) || undefined,
+      tab: (search["tab"] as "ailments" | "pregnancy" | "corporate") || undefined,
     };
   },
   head: () => ({
@@ -46,30 +53,30 @@ export const Route = createFileRoute("/discover")({
 
 // Ailment Search Aliases for fuzzy typing matches
 const searchAliases: Record<string, string> = {
-  "migrane": "Migraine",
-  "migrain": "Migraine",
-  "headache": "Migraine",
-  "alziemer": "Alziemer",
-  "alzheimer": "Alziemer",
-  "alzheimers": "Alziemer",
-  "memory": "Alziemer",
+  migrane: "Migraine",
+  migrain: "Migraine",
+  headache: "Migraine",
+  alziemer: "Alziemer",
+  alzheimer: "Alziemer",
+  alzheimers: "Alziemer",
+  memory: "Alziemer",
   "back apin": "Lower back apin",
   "back pain": "Lower back apin",
   "lower back": "Lower back apin",
-  "sciatica": "Sciatica ", // trailing space
-  "bp": "Hyper tension",
+  sciatica: "Sciatica ", // trailing space
+  bp: "Hyper tension",
   "blood pressure": "Hyper tension",
-  "hypertension": "Hyper tension",
-  "sleeplessness": "Insomnia",
-  "sleep": "Insomnia",
-  "depression": "Depression",
-  "depressed": "Depression",
-  "anxiety": "Anxiety ", // trailing space
-  "stress": "Anxiety ",
-  "anger": "Anger",
-  "cancer": "Cancer",
-  "parkinson": "Parkinson",
-  "parkinsons": "Parkinson",
+  hypertension: "Hyper tension",
+  sleeplessness: "Insomnia",
+  sleep: "Insomnia",
+  depression: "Depression",
+  depressed: "Depression",
+  anxiety: "Anxiety ", // trailing space
+  stress: "Anxiety ",
+  anger: "Anger",
+  cancer: "Cancer",
+  parkinson: "Parkinson",
+  parkinsons: "Parkinson",
 };
 
 interface Ailment {
@@ -121,9 +128,11 @@ function DiscoverPage() {
   const navigate = useNavigate();
   const { search, tab } = Route.useSearch();
 
-  const [activeTab, setActiveTab] = useState<"ailments" | "pregnancy" | "corporate">(tab || "ailments");
+  const [activeTab, setActiveTab] = useState<"ailments" | "pregnancy" | "corporate">(
+    tab || "ailments",
+  );
   const [loading, setLoading] = useState(true);
-  
+
   // Data Catalog State
   const [catalog, setCatalog] = useState<{
     ailments: Ailment[];
@@ -160,7 +169,10 @@ function DiscoverPage() {
 
   // Mock Payment Modal State
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [subscribingSurawali, setSubscribingSurawali] = useState<{ id: string; name: string } | null>(null);
+  const [subscribingSurawali, setSubscribingSurawali] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Fetch Catalog & Subscriptions
   const fetchData = async () => {
@@ -174,7 +186,9 @@ function DiscoverPage() {
       if (user) {
         const subRes = await api.discover.listSubscriptions();
         if (subRes.success) {
-          setSubscriptions(subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now()));
+          setSubscriptions(
+            subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now()),
+          );
         }
       }
     } catch (err) {
@@ -191,13 +205,13 @@ function DiscoverPage() {
 
   // Check if user is subscribed to a Surawali
   const isSubscribed = (surawaliId: string) => {
-    return subscriptions.some(sub => sub.surawaliId === surawaliId);
+    return subscriptions.some((sub) => sub.surawaliId === surawaliId);
   };
 
   // Helper mapping IDs to names
-  const getAilmentName = (id: string) => catalog?.ailments.find(a => a.id === id)?.name || "";
-  const getSurawaliName = (id: string) => catalog?.surawalis.find(s => s.id === id)?.name || "";
-  const getTimingName = (id: string) => catalog?.timings.find(t => t.id === id)?.name || "";
+  const getAilmentName = (id: string) => catalog?.ailments.find((a) => a.id === id)?.name || "";
+  const getSurawaliName = (id: string) => catalog?.surawalis.find((s) => s.id === id)?.name || "";
+  const getTimingName = (id: string) => catalog?.timings.find((t) => t.id === id)?.name || "";
 
   // Reset Tab 1 Filters
   const handleResetFilters = () => {
@@ -211,19 +225,22 @@ function DiscoverPage() {
   // We compute available options based on current selections
   const filteredAilments = useMemo(() => {
     if (!catalog) return [];
-    let list = catalog.ailments;
+    let list = catalog.ailments.filter((a) => a.name.toLowerCase() !== "name of disorder");
 
     // Search query with fuzzy alias mapping
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      const alias = searchAliases[q] || Object.keys(searchAliases).find(k => q.includes(k) || k.includes(q)) ? searchAliases[Object.keys(searchAliases).find(k => q.includes(k) || k.includes(q))!] : null;
-      
-      list = list.filter(a => {
+      const alias =
+        searchAliases[q] || Object.keys(searchAliases).find((k) => q.includes(k) || k.includes(q))
+          ? searchAliases[Object.keys(searchAliases).find((k) => q.includes(k) || k.includes(q))!]
+          : null;
+
+      list = list.filter((a) => {
         const matchesName = a.name.toLowerCase().includes(q);
         const matchesAlias = alias ? a.name.toLowerCase().includes(alias.toLowerCase()) : false;
-        
+
         // Also match if any recommended Surāwali for this ailment matches the search query
-        const hasMatchingSurawali = catalog.ailmentSurawalis.some(m => {
+        const hasMatchingSurawali = catalog.ailmentSurawalis.some((m) => {
           if (m.ailmentId !== a.id) return false;
           const sName = getSurawaliName(m.surawaliId);
           return sName.toLowerCase().includes(q);
@@ -236,17 +253,17 @@ function DiscoverPage() {
     // Filter by selected Surawali
     if (selectedSurawaliId) {
       const mappedAilmentIds = catalog.ailmentSurawalis
-        .filter(m => m.surawaliId === selectedSurawaliId)
-        .map(m => m.ailmentId);
-      list = list.filter(a => mappedAilmentIds.includes(a.id));
+        .filter((m) => m.surawaliId === selectedSurawaliId)
+        .map((m) => m.ailmentId);
+      list = list.filter((a) => mappedAilmentIds.includes(a.id));
     }
 
     // Filter by selected Timing
     if (selectedTimingId) {
       const mappedAilmentIds = catalog.ailmentSurawalis
-        .filter(m => m.timingId === selectedTimingId)
-        .map(m => m.ailmentId);
-      list = list.filter(a => mappedAilmentIds.includes(a.id));
+        .filter((m) => m.timingId === selectedTimingId)
+        .map((m) => m.ailmentId);
+      list = list.filter((a) => mappedAilmentIds.includes(a.id));
     }
 
     return list;
@@ -254,22 +271,22 @@ function DiscoverPage() {
 
   const filteredSurawalis = useMemo(() => {
     if (!catalog) return [];
-    let list = catalog.surawalis;
+    let list = catalog.surawalis.filter((s) => s.name.toLowerCase() !== "name of surawali");
 
     // Filter by selected Ailment
     if (selectedAilmentId) {
       const mappedSurawaliIds = catalog.ailmentSurawalis
-        .filter(m => m.ailmentId === selectedAilmentId)
-        .map(m => m.surawaliId);
-      list = list.filter(s => mappedSurawaliIds.includes(s.id));
+        .filter((m) => m.ailmentId === selectedAilmentId)
+        .map((m) => m.surawaliId);
+      list = list.filter((s) => mappedSurawaliIds.includes(s.id));
     }
 
     // Filter by selected Timing
     if (selectedTimingId) {
       const mappedSurawaliIds = catalog.ailmentSurawalis
-        .filter(m => m.timingId === selectedTimingId)
-        .map(m => m.surawaliId);
-      list = list.filter(s => mappedSurawaliIds.includes(s.id));
+        .filter((m) => m.timingId === selectedTimingId)
+        .map((m) => m.surawaliId);
+      list = list.filter((s) => mappedSurawaliIds.includes(s.id));
     }
 
     return list;
@@ -282,17 +299,17 @@ function DiscoverPage() {
     // Filter by selected Ailment
     if (selectedAilmentId) {
       const mappedTimingIds = catalog.ailmentSurawalis
-        .filter(m => m.ailmentId === selectedAilmentId)
-        .map(m => m.timingId);
-      list = list.filter(t => mappedTimingIds.includes(t.id));
+        .filter((m) => m.ailmentId === selectedAilmentId)
+        .map((m) => m.timingId);
+      list = list.filter((t) => mappedTimingIds.includes(t.id));
     }
 
     // Filter by selected Surawali
     if (selectedSurawaliId) {
       const mappedTimingIds = catalog.ailmentSurawalis
-        .filter(m => m.surawaliId === selectedSurawaliId)
-        .map(m => m.timingId);
-      list = list.filter(t => mappedTimingIds.includes(t.id));
+        .filter((m) => m.surawaliId === selectedSurawaliId)
+        .map((m) => m.timingId);
+      list = list.filter((t) => mappedTimingIds.includes(t.id));
     }
 
     return list;
@@ -301,9 +318,18 @@ function DiscoverPage() {
   // Actual mapped Ailment-Surawali recommendation pairs to render
   const matchedRecommendations = useMemo(() => {
     if (!catalog) return [];
-    return catalog.ailmentSurawalis.filter(m => {
-      const matchesSearch = searchQuery.trim() 
-        ? filteredAilments.some(a => a.id === m.ailmentId) 
+    return catalog.ailmentSurawalis.filter((m) => {
+      const sRecord = catalog.surawalis?.find((s: any) => s.id === m.surawaliId);
+      const aRecord = catalog.ailments?.find((a: any) => a.id === m.ailmentId);
+      if (
+        sRecord?.name?.toLowerCase() === "name of surawali" ||
+        aRecord?.name?.toLowerCase() === "name of disorder"
+      ) {
+        return false;
+      }
+
+      const matchesSearch = searchQuery.trim()
+        ? filteredAilments.some((a) => a.id === m.ailmentId)
         : true;
       const matchesAilment = selectedAilmentId ? m.ailmentId === selectedAilmentId : true;
       const matchesSurawali = selectedSurawaliId ? m.surawaliId === selectedSurawaliId : true;
@@ -311,27 +337,35 @@ function DiscoverPage() {
 
       return matchesSearch && matchesAilment && matchesSurawali && matchesTiming;
     });
-  }, [catalog, filteredAilments, searchQuery, selectedAilmentId, selectedSurawaliId, selectedTimingId]);
+  }, [
+    catalog,
+    filteredAilments,
+    searchQuery,
+    selectedAilmentId,
+    selectedSurawaliId,
+    selectedTimingId,
+  ]);
 
   // Pregnancy Recommendations
   const pregnancyRecommendations = useMemo(() => {
     if (!catalog) return [];
-    return catalog.pregnancyMappings.filter(m => m.pregnancyMonth === selectedMonth);
+    return catalog.pregnancyMappings.filter((m) => m.pregnancyMonth === selectedMonth);
   }, [catalog, selectedMonth]);
 
   // Corporate Recommendations
   const corporateRecommendations = useMemo(() => {
     if (!catalog) return [];
-    return catalog.corporateRagas.filter(m => 
-      m.weekDay.toLowerCase() === selectedDay.toLowerCase() || 
-      m.weekDay.toLowerCase() === "daily"
+    return catalog.corporateRagas.filter(
+      (m) =>
+        m.weekDay.toLowerCase() === selectedDay.toLowerCase() ||
+        m.weekDay.toLowerCase() === "daily",
     );
   }, [catalog, selectedDay]);
 
   // Play Preview Action
   const handlePlayPreview = (surawaliName: string, subtext: string, forceSubscribed = false) => {
     toast.info(`Playing ${forceSubscribed ? "session" : "preview"} for ${surawaliName}`);
-    
+
     if (forceSubscribed) {
       play({
         id: `mock_${surawaliName}`,
@@ -341,14 +375,16 @@ function DiscoverPage() {
         duration: 558,
         category: "secular",
         playlistKey: "",
-        art: "/govinda-bhakta-pr-seminars-mukund.mp3"
+        art: "/govinda-bhakta-pr-seminars-mukund.mp3",
       } as any);
       return;
     }
 
     // Find if we have a matching track in tracks, otherwise play the Suno track or default track
-    const existingTrack = tracks.find(t => t.title.toLowerCase().includes(surawaliName.toLowerCase()));
-    
+    const existingTrack = tracks.find((t) =>
+      t.title.toLowerCase().includes(surawaliName.toLowerCase()),
+    );
+
     if (existingTrack) {
       play(existingTrack);
     } else {
@@ -362,7 +398,7 @@ function DiscoverPage() {
         category: "secular",
         playlistKey: "",
         // Point to the loaded Suno MP3 at workspace root level (mapped to public)
-        art: "/govinda-bhakta-pr-seminars-mukund.mp3" 
+        art: "/govinda-bhakta-pr-seminars-mukund.mp3",
       } as any);
     }
   };
@@ -385,6 +421,7 @@ function DiscoverPage() {
       if (res.success) {
         toast.success(`Successfully subscribed to ${subscribingSurawali.name}!`);
         fetchData(); // reload active subscriptions
+        window.dispatchEvent(new Event("subscription-updated"));
       }
     } catch (err: any) {
       console.error(err);
@@ -396,9 +433,11 @@ function DiscoverPage() {
   };
 
   return (
-    <AppShell title="Surāwali Discovery" subtitle="Vedic music recommendation & therapeutic subscriptions">
+    <AppShell
+      title="Surāwali Discovery"
+      subtitle="Vedic music recommendation & therapeutic subscriptions"
+    >
       <div className="mx-auto max-w-6xl space-y-6">
-        
         {/* Navigation Tabs */}
         <div className="flex border-b border-border/60">
           <button
@@ -409,8 +448,8 @@ function DiscoverPage() {
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Activity className="h-4 w-4" />
-            <span>Therapeutic Ailments</span>
+            <Heart className="h-4 w-4" />
+            <span>Krishna Sanjeevani</span>
           </button>
           <button
             onClick={() => setActiveTab("pregnancy")}
@@ -420,8 +459,8 @@ function DiscoverPage() {
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Calendar className="h-4 w-4" />
-            <span>Garv Sanjeevani</span>
+            <Baby className="h-4 w-4" />
+            <span>Garbh Sanjeevani</span>
           </button>
           <button
             onClick={() => setActiveTab("corporate")}
@@ -445,14 +484,17 @@ function DiscoverPage() {
             {/* TAB 1: THERAPEUTIC AILMENTS */}
             {activeTab === "ailments" && (
               <div className="space-y-6">
-                
                 {/* Filters Panel */}
                 <div className="rounded-card border border-border/60 bg-surface p-5 shadow-soft space-y-4">
                   <div className="flex flex-col md:flex-row gap-4 items-end">
-                    
                     {/* Search query box */}
                     <div className="flex-1 w-full relative">
-                      <label htmlFor="search-input" className="block text-xs font-semibold text-muted-foreground mb-1">Search Disorder / Ailment</label>
+                      <label
+                        htmlFor="search-input"
+                        className="block text-xs font-semibold text-muted-foreground mb-1"
+                      >
+                        Search Disorder / Ailment
+                      </label>
                       <div className="relative">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input
@@ -468,7 +510,12 @@ function DiscoverPage() {
 
                     {/* Ailment Dropdown */}
                     <div className="w-full md:w-56">
-                      <label htmlFor="ailment-select" className="block text-xs font-semibold text-muted-foreground mb-1">Ailment Filter</label>
+                      <label
+                        htmlFor="ailment-select"
+                        className="block text-xs font-semibold text-muted-foreground mb-1"
+                      >
+                        Ailment Filter
+                      </label>
                       <select
                         id="ailment-select"
                         value={selectedAilmentId}
@@ -476,15 +523,22 @@ function DiscoverPage() {
                         className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:border-cat"
                       >
                         <option value="">-- All Ailments --</option>
-                        {filteredAilments.map(a => (
-                          <option key={a.id} value={a.id}>{a.name}</option>
+                        {filteredAilments.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.name}
+                          </option>
                         ))}
                       </select>
                     </div>
 
                     {/* Surawali Dropdown */}
                     <div className="w-full md:w-56">
-                      <label htmlFor="surawali-select" className="block text-xs font-semibold text-muted-foreground mb-1">Surāwali Filter</label>
+                      <label
+                        htmlFor="surawali-select"
+                        className="block text-xs font-semibold text-muted-foreground mb-1"
+                      >
+                        Surāwali Filter
+                      </label>
                       <select
                         id="surawali-select"
                         value={selectedSurawaliId}
@@ -492,15 +546,22 @@ function DiscoverPage() {
                         className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:border-cat"
                       >
                         <option value="">-- All Surāwalis --</option>
-                        {filteredSurawalis.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
+                        {filteredSurawalis.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
                         ))}
                       </select>
                     </div>
 
                     {/* Timing Dropdown */}
                     <div className="w-full md:w-56">
-                      <label htmlFor="timing-select" className="block text-xs font-semibold text-muted-foreground mb-1">Efficacy Time</label>
+                      <label
+                        htmlFor="timing-select"
+                        className="block text-xs font-semibold text-muted-foreground mb-1"
+                      >
+                        Efficacy Time
+                      </label>
                       <select
                         id="timing-select"
                         value={selectedTimingId}
@@ -508,8 +569,10 @@ function DiscoverPage() {
                         className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:border-cat"
                       >
                         <option value="">-- All Timings --</option>
-                        {filteredTimings.map(t => (
-                          <option key={t.id} value={t.id}>{t.name}</option>
+                        {filteredTimings.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -528,15 +591,22 @@ function DiscoverPage() {
                 {/* Recommendations Grid */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center px-1">
-                    <h3 className="font-semibold text-foreground">Matched Recommendations ({matchedRecommendations.length})</h3>
-                    <span className="text-xs text-muted-foreground">Select cards to preview or subscribe</span>
+                    <h3 className="font-semibold text-foreground">
+                      Matched Recommendations ({matchedRecommendations.length})
+                    </h3>
+                    <span className="text-xs text-muted-foreground">
+                      Select cards to preview or subscribe
+                    </span>
                   </div>
 
                   {matchedRecommendations.length === 0 ? (
                     <div className="rounded-card border border-dashed border-border/80 p-12 text-center space-y-2">
                       <Waves className="h-8 w-8 mx-auto text-muted-foreground/60" />
                       <p className="font-semibold text-foreground">No matches found</p>
-                      <p className="text-xs text-muted-foreground max-w-sm mx-auto">Try resetting the search filters or typing different keywords like BP, sleep, or sciatica.</p>
+                      <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                        Try resetting the search filters or typing different keywords like BP,
+                        sleep, or sciatica.
+                      </p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -564,20 +634,25 @@ function DiscoverPage() {
                                 )}
                               </div>
                               <div>
-                                <h4 className="font-display font-semibold text-lg text-foreground">{sName}</h4>
+                                <h4 className="font-display font-semibold text-lg text-foreground">
+                                  {sName}
+                                </h4>
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                                   <Clock className="h-3.5 w-3.5 text-cat" />
                                   <span>Time: {tName}</span>
                                 </div>
                               </div>
                               <p className="text-xs text-muted-foreground leading-relaxed">
-                                Vedic sound frequency composition calibrated specifically to assist with the treatment of {aName.toLowerCase()} symptoms.
+                                Vedic sound frequency composition calibrated specifically to assist
+                                with the treatment of {aName.toLowerCase()} symptoms.
                               </p>
                             </div>
 
                             <div className="mt-5 pt-4 border-t border-border/60 flex items-center gap-3">
                               <button
-                                onClick={() => handlePlayPreview(sName, `${aName} therapeutic preview`)}
+                                onClick={() =>
+                                  handlePlayPreview(sName, `${aName} therapeutic preview`)
+                                }
                                 className="press flex-1 min-h-9 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1.5"
                               >
                                 <Play className="h-3.5 w-3.5 fill-current" />
@@ -586,7 +661,9 @@ function DiscoverPage() {
 
                               {subscribed ? (
                                 <button
-                                  onClick={() => handlePlayPreview(sName, `${aName} full session`, true)}
+                                  onClick={() =>
+                                    handlePlayPreview(sName, `${aName} full session`, true)
+                                  }
                                   className="press flex-1 min-h-9 rounded-btn bg-cat text-cat-foreground text-xs font-bold hover:brightness-105 flex items-center justify-center gap-1.5"
                                 >
                                   <Waves className="h-3.5 w-3.5" />
@@ -594,7 +671,9 @@ function DiscoverPage() {
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => handleSubscribeClick({ id: rec.surawaliId, name: sName })}
+                                  onClick={() =>
+                                    handleSubscribeClick({ id: rec.surawaliId, name: sName })
+                                  }
                                   className="press flex-1 min-h-9 rounded-btn bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-hover flex items-center justify-center gap-1"
                                 >
                                   <Lock className="h-3 w-3 mr-1" />
@@ -614,7 +693,6 @@ function DiscoverPage() {
             {/* TAB 2: PREGNANCY CARE */}
             {activeTab === "pregnancy" && (
               <div className="space-y-6">
-                
                 {/* Month Picker Panel */}
                 <div className="rounded-card border border-border/60 bg-surface p-6 shadow-soft space-y-4">
                   <h4 className="font-semibold text-foreground text-sm">Select Pregnancy Month</h4>
@@ -641,10 +719,12 @@ function DiscoverPage() {
                 {/* Month Recommendation Details */}
                 <div className="space-y-4">
                   <div className="px-1">
-                    <h3 className="font-semibold text-foreground">Recommended Care for Month {selectedMonth}</h3>
+                    <h3 className="font-semibold text-foreground">
+                      Recommended Care for Month {selectedMonth}
+                    </h3>
                   </div>
 
-                  {pregnancyRecommendations.map(rec => {
+                  {pregnancyRecommendations.map((rec) => {
                     const sName = getSurawaliName(rec.surawaliId);
                     const tName = getTimingName(rec.timingId);
                     const subscribed = isSubscribed(rec.surawaliId);
@@ -666,7 +746,9 @@ function DiscoverPage() {
                               </span>
                             )}
                           </div>
-                          <h4 className="font-display font-semibold text-xl text-foreground">{sName}</h4>
+                          <h4 className="font-display font-semibold text-xl text-foreground">
+                            {sName}
+                          </h4>
                           <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4 text-cat" />
@@ -678,13 +760,17 @@ function DiscoverPage() {
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground pt-1 leading-relaxed">
-                            Specifically designed to support hormonal balance, maternal comfort, and healthy fetal cognitive development during the {selectedMonth} month of pregnancy.
+                            Specifically designed to support hormonal balance, maternal comfort, and
+                            healthy fetal cognitive development during the {selectedMonth} month of
+                            pregnancy.
                           </p>
                         </div>
 
                         <div className="flex items-center gap-3 w-full md:w-auto">
                           <button
-                            onClick={() => handlePlayPreview(sName, `Pregnancy Month ${selectedMonth} preview`)}
+                            onClick={() =>
+                              handlePlayPreview(sName, `Pregnancy Month ${selectedMonth} preview`)
+                            }
                             className="press flex-1 md:flex-none min-h-10 px-5 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1.5"
                           >
                             <Play className="h-4 w-4 fill-current" />
@@ -693,7 +779,13 @@ function DiscoverPage() {
 
                           {subscribed ? (
                             <button
-                              onClick={() => handlePlayPreview(sName, `Pregnancy Month ${selectedMonth} full session`, true)}
+                              onClick={() =>
+                                handlePlayPreview(
+                                  sName,
+                                  `Pregnancy Month ${selectedMonth} full session`,
+                                  true,
+                                )
+                              }
                               className="press flex-1 md:flex-none min-h-10 px-6 rounded-btn bg-cat text-cat-foreground text-xs font-bold hover:brightness-105 flex items-center justify-center gap-1.5"
                             >
                               <Waves className="h-4 w-4" />
@@ -701,7 +793,9 @@ function DiscoverPage() {
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleSubscribeClick({ id: rec.surawaliId, name: sName })}
+                              onClick={() =>
+                                handleSubscribeClick({ id: rec.surawaliId, name: sName })
+                              }
                               className="press flex-1 md:flex-none min-h-10 px-6 rounded-btn bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-hover flex items-center justify-center gap-1"
                             >
                               <Lock className="h-3.5 w-3.5 mr-1" />
@@ -719,12 +813,21 @@ function DiscoverPage() {
             {/* TAB 3: CORPORATE WELLNESS */}
             {activeTab === "corporate" && (
               <div className="space-y-6">
-                
                 {/* Day Selector */}
                 <div className="rounded-card border border-border/60 bg-surface p-6 shadow-soft space-y-4">
-                  <h4 className="font-semibold text-foreground text-sm">Select Arogya Sanjeevani Weekday</h4>
+                  <h4 className="font-semibold text-foreground text-sm">
+                    Select Arogya Sanjeevani Weekday
+                  </h4>
                   <div className="flex flex-wrap gap-2">
-                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day) => (
                       <button
                         key={day}
                         onClick={() => setSelectedDay(day)}
@@ -743,13 +846,15 @@ function DiscoverPage() {
                 {/* Corporate recommendations list */}
                 <div className="space-y-4">
                   <div className="px-1">
-                    <h3 className="font-semibold text-foreground">Elevating Ragas for {selectedDay}</h3>
+                    <h3 className="font-semibold text-foreground">
+                      Elevating Ragas for {selectedDay}
+                    </h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {corporateRecommendations.map(rec => {
+                    {corporateRecommendations.map((rec) => {
                       const tName = getTimingName(rec.timingId);
-                      
+
                       return (
                         <div
                           key={rec.id}
@@ -766,9 +871,12 @@ function DiscoverPage() {
                               </div>
                             </div>
                             <div>
-                              <h4 className="font-display font-semibold text-lg text-foreground">Mood Elevating Raga: {rec.ragaName}</h4>
+                              <h4 className="font-display font-semibold text-lg text-foreground">
+                                Mood Elevating Raga: {rec.ragaName}
+                              </h4>
                               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                                Professional wellness raga composition aligned to reduce stress, elevate workspace productivity, and restore mental focus.
+                                Professional wellness raga composition aligned to reduce stress,
+                                elevate workspace productivity, and restore mental focus.
                               </p>
                             </div>
                           </div>
@@ -776,7 +884,12 @@ function DiscoverPage() {
                           <div className="mt-5 pt-4 border-t border-border/60 flex items-center justify-between">
                             <span className="text-xs text-muted-foreground">Preview Available</span>
                             <button
-                              onClick={() => handlePlayPreview(rec.ragaName, `Corporate ${rec.ragaName} wellness stream`)}
+                              onClick={() =>
+                                handlePlayPreview(
+                                  rec.ragaName,
+                                  `Corporate ${rec.ragaName} wellness stream`,
+                                )
+                              }
                               className="press min-h-9 px-5 rounded-btn bg-cat text-cat-foreground text-xs font-bold hover:brightness-105 flex items-center justify-center gap-1.5"
                             >
                               <Play className="h-3.5 w-3.5 fill-current" />
@@ -797,13 +910,17 @@ function DiscoverPage() {
         <div className="rounded-card border border-amber-500/20 bg-amber-500/5 p-4 flex gap-3.5 items-start mt-8">
           <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wider">Medical Disclaimer</h4>
+            <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wider">
+              Medical Disclaimer
+            </h4>
             <p className="text-xs text-amber-700/90 leading-relaxed">
-              The Surāwali recommendation system is designed for therapeutic music listening and wellness support based on classical sound traditions. It is not a substitute for professional medical advice, diagnosis, or clinical treatment. Please consult with a physician or healthcare provider for any diagnostic or medical concerns.
+              The Surāwali recommendation system is designed for therapeutic music listening and
+              wellness support based on classical sound traditions. It is not a substitute for
+              professional medical advice, diagnosis, or clinical treatment. Please consult with a
+              physician or healthcare provider for any diagnostic or medical concerns.
             </p>
           </div>
         </div>
-
       </div>
 
       {/* Mock Payment Checkout Modal */}

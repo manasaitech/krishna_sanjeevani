@@ -72,9 +72,15 @@ function TheBeginningPage() {
   ];
 
   const galleryImages = [
-    { src: inaugurationImg, caption: "Inaugural plaque unveiling ceremony with Hon'ble Governor and leaders" },
+    {
+      src: inaugurationImg,
+      caption: "Inaugural plaque unveiling ceremony with Hon'ble Governor and leaders",
+    },
     { src: templeSunriseImg, caption: "Morning sanctum at ISKCON Kharghar campus" },
-    { src: ragaMusiciansImg, caption: "Live therapeutic classical raga invocation for retreat patients" },
+    {
+      src: ragaMusiciansImg,
+      caption: "Live therapeutic classical raga invocation for retreat patients",
+    },
   ];
 
   return (
@@ -123,9 +129,10 @@ function TheBeginningPage() {
               </p>
 
               <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-sans pt-1">
-                On 30 May 2026, Hon’ble Governor Shri Jishnu Dev Varma unveiled India’s first Holistic
-                Cancer Healing Retreat and officially launched the divine music therapy ‘Krishna Sanjeevani’
-                before more than 200 patients, physicians, and dignitaries at ISKCON Kharghar.
+                On 30 May 2026, Hon’ble Governor Shri Jishnu Dev Varma unveiled India’s first
+                Holistic Cancer Healing Retreat and officially launched the divine music therapy
+                ‘Krishna Sanjeevani’ before more than 200 patients, physicians, and dignitaries at
+                ISKCON Kharghar.
               </p>
 
               <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
@@ -191,8 +198,9 @@ function TheBeginningPage() {
                 <p className="text-base text-muted-foreground leading-relaxed font-sans">
                   The inaugural ceremony marked a momentous step forward in bridging traditional
                   Vedic acoustic therapies with modern supportive healthcare. The launch introduced
-                  specially calibrated listening modules designed to bring mental calmness, alleviate
-                  procedural anxiety, and cultivate Sattvic equilibrium for retreat participants.
+                  specially calibrated listening modules designed to bring mental calmness,
+                  alleviate procedural anxiety, and cultivate Sattvic equilibrium for retreat
+                  participants.
                 </p>
 
                 <blockquote className="border-l-2 border-cat pl-4 py-2 text-base font-serif italic text-foreground bg-cat-light/40 rounded-r-xl">
@@ -229,9 +237,7 @@ function TheBeginningPage() {
                     />
                   </div>
                   <div className="p-4">
-                    <p className="text-xs font-medium text-foreground font-sans">
-                      {img.caption}
-                    </p>
+                    <p className="text-xs font-medium text-foreground font-sans">{img.caption}</p>
                   </div>
                 </div>
               ))}

@@ -29,7 +29,8 @@ export function HomeFooter() {
 
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-sans max-w-sm">
               An amalgamation of Sur Sanjeevan and the divine Hare Krishna Mahamantra, bringing
-              forward the healing heritage of Indian classical music, Ayurveda, and mantra meditation.
+              forward the healing heritage of Indian classical music, Ayurveda, and mantra
+              meditation.
             </p>
 
             <div className="flex items-center gap-2 text-xs text-cat pt-1 font-serif italic">
@@ -45,42 +46,66 @@ export function HomeFooter() {
             </h3>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
-                <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Home
                 </Link>
               </li>
               <li>
-                <Link to="/inspiration" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/inspiration"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Our Inspiration
                 </Link>
               </li>
               <li>
-                <Link to="/vedic-science" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/vedic-science"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Vedic Sound Science
                 </Link>
               </li>
               <li>
-                <Link to="/the-beginning" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/the-beginning"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   A Landmark Beginning
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/about"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   About the Platform
                 </Link>
               </li>
               <li>
-                <Link to="/team" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/team"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Our Team & Lineage
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/terms"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/privacy"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Privacy Policy
                 </Link>
               </li>
@@ -94,17 +119,26 @@ export function HomeFooter() {
             </h3>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
-                <Link to="/register" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/register"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Explore Listening Experience
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/login"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Member Log In
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  to="/register"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Create Free Account
                 </Link>
               </li>
@@ -123,7 +157,8 @@ export function HomeFooter() {
           <p className="max-w-xl text-[11px] leading-relaxed">
             <strong>Disclaimer:</strong> Krishna Sanjeevani offers traditional meditative and
             therapeutic musical sequences rooted in classical Indian heritage. It is intended for
-            relaxation, spiritual contemplation, and emotional harmony as an adjunct to holistic care.
+            relaxation, spiritual contemplation, and emotional harmony as an adjunct to holistic
+            care.
           </p>
 
           <div className="flex flex-col items-center md:items-end gap-1.5 text-[11px] shrink-0">
@@ -137,7 +172,15 @@ export function HomeFooter() {
               </Link>
             </div>
             <p>
-              © {new Date().getFullYear()} Krishna Sanjeevani. All rights reserved.
+              © {new Date().getFullYear()} Krishna Sanjeevani. All rights reserved. · Maintained by{" "}
+              <a
+                href="https://manasai.tech/?utm_source=chatgpt.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cat hover:text-cat-accent font-medium transition-colors hover:underline decoration-cat/30 underline-offset-2"
+              >
+                ManasAI
+              </a>
             </p>
           </div>
         </div>

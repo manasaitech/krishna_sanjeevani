@@ -41,10 +41,12 @@ export function ScienceHero() {
           </p>
 
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto font-sans pt-1">
-            Classical Vedic and Ayurvedic knowledge approaches music not merely as sensory diversion,
-            but as an intentional psycho-acoustic science. By calibrating the modal architecture of
-            ancient ragas to awaken <strong className="text-foreground font-medium">Sattva (clarity and harmony)</strong>,
-            sacred sound acts as a subtle internal medicine that realigns consciousness and restores somatic balance.
+            Classical Vedic and Ayurvedic knowledge approaches music not merely as sensory
+            diversion, but as an intentional psycho-acoustic science. By calibrating the modal
+            architecture of ancient ragas to awaken{" "}
+            <strong className="text-foreground font-medium">Sattva (clarity and harmony)</strong>,
+            sacred sound acts as a subtle internal medicine that realigns consciousness and restores
+            somatic balance.
           </p>
 
           {/* Quick Nav Anchors */}

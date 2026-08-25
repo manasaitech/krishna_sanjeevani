@@ -46,7 +46,8 @@ function TermsPage() {
               Terms of Service
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground font-sans max-w-lg mx-auto">
-              Last updated: August 20, 2026. Please read these terms carefully before using our therapeutic sanctuary.
+              Last updated: August 20, 2026. Please read these terms carefully before using our
+              therapeutic sanctuary.
             </p>
           </div>
 
@@ -58,9 +59,10 @@ function TermsPage() {
                 <span className="text-cat">1.</span> Acceptance of Terms
               </h2>
               <p>
-                Welcome to Krishna Sanjeevani. By accessing or using our streaming services, website, 
-                and mobile application (collectively, the "Platform"), you agree to be bound by these 
-                Terms of Service. If you do not agree to these terms, please do not use the Platform.
+                Welcome to Krishna Sanjeevani. By accessing or using our streaming services,
+                website, and mobile application (collectively, the "Platform"), you agree to be
+                bound by these Terms of Service. If you do not agree to these terms, please do not
+                use the Platform.
               </p>
             </section>
 
@@ -70,12 +72,13 @@ function TermsPage() {
                 <span className="text-cat">2.</span> Therapeutic Nature & Medical Disclaimer
               </h2>
               <div className="bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 rounded-xl p-4 text-xs sm:text-sm text-amber-800 dark:text-amber-300">
-                <strong>Important Notice:</strong> Krishna Sanjeevani offers traditional meditative, Vedic sound, 
-                and therapeutic classical musical compositions (Ragas) rooted in ancient Indian heritage. 
-                Our streams and contents are created for stress-relief, spiritual contemplation, emotional 
-                balance, sleep support, and general wellness. They do NOT constitute medical advice, diagnosis, 
-                or treatment. Always seek the advice of a physician or other qualified health providers with 
-                any questions regarding a medical condition.
+                <strong>Important Notice:</strong> Krishna Sanjeevani offers traditional meditative,
+                Vedic sound, and therapeutic classical musical compositions (Ragas) rooted in
+                ancient Indian heritage. Our streams and contents are created for stress-relief,
+                spiritual contemplation, emotional balance, sleep support, and general wellness.
+                They do NOT constitute medical advice, diagnosis, or treatment. Always seek the
+                advice of a physician or other qualified health providers with any questions
+                regarding a medical condition.
               </div>
             </section>
 
@@ -85,10 +88,10 @@ function TermsPage() {
                 <span className="text-cat">3.</span> Account Registration & Security
               </h2>
               <p>
-                To explore full-length therapeutic ragas and customize your listening experience, you 
-                are required to create an account. You are responsible for keeping your credentials 
-                confidential and for all activities that occur under your account. You agree to notify us 
-                immediately of any unauthorized use of your account.
+                To explore full-length therapeutic ragas and customize your listening experience,
+                you are required to create an account. You are responsible for keeping your
+                credentials confidential and for all activities that occur under your account. You
+                agree to notify us immediately of any unauthorized use of your account.
               </p>
             </section>
 
@@ -98,12 +101,12 @@ function TermsPage() {
                 <span className="text-cat">4.</span> Intellectual Property & Sacred Audio
               </h2>
               <p>
-                All recordings, raga compositions, Sanskrit recitations, text, logos, custom player 
-                interfaces, and visual assets hosted on the Platform are protected by copyright, trademark, 
-                and intellectual property laws. Your registration grants you a limited, non-transferable, 
-                personal license to stream our therapeutic audio files for individual, non-commercial 
-                listening only. Any reproduction, distribution, public broadcasting, or commercial extraction 
-                of our audio assets is strictly prohibited.
+                All recordings, raga compositions, Sanskrit recitations, text, logos, custom player
+                interfaces, and visual assets hosted on the Platform are protected by copyright,
+                trademark, and intellectual property laws. Your registration grants you a limited,
+                non-transferable, personal license to stream our therapeutic audio files for
+                individual, non-commercial listening only. Any reproduction, distribution, public
+                broadcasting, or commercial extraction of our audio assets is strictly prohibited.
               </p>
             </section>
 
@@ -113,10 +116,11 @@ function TermsPage() {
                 <span className="text-cat">5.</span> Subscription Fees, Billing, & Donations
               </h2>
               <p>
-                Certain premium tiers, curated listening pathways, or prenatal tracks may require active 
-                subscriptions or donations. All payments are processed securely through third-party services. 
-                Subscription renewals and cancellation terms will be detailed upon billing setup, and you 
-                may manage your preferences directly in your Account settings.
+                Certain premium tiers, curated listening pathways, or prenatal tracks may require
+                active subscriptions or donations. All payments are processed securely through
+                third-party services. Subscription renewals and cancellation terms will be detailed
+                upon billing setup, and you may manage your preferences directly in your Account
+                settings.
               </p>
             </section>
 
@@ -126,9 +130,9 @@ function TermsPage() {
                 <span className="text-cat">6.</span> Prohibited Conduct
               </h2>
               <p>
-                You agree not to engage in web scraping, reverse engineering, audio recording extraction, 
-                denial-of-service attempts, or any behaviors that undermine the performance, security, 
-                or spiritual integrity of the Platform.
+                You agree not to engage in web scraping, reverse engineering, audio recording
+                extraction, denial-of-service attempts, or any behaviors that undermine the
+                performance, security, or spiritual integrity of the Platform.
               </p>
             </section>
 
@@ -138,10 +142,10 @@ function TermsPage() {
                 <span className="text-cat">7.</span> Limitation of Liability
               </h2>
               <p>
-                Krishna Sanjeevani is provided on an "as is" and "as available" basis. To the maximum extent 
-                permitted by law, we disclaim all warranties, and shall not be held liable for any damages, 
-                losses, or physiological/mental disturbances arising from your access to or reliance on the 
-                therapeutic soundtracks.
+                Krishna Sanjeevani is provided on an "as is" and "as available" basis. To the
+                maximum extent permitted by law, we disclaim all warranties, and shall not be held
+                liable for any damages, losses, or physiological/mental disturbances arising from
+                your access to or reliance on the therapeutic soundtracks.
               </p>
             </section>
 
@@ -151,9 +155,9 @@ function TermsPage() {
                 <span className="text-cat">8.</span> Modifications to Terms
               </h2>
               <p>
-                We reserve the right to revise these Terms of Service at any time. When updates are published, 
-                the "Last updated" date at the top will be updated. Your continued use of the Platform after 
-                revisions implies acceptance of the new terms.
+                We reserve the right to revise these Terms of Service at any time. When updates are
+                published, the "Last updated" date at the top will be updated. Your continued use of
+                the Platform after revisions implies acceptance of the new terms.
               </p>
             </section>
 

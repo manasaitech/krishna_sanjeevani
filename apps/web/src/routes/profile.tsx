@@ -133,7 +133,7 @@ function Profile() {
       duration: 558,
       category: "secular",
       playlistKey: "",
-      art: "/govinda-bhakta-pr-seminars-mukund.mp3"
+      art: "/govinda-bhakta-pr-seminars-mukund.mp3",
     } as any);
   };
 
@@ -169,7 +169,9 @@ function Profile() {
           ) : surawaliSubs.length === 0 ? (
             <div className="rounded-card border border-dashed border-border/80 p-8 text-center bg-surface shadow-soft space-y-2">
               <p className="text-sm font-semibold text-foreground">No subscribed Surāwalis</p>
-              <p className="text-xs text-muted-foreground max-w-xs mx-auto">Explore clinical disorders and subscribe to specific Vedic sound formulas.</p>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                Explore clinical disorders and subscribe to specific Vedic sound formulas.
+              </p>
               <Link
                 to="/discover"
                 className="press inline-flex min-h-9 items-center rounded-btn bg-cat px-4 text-xs font-bold text-cat-foreground hover:brightness-105 mt-2"
@@ -188,20 +190,23 @@ function Profile() {
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-sm text-foreground">{sub.surawaliName}</h4>
-                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                          isActive 
-                            ? "bg-green-500/10 text-green-600" 
-                            : "bg-amber-500/10 text-amber-600"
-                        }`}>
+                        <h4 className="font-semibold text-sm text-foreground">
+                          {sub.surawaliName}
+                        </h4>
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            isActive
+                              ? "bg-green-500/10 text-green-600"
+                              : "bg-amber-500/10 text-amber-600"
+                          }`}
+                        >
                           {isActive ? "Active" : "Cancelled"}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {isActive 
-                          ? `Valid until: ${new Date(sub.endDate).toLocaleDateString()}` 
-                          : `Access ended: ${new Date(sub.endDate).toLocaleDateString()}`
-                        }
+                        {isActive
+                          ? `Valid until: ${new Date(sub.endDate).toLocaleDateString()}`
+                          : `Access ended: ${new Date(sub.endDate).toLocaleDateString()}`}
                       </p>
                     </div>
 
@@ -265,4 +270,3 @@ function Profile() {
     </AppShell>
   );
 }
-

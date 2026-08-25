@@ -22,15 +22,17 @@ export const Route = createFileRoute("/register")({
 function RegisterScreen() {
   const { register, loginWithGoogle } = useApp();
   const navigate = useNavigate();
-  const [fullName, setFullName]   = useState("");
-  const [email, setEmail]         = useState("");
-  const [password, setPassword]   = useState("");
-  const [category, setCategory]   = useState("devotional");
-  const [loading, setLoading]     = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [category, setCategory] = useState("devotional");
+  const [loading, setLoading] = useState(false);
   const [showDedication, setShowDedication] = useState(false);
 
   const categoryRef = useRef(category);
-  useEffect(() => { categoryRef.current = category; }, [category]);
+  useEffect(() => {
+    categoryRef.current = category;
+  }, [category]);
 
   useEffect(() => {
     if (showDedication) {
@@ -44,16 +46,22 @@ function RegisterScreen() {
     setLoading(true);
     try {
       const res = await loginWithGoogle(response.credential, categoryRef.current);
-      if (res.success) { toast.success("Welcome to Krishna Sanjeevani!"); setShowDedication(true); }
-      else toast.error(res.message);
-    } catch { toast.error("Google authentication failed. Please try again."); }
-    finally { setLoading(false); }
+      if (res.success) {
+        toast.success("Welcome to Krishna Sanjeevani!");
+        setShowDedication(true);
+      } else toast.error(res.message);
+    } catch {
+      toast.error("Google authentication failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
-    script.async = true; script.defer = true;
+    script.async = true;
+    script.defer = true;
     document.body.appendChild(script);
     script.onload = () => {
       if ((window as any).google) {
@@ -63,25 +71,38 @@ function RegisterScreen() {
         });
       }
     };
-    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
+    return () => {
+      if (document.body.contains(script)) document.body.removeChild(script);
+    };
   }, []);
 
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
-  const hasNumber    = /[0-9]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !password || !category) { toast.error("Please fill in all fields"); return; }
-    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber) { toast.error("Password does not meet requirements"); return; }
+    if (!fullName || !email || !password || !category) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber) {
+      toast.error("Password does not meet requirements");
+      return;
+    }
     setLoading(true);
     try {
       const res = await register({ fullName, email, password, category });
-      if (res.success) { toast.success("Account created successfully!"); setShowDedication(true); }
-      else toast.error(res.message);
-    } catch { toast.error("An unexpected error occurred. Please try again."); }
-    finally { setLoading(false); }
+      if (res.success) {
+        toast.success("Account created successfully!");
+        setShowDedication(true);
+      } else toast.error(res.message);
+    } catch {
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignUp = () => {
@@ -97,23 +118,44 @@ function RegisterScreen() {
           <div className="relative">
             <div className="absolute -inset-4 rounded-full bg-[#C9A84C]/10 blur-xl animate-pulse" />
             <div className="relative h-72 w-52 overflow-hidden rounded-2xl border-2 border-[#C9A84C]/30 bg-white shadow-2xl p-1">
-              <img src={prabhupadaImg} alt="Srila Prabhupada" className="h-full w-full rounded-xl object-cover" />
+              <img
+                src={prabhupadaImg}
+                alt="Srila Prabhupada"
+                className="h-full w-full rounded-xl object-cover"
+              />
             </div>
           </div>
           <div className="space-y-2">
-            <span className="text-[10px] font-bold tracking-[0.25em] text-[#C9A84C] uppercase">Dedicated to</span>
-            <h2 className="text-2xl font-serif font-semibold tracking-wide mt-1 text-[#3A3125]">His Divine Grace</h2>
-            <h1 className="text-xl font-bold font-sans tracking-wide text-[#261E14]">A.C. Bhaktivedanta Swami Prabhupada</h1>
+            <span className="text-[10px] font-bold tracking-[0.25em] text-[#C9A84C] uppercase">
+              Dedicated to
+            </span>
+            <h2 className="text-2xl font-serif font-semibold tracking-wide mt-1 text-[#3A3125]">
+              His Divine Grace
+            </h2>
+            <h1 className="text-xl font-bold font-sans tracking-wide text-[#261E14]">
+              A.C. Bhaktivedanta Swami Prabhupada
+            </h1>
             <p className="text-xs text-[#5C5040] italic font-serif leading-relaxed mt-2 max-w-[280px] mx-auto">
               Founder-Acharya of the International Society for Krishna Consciousness
             </p>
             <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/40 to-transparent mx-auto my-4" />
-            <p className="text-[9px] uppercase font-semibold tracking-widest text-[#8A7963]">Krishna Sanjeevani Music Healing Research</p>
+            <p className="text-[9px] uppercase font-semibold tracking-widest text-[#8A7963]">
+              Krishna Sanjeevani Music Healing Research
+            </p>
           </div>
           <div className="mt-2 flex gap-1.5 items-center justify-center">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "0ms" }} />
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "150ms" }} />
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce" style={{ animationDelay: "300ms" }} />
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            />
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            />
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            />
           </div>
         </div>
       </div>
@@ -129,7 +171,6 @@ function RegisterScreen() {
 
       {/* Single viewport frame */}
       <div className="rg-frame">
-
         {/* Header */}
         <div className="rg-header">
           <div className="rg-medallion-sm">
@@ -142,22 +183,27 @@ function RegisterScreen() {
         </div>
 
         <div className="rg-rule-row" aria-hidden="true">
-          <span className="rg-rule" /><span className="rg-lotus">🪷</span><span className="rg-rule" />
+          <span className="rg-rule" />
+          <span className="rg-lotus">🪷</span>
+          <span className="rg-rule" />
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="rg-form" noValidate>
-
           {/* Name + Email row */}
           <div className="rg-field-row">
             <div className="rg-field">
-              <label className="rg-label" htmlFor="rg-name">Full Name</label>
+              <label className="rg-label" htmlFor="rg-name">
+                Full Name
+              </label>
               <div className="rg-input-wrap">
                 <User className="rg-input-ico" aria-hidden="true" />
                 <input
                   id="rg-name"
-                  type="text" required
-                  value={fullName} onChange={e => setFullName(e.target.value)}
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Ananya Rao"
                   className="rg-input"
                   autoComplete="name"
@@ -165,13 +211,17 @@ function RegisterScreen() {
               </div>
             </div>
             <div className="rg-field">
-              <label className="rg-label" htmlFor="rg-email">Email</label>
+              <label className="rg-label" htmlFor="rg-email">
+                Email
+              </label>
               <div className="rg-input-wrap">
                 <Mail className="rg-input-ico" aria-hidden="true" />
                 <input
                   id="rg-email"
-                  type="email" required
-                  value={email} onChange={e => setEmail(e.target.value)}
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="ananya@example.com"
                   className="rg-input"
                   autoComplete="email"
@@ -182,13 +232,17 @@ function RegisterScreen() {
 
           {/* Password */}
           <div className="rg-field rg-field-full">
-            <label className="rg-label" htmlFor="rg-password">Password</label>
+            <label className="rg-label" htmlFor="rg-password">
+              Password
+            </label>
             <div className="rg-input-wrap">
               <Lock className="rg-input-ico" aria-hidden="true" />
               <input
                 id="rg-password"
-                type="password" required
-                value={password} onChange={e => setPassword(e.target.value)}
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="rg-input"
                 autoComplete="new-password"
@@ -200,10 +254,11 @@ function RegisterScreen() {
                 [hasMinLength, "8+ chars"],
                 [hasUppercase, "Uppercase"],
                 [hasLowercase, "Lowercase"],
-                [hasNumber,    "Number"],
+                [hasNumber, "Number"],
               ].map(([ok, label]) => (
                 <span key={label as string} className={`rg-rule-chip ${ok ? "rg-rule-ok" : ""}`}>
-                  <span className="rg-rule-dot" />{label as string}
+                  <span className="rg-rule-dot" />
+                  {label as string}
                 </span>
               ))}
             </div>
@@ -213,9 +268,10 @@ function RegisterScreen() {
           <div className="rg-field rg-field-full">
             <label className="rg-label">Choose your Path</label>
             <div className="rg-cats">
-              {categories.map(cat => (
+              {categories.map((cat) => (
                 <button
-                  key={cat.id} type="button"
+                  key={cat.id}
+                  type="button"
                   onClick={() => setCategory(cat.id)}
                   className={`rg-cat ${category === cat.id ? "rg-cat-active" : ""}`}
                 >
@@ -227,25 +283,43 @@ function RegisterScreen() {
 
           {/* Submit */}
           <button type="submit" disabled={loading} id="rg-submit-btn" className="rg-submit">
-            {loading
-              ? <Loader2 className="rg-spin" aria-hidden="true" />
-              : <><UserPlus className="rg-ico" aria-hidden="true" /><span>Create Account</span></>
-            }
+            {loading ? (
+              <Loader2 className="rg-spin" aria-hidden="true" />
+            ) : (
+              <>
+                <UserPlus className="rg-ico" aria-hidden="true" />
+                <span>Create Account</span>
+              </>
+            )}
           </button>
         </form>
 
         {/* Divider */}
         <div className="rg-flute" aria-hidden="true">
-          <span className="rg-rule" /><span className="rg-flute-ico">🪈🦚</span><span className="rg-rule" />
+          <span className="rg-rule" />
+          <span className="rg-flute-ico">🪈🦚</span>
+          <span className="rg-rule" />
         </div>
 
         {/* Google social */}
         <button id="rg-google-btn" type="button" onClick={handleGoogleSignUp} className="rg-social">
           <svg className="rg-social-ico" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4"
+            />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853"
+            />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              fill="#FBBC05"
+            />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335"
+            />
           </svg>
           <span>Continue with Google</span>
         </button>
@@ -253,7 +327,9 @@ function RegisterScreen() {
         {/* Sign in link */}
         <p className="rg-legal">
           Already have an account?{" "}
-          <Link to="/login" className="rg-link">Sign in</Link>
+          <Link to="/login" className="rg-link">
+            Sign in
+          </Link>
         </p>
       </div>
 

@@ -340,4 +340,27 @@ stream.get("/:trackId/audio/:segmentName", async (c) => {
   });
 });
 
+// ── GET Public Audio File from R2 (No auth required) ───────────────────
+stream.get("/public/:keyName", async (c) => {
+  const keyName = c.req.param("keyName");
+  if (!keyName) {
+    throw new ValidationError("Key Name is required");
+  }
+
+  const fileKey = `audio/inspiration/prabhupada/${keyName}`;
+  const storage = new StorageService(c.env.SONG_BUCKET);
+  const file = await storage.getFile(fileKey);
+
+  if (!file) {
+    throw new NotFoundError("Public audio file not found");
+  }
+
+  return new Response(file.body, {
+    headers: {
+      "Content-Type": file.contentType || "audio/mpeg",
+      "Cache-Control": "public, max-age=31536000", // Cache publicly for a year
+    },
+  });
+});
+
 export default stream;

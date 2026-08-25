@@ -53,9 +53,7 @@ function Notifications() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-sm font-semibold">{n.title}</h3>
-                        <span className="shrink-0 text-[11px] text-muted-foreground">
-                          {n.time}
-                        </span>
+                        <span className="shrink-0 text-[11px] text-muted-foreground">{n.time}</span>
                       </div>
                       <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
                         {n.body}

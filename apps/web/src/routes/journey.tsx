@@ -69,7 +69,8 @@ function Journey() {
 
   const fetchPregnancyDetails = () => {
     setFetchingData(true);
-    api.pregnancy.getToday()
+    api.pregnancy
+      .getToday()
       .then((res) => {
         if (res.success && res.data) {
           setPregnancyData(res.data);
@@ -151,14 +152,18 @@ function Journey() {
         <div className="mx-auto max-w-md rounded-card border border-border bg-surface p-6 shadow-soft mt-8">
           <h2 className="text-xl font-semibold text-center">Pregnancy Onboarding</h2>
           <p className="text-xs text-muted-foreground text-center mt-2 leading-relaxed">
-            Configure your gestational details so we can customize your daily prenatal listening path.
+            Configure your gestational details so we can customize your daily prenatal listening
+            path.
           </p>
 
           <form onSubmit={handleSave} className="mt-6 space-y-4">
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => { setOption("lmp"); setErrorMsg(null); }}
+                onClick={() => {
+                  setOption("lmp");
+                  setErrorMsg(null);
+                }}
                 className={`flex-1 min-h-[40px] rounded-xl border text-[11px] font-semibold transition-colors ${
                   option === "lmp"
                     ? "border-cat bg-cat text-cat-foreground"
@@ -169,7 +174,10 @@ function Journey() {
               </button>
               <button
                 type="button"
-                onClick={() => { setOption("edd"); setErrorMsg(null); }}
+                onClick={() => {
+                  setOption("edd");
+                  setErrorMsg(null);
+                }}
                 className={`flex-1 min-h-[40px] rounded-xl border text-[11px] font-semibold transition-colors ${
                   option === "edd"
                     ? "border-cat bg-cat text-cat-foreground"
@@ -180,7 +188,10 @@ function Journey() {
               </button>
               <button
                 type="button"
-                onClick={() => { setOption("week"); setErrorMsg(null); }}
+                onClick={() => {
+                  setOption("week");
+                  setErrorMsg(null);
+                }}
                 className={`flex-1 min-h-[40px] rounded-xl border text-[11px] font-semibold transition-colors ${
                   option === "week"
                     ? "border-cat bg-cat text-cat-foreground"
@@ -193,14 +204,19 @@ function Journey() {
 
             {option === "lmp" ? (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold block">Last Period Date / Pregnancy Start Date</label>
+                <label className="text-xs font-semibold block">
+                  Last Period Date / Pregnancy Start Date
+                </label>
                 <input
                   type="date"
                   value={edd}
                   onChange={(e) => setEdd(e.target.value)}
                   className="w-full rounded-field border border-border bg-background px-4 py-3 text-sm focus:ring-2 focus:ring-cat focus:outline-none"
                 />
-                <p className="text-[10px] text-muted-foreground">Enter the date you became pregnant. We will calculate the EDD (LMP + 280 days) dynamically.</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Enter the date you became pregnant. We will calculate the EDD (LMP + 280 days)
+                  dynamically.
+                </p>
               </div>
             ) : option === "edd" ? (
               <div className="space-y-1.5">
@@ -211,7 +227,9 @@ function Journey() {
                   onChange={(e) => setEdd(e.target.value)}
                   className="w-full rounded-field border border-border bg-background px-4 py-3 text-sm focus:ring-2 focus:ring-cat focus:outline-none"
                 />
-                <p className="text-[10px] text-muted-foreground">Enter your target due date to calculate gestational age.</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Enter your target due date to calculate gestational age.
+                </p>
               </div>
             ) : (
               <div className="space-y-1.5">
@@ -225,7 +243,9 @@ function Journey() {
                   onChange={(e) => setWeek(e.target.value)}
                   className="w-full rounded-field border border-border bg-background px-4 py-3 text-sm focus:ring-2 focus:ring-cat focus:outline-none"
                 />
-                <p className="text-[10px] text-muted-foreground">Enter your current pregnancy week (1 to 40).</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Enter your current pregnancy week (1 to 40).
+                </p>
               </div>
             )}
 
@@ -236,11 +256,7 @@ function Journey() {
               disabled={saving}
               className="w-full min-h-[48px] rounded-xl bg-cat text-cat-foreground font-semibold flex items-center justify-center disabled:opacity-75 transition-opacity"
             >
-              {saving ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                "Save and Start Journey"
-              )}
+              {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save and Start Journey"}
             </button>
           </form>
         </div>
@@ -253,12 +269,16 @@ function Journey() {
   const total = pregnancyData.program?.tracks?.length ?? 0;
   const pct = pregnancyData.program?.progress?.progressPercentage ?? 0;
 
-  const today = pregnancyData.program?.tracks?.[0] ? ({
-    ...pregnancyData.program.tracks[0],
-    art: pregnancyData.program.tracks[0].thumbnailKey ? `/api/v1/storage/file/${pregnancyData.program.tracks[0].thumbnailKey}` : undefined,
-    raga: pregnancyData.program.tracks[0].subtitle || "",
-    purpose: pregnancyData.program.tracks[0].description || "Healing",
-  } as Track) : null;
+  const today = pregnancyData.program?.tracks?.[0]
+    ? ({
+        ...pregnancyData.program.tracks[0],
+        art: pregnancyData.program.tracks[0].thumbnailKey
+          ? `/api/v1/storage/file/${pregnancyData.program.tracks[0].thumbnailKey}`
+          : undefined,
+        raga: pregnancyData.program.tracks[0].subtitle || "",
+        purpose: pregnancyData.program.tracks[0].description || "Healing",
+      } as Track)
+    : null;
 
   const upcomingTracks = Array.isArray(pregnancyData.program?.tracks)
     ? (pregnancyData.program.tracks.slice(1).map((t: any) => ({
@@ -269,7 +289,9 @@ function Journey() {
       })) as Track[])
     : [];
 
-  const isTodayCompleted = today && Array.isArray(pregnancyData.program?.progress?.completedTracks) &&
+  const isTodayCompleted =
+    today &&
+    Array.isArray(pregnancyData.program?.progress?.completedTracks) &&
     pregnancyData.program.progress.completedTracks.includes(today.id);
 
   return (
@@ -279,7 +301,12 @@ function Journey() {
           Pregnancy journey
         </p>
         <h1 className="mt-2 text-[24px] leading-tight font-semibold">
-          Month {currentMonth} · {currentMonth <= 3 ? "First trimester" : currentMonth <= 6 ? "Second trimester" : "Third trimester"}
+          Month {currentMonth} ·{" "}
+          {currentMonth <= 3
+            ? "First trimester"
+            : currentMonth <= 6
+              ? "Second trimester"
+              : "Third trimester"}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Gentle sequences chosen for this stage. Nothing strenuous, nothing loud.
@@ -333,8 +360,11 @@ function Journey() {
       {today ? (
         <Section title="Today's recommendation">
           <div className="overflow-hidden rounded-card border border-border bg-surface shadow-soft">
-            <div className={`flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold tracking-wider uppercase ${isTodayCompleted ? "bg-green-50 text-green-700" : "bg-cat-light text-cat"}`}>
-              <Baby className="h-3.5 w-3.5" /> Month {currentMonth} · {isTodayCompleted ? "COMPLETED" : "TODAY'S SESSION"}
+            <div
+              className={`flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold tracking-wider uppercase ${isTodayCompleted ? "bg-green-50 text-green-700" : "bg-cat-light text-cat"}`}
+            >
+              <Baby className="h-3.5 w-3.5" /> Month {currentMonth} ·{" "}
+              {isTodayCompleted ? "COMPLETED" : "TODAY'S SESSION"}
             </div>
             <div className="p-3">
               <TrackRow track={today} programId={pregnancyData?.program?.id} />
@@ -388,8 +418,8 @@ function Journey() {
             </div>
           </div>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            "Continue the evening sequences at low volume. Add the Month 6 set only after
-            your next scan. Stop any session that causes discomfort."
+            "Continue the evening sequences at low volume. Add the Month 6 set only after your next
+            scan. Stop any session that causes discomfort."
           </p>
           <label className="mt-5 block text-xs font-medium text-muted-foreground">
             Add a note for your next visit

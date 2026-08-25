@@ -14,7 +14,7 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
   const [isInteracted, setIsInteracted] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
-  
+
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
@@ -22,7 +22,8 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap";
     document.head.appendChild(link);
 
     // Entrance Animation Sequence
@@ -78,15 +79,15 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
     <div
       onClick={handleInteraction}
       className={`fixed inset-0 z-50 flex flex-col items-center justify-between py-10 px-6 overflow-hidden select-none cursor-pointer transition-all duration-[950ms] ease-in-out ${
-        isFadingOut
-          ? "opacity-0 scale-[1.015] pointer-events-none"
-          : "opacity-100 scale-100"
+        isFadingOut ? "opacity-0 scale-[1.015] pointer-events-none" : "opacity-100 scale-100"
       }`}
       role="button"
       aria-label="Enter Krishna Sanjeevani Application"
     >
       {/* Styles for breathing animations and fonts */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes breathing {
           0%, 100% {
             transform: scale(1);
@@ -105,7 +106,9 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
         .font-lora {
           font-family: 'Lora', Georgia, serif;
         }
-      `}} />
+      `,
+        }}
+      />
 
       {/* 1. Full Bleed Background Landscape (Always Visible) */}
       <div
@@ -116,9 +119,7 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
       {/* 2. Top Gold Lotus Logo and Header */}
       <div
         className={`flex flex-col items-center gap-1.5 z-10 pointer-events-none mt-4 transition-all duration-[1000ms] ${
-          animateStage >= 2
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 -translate-y-4"
+          animateStage >= 2 ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
         }`}
       >
         {/* Actual platform logo */}
@@ -127,7 +128,7 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
           alt="Krishna Sanjeevani Logo"
           className="h-8 sm:h-10 object-contain drop-shadow-sm select-none pointer-events-none"
         />
-        
+
         {/* Title with Gold Lines and Dots */}
         <div className="flex items-center gap-3 sm:gap-4 text-[#C5A059] mt-1.5">
           <div className="flex items-center">
@@ -146,7 +147,6 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
 
       {/* 3. Central Character Placement overlaying background sun/mandala */}
       <div className="relative flex flex-col items-center justify-center flex-1 w-full max-h-[48vh] mt-2 mb-2 z-10">
-        
         {/* Dynamic expanding aura ring on interaction */}
         <div
           className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(201,168,76,0.18)_0%,transparent_70%)] blur-md pointer-events-none z-0 transition-all duration-[900ms] ${
@@ -173,13 +173,10 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
 
       {/* 4. Text, Divider and CTA Section (at the bottom half) */}
       <div className="flex flex-col items-center w-full max-w-lg text-center gap-6 z-10">
-        
         {/* Main Text Content (Fades in at Stage 2) */}
         <div
           className={`flex flex-col items-center text-center gap-1 sm:gap-1.5 px-4 pointer-events-none transition-all duration-[1000ms] ${
-            animateStage >= 2
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4"
+            animateStage >= 2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
           <span className="text-sm sm:text-base font-lora italic text-[#4D0F1B] tracking-wide">
@@ -202,9 +199,7 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
         {/* CTA Button and Footer texts (Fades in at Stage 2) */}
         <div
           className={`flex flex-col items-center gap-4.5 w-full max-w-xs mb-4 transition-all duration-[1000ms] ${
-            animateStage >= 2
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4"
+            animateStage >= 2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
           <button
@@ -222,12 +217,12 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
           >
             Click Here
           </button>
-          
+
           <div className="text-center flex flex-col items-center gap-1.5 mt-1">
             <p className="text-[10px] sm:text-[11px] text-[#7C7A85] font-lora italic tracking-wide">
               Tap anywhere to begin your sacred journey
             </p>
-            
+
             {/* Subtle gold decoration divider */}
             <div className="flex items-center justify-center text-[#C5A059] opacity-55 mt-0.5">
               <div className="h-[0.5px] w-4 bg-[#C5A059]" />

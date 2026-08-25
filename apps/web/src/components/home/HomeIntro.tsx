@@ -70,7 +70,8 @@ export function HomeIntro() {
                     Sur Sanjeevan & Devotional Kīrtana in Harmony
                   </p>
                   <p className="text-xs text-stone-200 mt-1.5 font-sans leading-relaxed">
-                    Bridging diagnostic Indian raga theory with the transcendental healing vibration of sacred mantras.
+                    Bridging diagnostic Indian raga theory with the transcendental healing vibration
+                    of sacred mantras.
                   </p>
                 </div>
               </div>

@@ -4,7 +4,10 @@ import { ArrowRight, Sparkles, Compass } from "lucide-react";
 
 export function ExploreCardsGrid() {
   return (
-    <section id="explore" className="py-20 sm:py-28 bg-surface border-y border-border relative overflow-hidden">
+    <section
+      id="explore"
+      className="py-20 sm:py-28 bg-surface border-y border-border relative overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
@@ -18,8 +21,8 @@ export function ExploreCardsGrid() {
           </h2>
 
           <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans">
-            Delve deeper into our foundational lineages, therapeutic science, historical launch,
-            and the vision guiding our sound ecosystem.
+            Delve deeper into our foundational lineages, therapeutic science, historical launch, and
+            the vision guiding our sound ecosystem.
           </p>
         </div>
 

@@ -45,8 +45,8 @@ function CategoryScreen() {
             Which path fits you today?
           </h1>
           <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-            Your choice quietly adapts the colours, recommendations, and programs. You can
-            change it any time from your profile.
+            Your choice quietly adapts the colours, recommendations, and programs. You can change it
+            any time from your profile.
           </p>
         </header>
 

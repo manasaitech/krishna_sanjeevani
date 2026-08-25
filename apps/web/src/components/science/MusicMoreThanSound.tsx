@@ -38,8 +38,10 @@ export function MusicMoreThanSound() {
           </h2>
 
           <p className="mt-3 text-base sm:text-lg text-muted-foreground font-sans">
-            In the Vedic worldview, sound (<span className="text-cat font-serif italic">Nāda Brahma</span>) is the
-            primal vibrational blueprint that shapes physical matter, brainwave frequencies, and internal vitality.
+            In the Vedic worldview, sound (
+            <span className="text-cat font-serif italic">Nāda Brahma</span>) is the primal
+            vibrational blueprint that shapes physical matter, brainwave frequencies, and internal
+            vitality.
           </p>
         </div>
 
@@ -65,7 +67,8 @@ export function MusicMoreThanSound() {
                     Sound Vibrations Structuring Physical & Mental Matter
                   </h3>
                   <p className="text-xs text-stone-200 mt-1 font-sans">
-                    Just as sound frequencies organize sand into symmetrical mandalas, Vedic ragas organize bio-energies into harmonious health.
+                    Just as sound frequencies organize sand into symmetrical mandalas, Vedic ragas
+                    organize bio-energies into harmonious health.
                   </p>
                 </div>
               </div>
@@ -90,9 +93,7 @@ export function MusicMoreThanSound() {
                       <span className="text-[10px] uppercase font-bold tracking-wider text-cat font-sans block">
                         {item.subtitle}
                       </span>
-                      <span className="text-xs font-serif font-bold text-cat/70">
-                        0{idx + 1}
-                      </span>
+                      <span className="text-xs font-serif font-bold text-cat/70">0{idx + 1}</span>
                     </div>
 
                     <h3 className="text-base sm:text-lg font-bold font-serif text-foreground mt-0.5">

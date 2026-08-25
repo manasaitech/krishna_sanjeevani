@@ -24,9 +24,7 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Map favorites IDs to full tracks
-  const favoriteTracksList = favorites
-    .map((id) => tracks.find((t) => t.id === id))
-    .filter(Boolean);
+  const favoriteTracksList = favorites.map((id) => tracks.find((t) => t.id === id)).filter(Boolean);
 
   // Map saved programs IDs to full programs
   const savedProgramsList = savedPrograms
@@ -40,19 +38,31 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
   const [surawaliSubs, setSurawaliSubs] = useState<any[]>([]);
 
   useEffect(() => {
-    if (user) {
-      api.discover.listSubscriptions()
-        .then((res) => {
-          if (res.success) {
-            const active = res.data.filter((s: any) => s.status === "active" && s.endDate > Date.now());
-            setSurawaliSubs(active);
-          }
-        })
-        .catch((err) => console.error("Failed to load sidebar subscriptions", err));
-    } else {
-      setSurawaliSubs([]);
-    }
-  }, [user]);
+    const fetchSubscriptions = () => {
+      if (user) {
+        api.discover
+          .listSubscriptions()
+          .then((res) => {
+            if (res.success) {
+              const active = res.data.filter(
+                (s: any) => s.status === "active" && s.endDate > Date.now(),
+              );
+              setSurawaliSubs(active);
+            }
+          })
+          .catch((err) => console.error("Failed to load sidebar subscriptions", err));
+      } else {
+        setSurawaliSubs([]);
+      }
+    };
+
+    fetchSubscriptions();
+
+    window.addEventListener("subscription-updated", fetchSubscriptions);
+    return () => {
+      window.removeEventListener("subscription-updated", fetchSubscriptions);
+    };
+  }, [user, pathname]);
 
   const getLinkClass = (to: string) => {
     const active = pathname === to;
@@ -96,12 +106,6 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
               <Link to="/home" onClick={onNavigate} className={getLinkClass("/home")}>
                 <House className="h-[18px] w-[18px] shrink-0" />
                 <span className="truncate">Home</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/search" onClick={onNavigate} className={getLinkClass("/search")}>
-                <Search className="h-[18px] w-[18px] shrink-0" />
-                <span className="truncate">Search</span>
               </Link>
             </li>
             <li>
@@ -189,7 +193,7 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
           )}
 
           {/* Subscribed Surāwalis */}
-          {(filter === "All" || filter === "Surāwalis") && (
+          {(filter === "All" || filter === "Surāwalis") &&
             surawaliSubs.map((sub) => {
               const surawaliName = sub.surawaliName;
               return (
@@ -204,7 +208,7 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
                       duration: 558,
                       category: "secular",
                       playlistKey: "",
-                      art: "/govinda-bhakta-pr-seminars-mukund.mp3"
+                      art: "/govinda-bhakta-pr-seminars-mukund.mp3",
                     } as any);
                     if (onNavigate) onNavigate();
                   }}
@@ -217,17 +221,14 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
                     <p className="text-[13px] font-semibold truncate group-hover:text-cat transition-colors">
                       {surawaliName}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Surāwali · Active
-                    </p>
+                    <p className="text-[11px] text-muted-foreground">Surāwali · Active</p>
                   </div>
                 </button>
               );
-            })
-          )}
+            })}
 
           {/* Saved Programs */}
-          {(filter === "All" || filter === "Programs") && (
+          {(filter === "All" || filter === "Programs") &&
             savedProgramsList.map((prog) => {
               if (!prog) return null;
               const active = pathname === `/program/${prog.id}`;
@@ -257,11 +258,10 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
                   </div>
                 </Link>
               );
-            })
-          )}
+            })}
 
           {/* Recently Played Tracks */}
-          {(filter === "All" || filter === "Playlists") && (
+          {(filter === "All" || filter === "Playlists") &&
             recentTracks.map((track) => {
               if (!track) return null;
               const isActive = current?.id === track.id;
@@ -278,11 +278,7 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
                   )}
                 >
                   <div className="relative h-11 w-11 shrink-0 rounded-xl overflow-hidden shadow-sm">
-                    <img
-                      src={track.art}
-                      alt={track.title}
-                      className="h-full w-full object-cover"
-                    />
+                    <img src={track.art} alt={track.title} className="h-full w-full object-cover" />
                     {isActive && playing && (
                       <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
                         <span className="text-[9px] text-white font-bold tracking-wider animate-pulse uppercase">
@@ -292,27 +288,24 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={cn(
-                      "text-[13px] font-semibold truncate transition-colors",
-                      isActive ? "text-cat font-bold" : "group-hover:text-cat",
-                    )}>
+                    <p
+                      className={cn(
+                        "text-[13px] font-semibold truncate transition-colors",
+                        isActive ? "text-cat font-bold" : "group-hover:text-cat",
+                      )}
+                    >
                       {track.title}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Track · {track.raga}
-                    </p>
+                    <p className="text-[11px] text-muted-foreground">Track · {track.raga}</p>
                   </div>
                 </button>
               );
-            })
-          )}
+            })}
         </div>
 
         {/* Streaming Info Box */}
         <div className="rounded-xl border border-border/80 bg-background/50 p-3 mt-auto shrink-0">
-          <p className="text-[10px] font-bold tracking-wider text-cat uppercase">
-            Streaming only
-          </p>
+          <p className="text-[10px] font-bold tracking-wider text-cat uppercase">Streaming only</p>
           <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
             Sessions are guided in-app and never downloaded or shared.
           </p>

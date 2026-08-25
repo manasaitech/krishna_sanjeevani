@@ -32,7 +32,10 @@ function Favorites() {
   const favPrograms = programs.filter((p) => savedPrograms.includes(p.id));
 
   return (
-    <AppShell title="Favorites" subtitle={`${favTracks.length} sessions · ${favPrograms.length} programs`}>
+    <AppShell
+      title="Favorites"
+      subtitle={`${favTracks.length} sessions · ${favPrograms.length} programs`}
+    >
       <Section title="Saved sessions" hint={`${favTracks.length} sessions`} className="mt-0">
         {favTracks.length === 0 ? (
           <EmptyState

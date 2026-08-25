@@ -75,9 +75,7 @@ export function ConsciousnessModulation() {
                 {/* Top Number & Icon */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-serif font-bold text-cat">
-                      PHASE {item.num}
-                    </span>
+                    <span className="text-xs font-serif font-bold text-cat">PHASE {item.num}</span>
                     <div
                       className="h-9 w-9 rounded-xl flex items-center justify-center text-white shadow-sm"
                       style={{ backgroundColor: item.color }}

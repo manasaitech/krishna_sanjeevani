@@ -44,10 +44,12 @@ export function BalancePrinciple() {
 
             <div className="mt-4 p-4 rounded-xl bg-surface border border-border/60 text-xs text-muted-foreground space-y-2">
               <p>
-                • <strong>Hyperactive Vāta</strong> + Fast, erratic, aggressive rhythms = <em>Heightened anxiety & nervous tension.</em>
+                • <strong>Hyperactive Vāta</strong> + Fast, erratic, aggressive rhythms ={" "}
+                <em>Heightened anxiety & nervous tension.</em>
               </p>
               <p>
-                • <strong>Inflamed Pitta</strong> + Fiery, competitive, intense marches = <em>Elevated metabolic heat & irritability.</em>
+                • <strong>Inflamed Pitta</strong> + Fiery, competitive, intense marches ={" "}
+                <em>Elevated metabolic heat & irritability.</em>
               </p>
             </div>
           </div>
@@ -75,10 +77,12 @@ export function BalancePrinciple() {
 
             <div className="mt-4 p-4 rounded-xl bg-surface border border-border/60 text-xs text-muted-foreground space-y-2">
               <p>
-                • <strong>Restless Vāta & Hot Pitta</strong> + Grounding, cooling Karuṇa / Śānta = <em>Profound tranquility & peace.</em>
+                • <strong>Restless Vāta & Hot Pitta</strong> + Grounding, cooling Karuṇa / Śānta ={" "}
+                <em>Profound tranquility & peace.</em>
               </p>
               <p>
-                • <strong>Sluggish, Heavy Kapha</strong> + Uplifting, dynamic Śṛṅgāra & Vīra = <em>Energized vitality & alertness.</em>
+                • <strong>Sluggish, Heavy Kapha</strong> + Uplifting, dynamic Śṛṅgāra & Vīra ={" "}
+                <em>Energized vitality & alertness.</em>
               </p>
             </div>
           </div>

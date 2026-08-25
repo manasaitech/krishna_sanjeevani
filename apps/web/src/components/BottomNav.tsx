@@ -10,9 +10,7 @@ export function BottomNav() {
   const items = [
     { to: "/home", label: "Home", icon: House },
     { to: "/search", label: "Search", icon: Search },
-    ...(category === "pregnancy"
-      ? [{ to: "/journey", label: "Journey", icon: Sparkles }]
-      : []),
+    ...(category === "pregnancy" ? [{ to: "/journey", label: "Journey", icon: Sparkles }] : []),
     { to: "/favorites", label: "Saved", icon: Heart },
     { to: "/profile", label: "Profile", icon: User },
   ];

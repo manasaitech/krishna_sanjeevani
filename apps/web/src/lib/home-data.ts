@@ -160,27 +160,33 @@ bhaktātyanta-hitauṣadhaṁ bhava-bhaya-pradhvaṁsanaikauṣadhaṁ
   dimensions: [
     {
       sanskrit: "व्यामोह-प्रशमौषधम् (Vyāmoha-praśamauṣadham)",
-      meaning: "The medicine that completely pacifies and dispels mental illusion and emotional delusion.",
+      meaning:
+        "The medicine that completely pacifies and dispels mental illusion and emotional delusion.",
     },
     {
       sanskrit: "मुनि-मनोवृत्ति-प्रवृत्त्यौषधम् (Muni-mano-vṛtti-pravṛtty-auṣadham)",
-      meaning: "The elixir that turns the mind inward and awakens deep meditative absorption in the sages.",
+      meaning:
+        "The elixir that turns the mind inward and awakens deep meditative absorption in the sages.",
     },
     {
       sanskrit: "त्रिजगतां सञ्जीवनैकौषधम् (Tri-jagatāṁ Sañjīvanaikauṣadham)",
-      meaning: "The singular life-giving and restoring medicine (Sanjeevani) for all living beings across the three worlds.",
+      meaning:
+        "The singular life-giving and restoring medicine (Sanjeevani) for all living beings across the three worlds.",
     },
     {
       sanskrit: "भक्तात्यन्त-हितौषधम् (Bhaktātyanta-hitauṣadham)",
-      meaning: "The supreme wholesome remedy that brings ultimate spiritual and physiological wellbeing to devotees.",
+      meaning:
+        "The supreme wholesome remedy that brings ultimate spiritual and physiological wellbeing to devotees.",
     },
     {
       sanskrit: "भव-भय-प्रध्वंसनैकौषधम् (Bhava-bhaya-pradhvaṁsanaikauṣadham)",
-      meaning: "The unparalleled medicine that eradicates existential anxiety and the dread of material entrapment.",
+      meaning:
+        "The unparalleled medicine that eradicates existential anxiety and the dread of material entrapment.",
     },
     {
       sanskrit: "श्रेयः-प्राप्ति-करौषधम् (Śreyaḥ-prāpti-karauṣadham)",
-      meaning: "The curative force that confers everlasting spiritual auspiciousness, peace, and transcendental bliss.",
+      meaning:
+        "The curative force that confers everlasting spiritual auspiciousness, peace, and transcendental bliss.",
     },
   ],
 };
@@ -202,15 +208,18 @@ sarvātma-snapanaṁ paraṁ vijayate śrī-kṛṣṇa-saṅkīrtanam || 1 ||`,
   lines: [
     {
       term: "चेतो-दर्पण-मार्जनम् (Ceto-darpaṇa-mārjanam)",
-      meaning: "Cleanses the dust from the mirror of consciousness and restores original mental purity.",
+      meaning:
+        "Cleanses the dust from the mirror of consciousness and restores original mental purity.",
     },
     {
       term: "भव-महा-दावाग्नि-निर्वपणम् (Bhava-mahā-dāvāgni-nirvāpaṇam)",
-      meaning: "Extinguishes the blazing forest fire of existential anxiety, stress, and somatic distress.",
+      meaning:
+        "Extinguishes the blazing forest fire of existential anxiety, stress, and somatic distress.",
     },
     {
       term: "श्रेयः-कैरव-चन्द्रिका-वितरणम् (Śreyaḥ-kairava-candrikā-vitaraṇam)",
-      meaning: "Diffuses the cooling, soothing moonlight that causes the white lotus of good fortune to blossom.",
+      meaning:
+        "Diffuses the cooling, soothing moonlight that causes the white lotus of good fortune to blossom.",
     },
     {
       term: "विद्या-वधू-जीवनम् (Vidyā-vadhū-jīvanam)",
@@ -226,11 +235,13 @@ sarvātma-snapanaṁ paraṁ vijayate śrī-kṛṣṇa-saṅkīrtanam || 1 ||`,
     },
     {
       term: "सर्वात्म-स्नपनम् (Sarvātma-snapanam)",
-      meaning: "Thoroughly bathes, purifies, and refreshes the mind, sensory organs, and the inner soul.",
+      meaning:
+        "Thoroughly bathes, purifies, and refreshes the mind, sensory organs, and the inner soul.",
     },
     {
       term: "परं विजयते श्रीकृष्णसङ्कीर्तनम् (Paraṁ Vijayate Śrī-Kṛṣṇa-Saṅkīrtanam)",
-      meaning: "Supreme victory to the congregational singing and chanting of the Holy Names of Krishna.",
+      meaning:
+        "Supreme victory to the congregational singing and chanting of the Holy Names of Krishna.",
     },
   ],
 };

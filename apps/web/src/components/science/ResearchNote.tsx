@@ -14,8 +14,8 @@ export function ResearchNote() {
               Research Context & Epistemic Boundaries
             </h3>
             <p>
-              This document outlines the theoretical and philosophical framework of sound therapy
-              as preserved in classical Indian knowledge traditions (including the{" "}
+              This document outlines the theoretical and philosophical framework of sound therapy as
+              preserved in classical Indian knowledge traditions (including the{" "}
               <em>Caraka Saṁhitā, Suśruta Saṁhitā, Nāṭyaśāstra,</em> and Gāndharva Veda).
             </p>
             <p>
