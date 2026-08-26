@@ -8,11 +8,11 @@ enum AppCategory {
   String get displayName {
     switch (this) {
       case AppCategory.devotional:
-        return 'Devotional';
+        return 'Krishna Sanjeevani';
       case AppCategory.secular:
         return 'Arogya Sanjeevani';
       case AppCategory.pregnancy:
-        return 'Garv Sanjeevani';
+        return 'Garbh Sanjeevani';
     }
   }
 

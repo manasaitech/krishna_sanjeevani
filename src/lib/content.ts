@@ -297,6 +297,6 @@ export const sanjeevaniConfigs: Record<Exclude<CategoryId, "unset">, SanjeevaniC
     placeholderSearch: "Search surawalis, pregnancy themes...",
     greetingText: "पुत्रं कुरु प्रवरं कुलवर्धनम्, गर्भं रक्ष सुशोभनम्।",
     bannerText: "Nurturing Garbha Sanskar sound frequencies active. Connect with your baby and support healthy fetal development.",
-    filters: ["All", "Month 1-3", "Month 4-6", "Month 7-9", "Maternal Calm", "Baby Bond", "Sleep", "Meditation"],
+    filters: ["All", "Month 1-3", "Month 4-6", "Month 7-9"],
   },
 };

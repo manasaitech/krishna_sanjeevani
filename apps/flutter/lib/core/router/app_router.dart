@@ -14,6 +14,8 @@ import '../../features/programs/screens/program_detail_screen.dart';
 import '../../features/splash/screens/splash_screen.dart';
 import '../../features/subscription/screens/subscription_screen.dart';
 import '../../features/therapy/screens/therapy_screen.dart';
+import '../../features/sanjeevani/selection/choose_sanjeevani_screen.dart';
+import '../../features/sanjeevani/selection/change_sanjeevani_screen.dart';
 import '../../shared/layout/app_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -56,8 +58,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login';
       }
 
-      if (isAuthenticated && isAuthRoute && state.matchedLocation != '/splash') {
-        return '/home';
+      if (isAuthenticated) {
+        final profile = authState.user?['profile'];
+        final categoryStr = (profile is Map<String, dynamic>) ? profile['category'] as String? : null;
+        
+        final isCategoryUnset = categoryStr == null || categoryStr == 'unset';
+
+        if (isCategoryUnset) {
+          if (state.matchedLocation != '/choose-sanjeevani') {
+            return '/choose-sanjeevani';
+          }
+          return null;
+        }
+
+        // If category is set, redirect away from /choose-sanjeevani or auth screens (excluding splash)
+        if (state.matchedLocation == '/choose-sanjeevani' || (isAuthRoute && state.matchedLocation != '/splash')) {
+          return categoryStr == 'pregnancy' ? '/journey' : '/home';
+        }
       }
 
       return null;
@@ -78,6 +95,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => RegisterScreen(
           onNavigateToLogin: () => context.go('/login'),
         ),
+      ),
+      GoRoute(
+        path: '/choose-sanjeevani',
+        builder: (context, state) => const ChooseSanjeevaniScreen(),
+      ),
+      GoRoute(
+        path: '/change-sanjeevani',
+        builder: (context, state) => const ChangeSanjeevaniScreen(),
       ),
       GoRoute(
         path: '/player',

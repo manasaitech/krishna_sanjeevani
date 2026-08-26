@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/asset_constants.dart';
-import '../../../core/theme/category_theme.dart';
-import '../../../shared/providers/category_provider.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -25,7 +23,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  AppCategory _selectedCategory = AppCategory.devotional;
   late final AnimationController _equalizerController;
 
   @override
@@ -49,13 +46,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
   void _submitRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    ref.read(categoryProvider.notifier).setCategory(_selectedCategory);
-
     final success = await ref.read(authProvider.notifier).register(
           email: _emailController.text.trim(),
           password: _passwordController.text,
           fullName: _fullNameController.text.trim(),
-          category: _selectedCategory.name,
+          category: 'unset',
         );
 
     if (success && mounted) {
@@ -366,53 +361,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
                                   ),
                                   const SizedBox(height: 12),
 
-                                  // Preferred Category
-                                  const Text(
-                                    'Preferred Category',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1A3323),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  DropdownButtonFormField<AppCategory>(
-                                    initialValue: _selectedCategory,
-                                    style: const TextStyle(fontSize: 14, color: Color(0xFF1A3323)),
-                                    dropdownColor: const Color(0xFFFAF6EE),
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(Icons.layers_outlined, size: 18, color: Color(0xFF6B5A3E)),
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                                      filled: true,
-                                      fillColor: Colors.white.withValues(alpha: 0.6),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0x33C9A84C)),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0x33C9A84C)),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0xFFC9A84C), width: 1.5),
-                                      ),
-                                    ),
-                                    items: AppCategory.values.map((cat) {
-                                      return DropdownMenuItem(
-                                        value: cat,
-                                        child: Text(cat.displayName),
-                                      );
-                                    }).toList(),
-                                    onChanged: (cat) {
-                                      if (cat != null) {
-                                        setState(() {
-                                          _selectedCategory = cat;
-                                        });
-                                      }
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
+
 
                                   // Register Button
                                   SizedBox(

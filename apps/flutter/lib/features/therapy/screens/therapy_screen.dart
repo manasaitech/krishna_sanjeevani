@@ -374,7 +374,7 @@ class _TherapyScreenState extends ConsumerState<TherapyScreen> with SingleTicker
           unselectedLabelColor: const Color(0xFF7A6B58),
           tabs: const [
             Tab(text: 'Ailments'),
-            Tab(text: 'Garv Sanjeevani'),
+            Tab(text: 'Garbh Sanjeevani'),
             Tab(text: 'Arogya Sanjeevani'),
           ],
         ),

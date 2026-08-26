@@ -14,6 +14,10 @@ import {
   Trash2,
   Play,
   Loader2,
+  Activity,
+  Brain,
+  Heart,
+  Compass,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Section } from "@/components/layout-bits";
@@ -23,6 +27,13 @@ import { categories, sanjeevaniConfigs, type CategoryId } from "@/lib/content";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -46,10 +57,10 @@ function Row({
   value,
   to,
 }: {
-  icon: typeof Bell;
+  icon: any;
   label: string;
   value?: string;
-  to?: "/subscription" | "/category";
+  to?: "/subscription" | "/select-sanjeevani";
 }) {
   const inner = (
     <>
@@ -78,21 +89,26 @@ function Profile() {
   const cat = categories.find((c) => c.id === category)!;
 
   const [switching, setSwitching] = useState(false);
+  const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
+  const [pendingCategory, setPendingCategory] = useState<CategoryId | null>(null);
 
   const handleLogout = async () => {
     await logout();
     navigate({ to: "/" });
   };
 
-  const handleSwitchCategory = async (targetCategory: CategoryId) => {
-    if (category === targetCategory) return;
+  const handleConfirmSwitch = async () => {
+    if (!pendingCategory) return;
     try {
       setSwitching(true);
-      const res = await api.auth.updateProfile({ category: targetCategory });
+      const res = await api.auth.updateProfile({ category: pendingCategory });
       if (res.success) {
-        setCategory(targetCategory);
+        setCategory(pendingCategory);
         await restoreSession();
-        toast.success(`Switched to ${sanjeevaniConfigs[targetCategory].name}`);
+        toast.success(`Switched to ${sanjeevaniConfigs[pendingCategory].name}`);
+        setIsChangeModalOpen(false);
+        setPendingCategory(null);
+        navigate({ to: pendingCategory === "pregnancy" ? "/journey" : "/home" });
       } else {
         toast.error(res.message || "Failed to switch pathway.");
       }
@@ -179,47 +195,26 @@ function Profile() {
         </div>
       </Section>
 
-      {/* Switch Pathway Section */}
-      <Section title="Switch Healing Pathway">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {(["devotional", "secular", "pregnancy"] as const).map((catId) => {
-            const config = sanjeevaniConfigs[catId];
-            const isSelected = category === catId;
-            return (
-              <button
-                key={catId}
-                disabled={switching}
-                onClick={() => handleSwitchCategory(catId)}
-                className={cn(
-                  "press relative p-4 rounded-card border text-left bg-surface shadow-soft transition-all duration-300 flex flex-col justify-between min-h-[90px] hover:border-cat/60",
-                  isSelected
-                    ? "border-cat bg-cat-light/10 ring-1 ring-cat"
-                    : "border-border hover:bg-secondary/40"
-                )}
-                style={isSelected ? ({ "--theme-color": config.theme.primary, borderColor: config.theme.primary } as any) : undefined}
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span
-                      className="font-display font-bold text-[10px] uppercase tracking-wider"
-                      style={{ color: config.theme.primary }}
-                    >
-                      {config.name.split(" ")[0]}
-                    </span>
-                    {isSelected && (
-                      <span className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: config.theme.primary }} />
-                    )}
-                  </div>
-                  <h4 className="font-display font-extrabold text-[13px] text-foreground leading-snug">
-                    {config.name}
-                  </h4>
-                  <p className="text-[10px] text-muted-foreground line-clamp-1">
-                    {config.subtitle}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
+      {/* My Sanjeevani Section */}
+      <Section title="My Sanjeevani">
+        <div className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold tracking-widest text-cat uppercase">
+              Current Experience
+            </span>
+            <h3 className="font-display font-extrabold text-base text-foreground leading-snug">
+              {sanjeevaniConfigs[category as Exclude<CategoryId, "unset">]?.name || "None Selected"}
+            </h3>
+            <p className="text-xs text-[#5C5040]">
+              {sanjeevaniConfigs[category as Exclude<CategoryId, "unset">]?.subtitle}
+            </p>
+          </div>
+          <button
+            onClick={() => setIsChangeModalOpen(true)}
+            className="press inline-flex min-h-11 items-center justify-center rounded-btn bg-cat px-6 text-sm font-semibold text-cat-foreground hover:brightness-105 cursor-pointer"
+          >
+            Change Experience
+          </button>
         </div>
       </Section>
 
@@ -326,11 +321,120 @@ function Profile() {
 
       <button
         onClick={handleLogout}
-        className="press mt-8 flex min-h-13 w-full items-center justify-center gap-2 rounded-btn border border-border bg-surface text-sm font-semibold text-destructive"
+        className="press mt-8 flex min-h-13 w-full items-center justify-center gap-2 rounded-btn border border-border bg-surface text-sm font-semibold text-destructive cursor-pointer"
       >
         <LogOut className="h-4 w-4" /> Log out
       </button>
       <p className="mt-6 text-center text-[12px] text-muted-foreground">Version 1.0.0</p>
+
+      <Dialog open={isChangeModalOpen} onOpenChange={(open) => {
+        setIsChangeModalOpen(open);
+        if (!open) setPendingCategory(null);
+      }}>
+        <DialogContent className="sm:max-w-2xl bg-[#FAF8F5] border border-border rounded-3xl p-6 shadow-lift">
+          <DialogHeader className="text-center sm:text-left space-y-2">
+            <DialogTitle className="text-2xl font-bold font-serif text-[#4A0E17]">
+              {pendingCategory ? "Confirm Experience Switch" : "Choose Your Sanjeevani"}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-[#5C5040]">
+              {pendingCategory 
+                ? `Are you sure you want to switch to ${sanjeevaniConfigs[pendingCategory]?.name}?` 
+                : "Select the personal journey that best matches your spiritual, health, or maternity path."
+              }
+            </DialogDescription>
+          </DialogHeader>
+
+          {pendingCategory ? (
+            <div className="space-y-6 py-4">
+              <div className="rounded-2xl border border-border p-4 bg-white/70 space-y-3">
+                <h4 className="font-bold text-sm text-[#3A2C18] uppercase tracking-wider">
+                  What will change:
+                </h4>
+                <p className="text-xs sm:text-sm text-[#5C5040] leading-relaxed">
+                  Your website layout, color scheme, recommendations, and available content will adapt to reflect the <strong>{sanjeevaniConfigs[pendingCategory]?.name}</strong> experience.
+                </p>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  disabled={switching}
+                  onClick={() => setPendingCategory(null)}
+                  className="press min-h-10 px-4 rounded-xl border border-border text-xs sm:text-sm font-semibold hover:bg-secondary cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={switching}
+                  onClick={handleConfirmSwitch}
+                  className="press min-h-10 px-6 rounded-xl text-xs sm:text-sm font-bold text-white flex items-center justify-center gap-2 cursor-pointer"
+                  style={{ backgroundColor: sanjeevaniConfigs[pendingCategory]?.theme.primary }}
+                >
+                  {switching ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <span>Switch Experience</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-4">
+              {(["devotional", "secular", "pregnancy"] as const).map((catId) => {
+                const config = sanjeevaniConfigs[catId];
+                const isSelected = category === catId;
+                const IconComponent = catId === "devotional" ? Compass : catId === "secular" ? Brain : Heart;
+
+                return (
+                  <button
+                    key={catId}
+                    disabled={switching}
+                    onClick={() => {
+                      if (isSelected) {
+                        toast.info(`You are already in ${config.name} mode.`);
+                        return;
+                      }
+                      setPendingCategory(catId);
+                    }}
+                    className={cn(
+                      "press relative p-4 rounded-2xl border text-left bg-white shadow-soft transition-all duration-300 flex flex-col justify-between min-h-[140px] hover:border-cat/60 cursor-pointer",
+                      isSelected
+                        ? "border-cat bg-cat-light/10 ring-2 ring-cat"
+                        : "border-border hover:bg-secondary/40"
+                    )}
+                    style={isSelected ? ({ "--theme-color": config.theme.primary, borderColor: config.theme.primary } as any) : undefined}
+                  >
+                    <div className="space-y-2 w-full">
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="font-display font-bold text-[9px] uppercase tracking-wider"
+                          style={{ color: config.theme.primary }}
+                        >
+                          {config.name.split(" ")[0]}
+                        </span>
+                        <IconComponent className="h-4 w-4 shrink-0" style={{ color: config.theme.primary }} />
+                      </div>
+                      <h4 className="font-display font-extrabold text-sm text-[#3A2C18] leading-tight">
+                        {config.name}
+                      </h4>
+                      <p className="text-[10px] text-[#5C5040] line-clamp-3 leading-relaxed">
+                        {config.subtitle} — {config.description.split(".")[0]}.
+                      </p>
+                    </div>
+
+                    {isSelected && (
+                      <span className="mt-3 inline-flex self-start rounded-full bg-cat-light px-2 py-0.5 text-[9px] font-bold text-cat uppercase tracking-widest">
+                        Current
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

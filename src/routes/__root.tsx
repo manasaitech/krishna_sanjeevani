@@ -156,8 +156,12 @@ function RouteGuard({ children }: { children: ReactNode }) {
     if (user) {
       const selectedPathway = user.profile?.category;
       if (!selectedPathway || selectedPathway === "unset") {
-        if (location.pathname !== "/category") {
-          navigate({ to: "/category" });
+        if (location.pathname !== "/select-sanjeevani") {
+          navigate({ to: "/select-sanjeevani" });
+        }
+      } else {
+        if (location.pathname === "/select-sanjeevani") {
+          navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
         }
       }
     }

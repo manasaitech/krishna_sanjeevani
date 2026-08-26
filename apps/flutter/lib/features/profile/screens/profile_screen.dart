@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/category_theme.dart';
+import 'package:go_router/go_router.dart';
 import '../../../shared/providers/category_provider.dart';
 import '../../../shared/widgets/sanjeevani_card.dart';
 import '../../../shared/widgets/therapeutic_button.dart';
@@ -67,34 +67,64 @@ class ProfileScreen extends ConsumerWidget {
 
             const SizedBox(height: 20),
 
-            // Active Category Selector Card
+            // My Sanjeevani Section Card
             SanjeevaniCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Active Category Mode',
+                    'My Sanjeevani',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: catColors.cat,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: AppCategory.values.map((cat) {
-                      final selected = cat == activeCategory;
-                      return ChoiceChip(
-                        label: Text(cat.displayName),
-                        selected: selected,
-                        selectedColor: catColors.catLight,
-                        onSelected: (_) {
-                          ref.read(categoryProvider.notifier).setCategory(cat);
-                        },
-                      );
-                    }).toList(),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              activeCategory.displayName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF3A2C18),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              activeCategory.description,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF7A6B58),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: () => context.push('/change-sanjeevani'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: catColors.cat,
+                          foregroundColor: catColors.catForeground,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        ),
+                        child: const Text(
+                          'Change',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BrowseRouteImport } from './routes/browse'
-import { Route as CategoryRouteImport } from './routes/category'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HomeRouteImport } from './routes/home'
@@ -28,6 +27,7 @@ import { Route as ProgramsRouteImport } from './routes/programs'
 import { Route as RecentRouteImport } from './routes/recent'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SelectSanjeevaniRouteImport } from './routes/select-sanjeevani'
 import { Route as SessionCompleteRouteImport } from './routes/session-complete'
 import { Route as SubscriptionRouteImport } from './routes/subscription'
 import { Route as TeamRouteImport } from './routes/team'
@@ -54,11 +54,6 @@ const AdminRoute = AdminRouteImport.update({
 const BrowseRoute = BrowseRouteImport.update({
   id: '/browse',
   path: '/browse',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CategoryRoute = CategoryRouteImport.update({
-  id: '/category',
-  path: '/category',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -131,6 +126,11 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SelectSanjeevaniRoute = SelectSanjeevaniRouteImport.update({
+  id: '/select-sanjeevani',
+  path: '/select-sanjeevani',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SessionCompleteRoute = SessionCompleteRouteImport.update({
   id: '/session-complete',
   path: '/session-complete',
@@ -172,7 +172,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
-  '/category': typeof CategoryRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
@@ -187,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/recent': typeof RecentRoute
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
+  '/select-sanjeevani': typeof SelectSanjeevaniRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
   '/team': typeof TeamRoute
@@ -200,7 +200,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
-  '/category': typeof CategoryRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
@@ -215,6 +214,7 @@ export interface FileRoutesByTo {
   '/recent': typeof RecentRoute
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
+  '/select-sanjeevani': typeof SelectSanjeevaniRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
   '/team': typeof TeamRoute
@@ -229,7 +229,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
-  '/category': typeof CategoryRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
@@ -244,6 +243,7 @@ export interface FileRoutesById {
   '/recent': typeof RecentRoute
   '/register': typeof RegisterRoute
   '/search': typeof SearchRoute
+  '/select-sanjeevani': typeof SelectSanjeevaniRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
   '/team': typeof TeamRoute
@@ -259,7 +259,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/browse'
-    | '/category'
     | '/discover'
     | '/favorites'
     | '/home'
@@ -274,6 +273,7 @@ export interface FileRouteTypes {
     | '/recent'
     | '/register'
     | '/search'
+    | '/select-sanjeevani'
     | '/session-complete'
     | '/subscription'
     | '/team'
@@ -287,7 +287,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/browse'
-    | '/category'
     | '/discover'
     | '/favorites'
     | '/home'
@@ -302,6 +301,7 @@ export interface FileRouteTypes {
     | '/recent'
     | '/register'
     | '/search'
+    | '/select-sanjeevani'
     | '/session-complete'
     | '/subscription'
     | '/team'
@@ -315,7 +315,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/browse'
-    | '/category'
     | '/discover'
     | '/favorites'
     | '/home'
@@ -330,6 +329,7 @@ export interface FileRouteTypes {
     | '/recent'
     | '/register'
     | '/search'
+    | '/select-sanjeevani'
     | '/session-complete'
     | '/subscription'
     | '/team'
@@ -344,7 +344,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   BrowseRoute: typeof BrowseRoute
-  CategoryRoute: typeof CategoryRoute
   DiscoverRoute: typeof DiscoverRoute
   FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
@@ -359,6 +358,7 @@ export interface RootRouteChildren {
   RecentRoute: typeof RecentRoute
   RegisterRoute: typeof RegisterRoute
   SearchRoute: typeof SearchRoute
+  SelectSanjeevaniRoute: typeof SelectSanjeevaniRoute
   SessionCompleteRoute: typeof SessionCompleteRoute
   SubscriptionRoute: typeof SubscriptionRoute
   TeamRoute: typeof TeamRoute
@@ -396,13 +396,6 @@ declare module '@tanstack/react-router' {
       path: '/browse'
       fullPath: '/browse'
       preLoaderRoute: typeof BrowseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/category': {
-      id: '/category'
-      path: '/category'
-      fullPath: '/category'
-      preLoaderRoute: typeof CategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -503,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/select-sanjeevani': {
+      id: '/select-sanjeevani'
+      path: '/select-sanjeevani'
+      fullPath: '/select-sanjeevani'
+      preLoaderRoute: typeof SelectSanjeevaniRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session-complete': {
       id: '/session-complete'
       path: '/session-complete'
@@ -560,7 +560,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   BrowseRoute: BrowseRoute,
-  CategoryRoute: CategoryRoute,
   DiscoverRoute: DiscoverRoute,
   FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
@@ -575,6 +574,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecentRoute: RecentRoute,
   RegisterRoute: RegisterRoute,
   SearchRoute: SearchRoute,
+  SelectSanjeevaniRoute: SelectSanjeevaniRoute,
   SessionCompleteRoute: SessionCompleteRoute,
   SubscriptionRoute: SubscriptionRoute,
   TeamRoute: TeamRoute,
