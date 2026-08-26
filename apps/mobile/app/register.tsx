@@ -42,7 +42,7 @@ export default function RegisterScreen() {
   useEffect(() => {
     if (showDedication) {
       const timer = setTimeout(() => {
-        router.replace("/(tabs)/home");
+        router.replace("/category");
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -66,7 +66,6 @@ export default function RegisterScreen() {
         return;
       }
 
-      setCategory(selectedCategory);
       const res = await loginWithGoogle(authRes.idToken);
       if (res.success) {
         setShowDedication(true);
@@ -99,12 +98,11 @@ export default function RegisterScreen() {
 
     setLoading(true);
     try {
-      setCategory(selectedCategory);
       const res = await register({
         fullName: fullName.trim(),
         email: email.trim(),
         password,
-        category: selectedCategory,
+        category: "unset",
       });
 
       if (res.success) {
@@ -256,31 +254,7 @@ export default function RegisterScreen() {
                   </View>
                 </View>
 
-                {/* Category Picker */}
-                <View style={styles.field}>
-                  <Text style={styles.label}>CHOOSE YOUR PATH</Text>
-                  <View style={styles.catsRow}>
-                    {categories.map((cat) => (
-                      <Pressable
-                        key={cat.id}
-                        onPress={() => setSelectedCategory(cat.id)}
-                        style={[
-                          styles.catBtn,
-                          selectedCategory === cat.id && styles.catBtnActive,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.catText,
-                            selectedCategory === cat.id && styles.catTextActive,
-                          ]}
-                        >
-                          {cat.name}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                </View>
+
 
                 {/* Submit */}
                 <Pressable

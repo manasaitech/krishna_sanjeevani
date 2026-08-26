@@ -312,8 +312,8 @@ export const api = {
     me: () => http.get("/auth/me"),
     changePassword: (password: string) =>
       http.post("/auth/change-password", { password }),
-    updateProfile: (fullName?: string, language?: string) =>
-      http.patch("/auth/profile", { fullName, language }),
+    updateProfile: (fullName?: string, language?: string, category?: string) =>
+      http.patch("/auth/profile", { fullName, language, category }),
   },
 
   // ── Tracks ──

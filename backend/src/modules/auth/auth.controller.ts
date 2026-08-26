@@ -48,7 +48,7 @@ export class AuthController {
   static async loginWithGoogle(c: Context<{ Bindings: Env }>) {
     const body = await c.req.json();
     const idToken = body.idToken;
-    const defaultCategory = body.category || "devotional";
+    const defaultCategory = body.category || "unset";
 
     if (!idToken) {
       throw new ValidationError("Google ID token (idToken) is required");

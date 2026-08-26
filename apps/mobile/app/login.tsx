@@ -39,11 +39,15 @@ export default function LoginScreen() {
   useEffect(() => {
     if (showDedication) {
       const timer = setTimeout(() => {
-        router.replace("/(tabs)/home");
+        if (!user || !user.profile?.category || user.profile.category === "unset") {
+          router.replace("/category");
+        } else {
+          router.replace(user.profile.category === "pregnancy" ? "/(tabs)/journey" : "/(tabs)/home");
+        }
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [showDedication]);
+  }, [showDedication, user]);
 
   const handleEmailLogin = async () => {
     if (!email.trim() || !password.trim()) {

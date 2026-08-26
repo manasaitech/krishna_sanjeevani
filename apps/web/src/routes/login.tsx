@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Music, Headphones, User, UserPlus } from "lucide-react";
@@ -5,6 +7,11 @@ import { toast } from "sonner";
 import { useApp } from "@/lib/app-state";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    return {
+      redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Sign In — Krishna Sanjeevani" },
@@ -20,6 +27,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginScreen() {
   const { loginWithGoogle } = useApp();
+  const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [_googleLoading, setGoogleLoading] = useState(false);
 
@@ -29,7 +37,7 @@ function LoginScreen() {
       const res = await loginWithGoogle(response.credential);
       if (res.success) {
         toast.success("Welcome to Krishna Sanjeevani!");
-        navigate({ to: "/home" });
+        navigate({ to: redirect || "/home" });
       } else {
         toast.error(res.message);
       }
@@ -128,6 +136,7 @@ function LoginScreen() {
         {/* CTA */}
         <Link
           to="/register"
+          search={{ redirect }}
           id="ks-get-started-btn"
           className="ks-primary"
           aria-label="Get Started"
@@ -137,12 +146,19 @@ function LoginScreen() {
         </Link>
 
         <div className="ks-pair">
-          <Link to="/login" id="ks-sign-in-btn" className="ks-secondary" aria-label="Sign in">
+          <Link
+            to="/login"
+            search={{ redirect }}
+            id="ks-sign-in-btn"
+            className="ks-secondary"
+            aria-label="Sign in"
+          >
             <User className="ks-ico-sm" aria-hidden="true" />
             <span>Sign in</span>
           </Link>
           <Link
             to="/register"
+            search={{ redirect }}
             id="ks-create-account-btn"
             className="ks-secondary"
             aria-label="Create account"

@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowRight, Baby, Briefcase, Flower, Music2, Disc3 } from "lucide-react-native";
@@ -13,8 +13,29 @@ const icons: Record<CategoryId, typeof Flower> = {
 };
 
 export default function CategoryScreen() {
-  const { category, setCategory, theme } = useApp();
+  const { category, setCategory, theme, updateProfile } = useApp();
   const router = useRouter();
+  const [saving, setSaving] = useState(false);
+
+  const handleContinue = async () => {
+    if (!category || category === "unset") {
+      Alert.alert("Select Pathway", "Please select a pathway to continue.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await updateProfile(undefined, undefined, category);
+      if (res.success) {
+        router.replace(category === "pregnancy" ? "/(tabs)/journey" : "/(tabs)/home");
+      } else {
+        Alert.alert("Error", res.message || "Failed to update profile pathway.");
+      }
+    } catch {
+      Alert.alert("Error", "Network connection issue.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -122,16 +143,26 @@ export default function CategoryScreen() {
 
         {/* Continue button */}
         <Pressable
-          onPress={() =>
-            router.replace(category === "pregnancy" ? "/(tabs)/journey" : "/(tabs)/home")
-          }
-          style={[styles.continueBtn, { backgroundColor: "#264653" }]}
+          onPress={handleContinue}
+          disabled={saving || !category || category === "unset"}
+          style={[
+            styles.continueBtn,
+            { backgroundColor: (!category || category === "unset") ? "#A5B5BA" : "#264653" }
+          ]}
         >
-          <Music2 size={16} color="#FAF8F4" />
-          <Text style={styles.continueBtnText}>
-            Tune into {categories.find((c) => c.id === category)?.name}
-          </Text>
-          <ArrowRight size={16} color="#FAF8F4" />
+          {saving ? (
+            <ActivityIndicator size="small" color="#FAF8F4" />
+          ) : (
+            <>
+              <Music2 size={16} color="#FAF8F4" />
+              <Text style={styles.continueBtnText}>
+                {(!category || category === "unset")
+                  ? "Select Pathway"
+                  : `Tune into ${categories.find((c) => c.id === category)?.name}`}
+              </Text>
+              <ArrowRight size={16} color="#FAF8F4" />
+            </>
+          )}
         </Pressable>
       </ScrollView>
     </SafeAreaView>

@@ -7,7 +7,6 @@ import {
   Crown,
   FileText,
   Globe,
-  LayoutDashboard,
   LogOut,
   Palette,
   ShieldCheck,
@@ -20,9 +19,10 @@ import { AppShell } from "@/components/AppShell";
 import { Section } from "@/components/layout-bits";
 import { Switch } from "@/components/ui/switch";
 import { useApp } from "@/lib/app-state";
-import { categories } from "@/lib/content";
+import { categories, sanjeevaniConfigs, type CategoryId } from "@/lib/content";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -49,7 +49,7 @@ function Row({
   icon: typeof Bell;
   label: string;
   value?: string;
-  to?: "/subscription" | "/category" | "/admin";
+  to?: "/subscription" | "/category";
 }) {
   const inner = (
     <>
@@ -73,13 +73,34 @@ function Row({
 }
 
 function Profile() {
-  const { category, user, logout } = useApp();
+  const { category, setCategory, restoreSession, user, logout } = useApp();
   const navigate = useNavigate();
   const cat = categories.find((c) => c.id === category)!;
+
+  const [switching, setSwitching] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate({ to: "/" });
+  };
+
+  const handleSwitchCategory = async (targetCategory: CategoryId) => {
+    if (category === targetCategory) return;
+    try {
+      setSwitching(true);
+      const res = await api.auth.updateProfile({ category: targetCategory });
+      if (res.success) {
+        setCategory(targetCategory);
+        await restoreSession();
+        toast.success(`Switched to ${sanjeevaniConfigs[targetCategory].name}`);
+      } else {
+        toast.error(res.message || "Failed to switch pathway.");
+      }
+    } catch (err) {
+      toast.error("Failed to switch pathway.");
+    } finally {
+      setSwitching(false);
+    }
   };
 
   const name = user?.profile?.fullName || "Guest User";
@@ -90,7 +111,7 @@ function Profile() {
   // Surawali Subscriptions State
   const [surawaliSubs, setSurawaliSubs] = useState<any[]>([]);
   const [subsLoading, setSubsLoading] = useState(false);
-  const { play, tracks } = useApp();
+  const { play } = useApp();
 
   const fetchSubs = async () => {
     if (!user) return;
@@ -155,7 +176,50 @@ function Profile() {
       <Section title="Your plan">
         <div className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft">
           <Row icon={Crown} label="Subscription" value={`${role} · monthly`} to="/subscription" />
-          <Row icon={Sparkles} label="Listening path" value={cat.name} to="/category" />
+        </div>
+      </Section>
+
+      {/* Switch Pathway Section */}
+      <Section title="Switch Healing Pathway">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {(["devotional", "secular", "pregnancy"] as const).map((catId) => {
+            const config = sanjeevaniConfigs[catId];
+            const isSelected = category === catId;
+            return (
+              <button
+                key={catId}
+                disabled={switching}
+                onClick={() => handleSwitchCategory(catId)}
+                className={cn(
+                  "press relative p-4 rounded-card border text-left bg-surface shadow-soft transition-all duration-300 flex flex-col justify-between min-h-[90px] hover:border-cat/60",
+                  isSelected
+                    ? "border-cat bg-cat-light/10 ring-1 ring-cat"
+                    : "border-border hover:bg-secondary/40"
+                )}
+                style={isSelected ? ({ "--theme-color": config.theme.primary, borderColor: config.theme.primary } as any) : undefined}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="font-display font-bold text-[10px] uppercase tracking-wider"
+                      style={{ color: config.theme.primary }}
+                    >
+                      {config.name.split(" ")[0]}
+                    </span>
+                    {isSelected && (
+                      <span className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: config.theme.primary }} />
+                    )}
+                  </div>
+                  <h4 className="font-display font-extrabold text-[13px] text-foreground leading-snug">
+                    {config.name}
+                  </h4>
+                  <p className="text-[10px] text-muted-foreground line-clamp-1">
+                    {config.subtitle}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </Section>
 
@@ -173,7 +237,8 @@ function Profile() {
                 Explore clinical disorders and subscribe to specific Vedic sound formulas.
               </p>
               <Link
-                to="/discover"
+                to="/home"
+                hash="explore-surawalis"
                 className="press inline-flex min-h-9 items-center rounded-btn bg-cat px-4 text-xs font-bold text-cat-foreground hover:brightness-105 mt-2"
               >
                 Go to Discovery
@@ -190,18 +255,18 @@ function Profile() {
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-sm text-foreground">
-                          {sub.surawaliName}
+                        <h4 className="font-semibold text-sm text-foreground flex items-center gap-1.5">
+                          <span>{sub.surawaliName}</span>
+                          <span
+                            className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                              isActive
+                                ? "bg-green-500/10 text-green-600"
+                                : "bg-amber-500/10 text-amber-600"
+                            }`}
+                          >
+                            {isActive ? "Active" : "Cancelled"}
+                          </span>
                         </h4>
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                            isActive
-                              ? "bg-green-500/10 text-green-600"
-                              : "bg-amber-500/10 text-amber-600"
-                          }`}
-                        >
-                          {isActive ? "Active" : "Cancelled"}
-                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {isActive
@@ -256,7 +321,6 @@ function Profile() {
           <Row icon={ShieldCheck} label="Privacy policy" />
           <Row icon={FileText} label="Terms of use" />
           <Row icon={CircleHelp} label="Help & contact" />
-          <Row icon={LayoutDashboard} label="Admin dashboard" to="/admin" />
         </div>
       </Section>
 

@@ -51,7 +51,7 @@ type AppState = {
   register: (data: { email: string; password: string; fullName: string; category: string }) => Promise<{ success: boolean; message: string; errors?: any[] }>;
   loginWithGoogle: (idToken: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
-  updateProfile: (fullName?: string, language?: string) => Promise<{ success: boolean; message: string }>;
+  updateProfile: (fullName?: string, language?: string, category?: string) => Promise<{ success: boolean; message: string }>;
 
   // Data
   tracks: Track[];
@@ -522,9 +522,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  const updateProfile = useCallback(async (fullName?: string, language?: string) => {
+  const updateProfile = useCallback(async (fullName?: string, language?: string, category?: string) => {
     try {
-      const res = await api.auth.updateProfile(fullName, language);
+      const res = await api.auth.updateProfile(fullName, language, category);
       if (res.success) {
         setUser((prev: any) => {
           if (!prev) return prev;
@@ -534,9 +534,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
               ...prev.profile,
               ...(fullName && { fullName }),
               ...(language && { language }),
+              ...(category && { category }),
             },
           };
         });
+        if (category) {
+          setCategory(category as CategoryId);
+        }
         return { success: true, message: "Profile updated successfully" };
       }
       return { success: false, message: res.message || "Failed to update profile" };

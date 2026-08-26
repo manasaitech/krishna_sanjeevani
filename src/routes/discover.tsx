@@ -316,7 +316,10 @@ function DiscoverPage() {
   // Pregnancy Recommendations
   const pregnancyRecommendations = useMemo(() => {
     if (!catalog) return [];
-    return catalog.pregnancyMappings.filter(m => m.pregnancyMonth === selectedMonth);
+    return catalog.pregnancyMappings.filter(m => 
+      m.pregnancyMonth === selectedMonth && 
+      m.surawaliId !== "sur_b719ad07-c4a5-51db-aaa5-48027611b68d"
+    );
   }, [catalog, selectedMonth]);
 
   // Corporate Recommendations

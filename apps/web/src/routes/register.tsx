@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { Loader2, Lock, Mail, User, UserPlus } from "lucide-react";
@@ -7,6 +9,11 @@ import { categories } from "@/lib/content";
 import prabhupadaImg from "@/assets/prabhupada.png";
 
 export const Route = createFileRoute("/register")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    return {
+      redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Create Account — Krishna Sanjeevani" },
@@ -21,11 +28,12 @@ export const Route = createFileRoute("/register")({
 
 function RegisterScreen() {
   const { register, loginWithGoogle } = useApp();
+  const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [category, setCategory] = useState("devotional");
+  const [category, setCategory] = useState("unset");
   const [loading, setLoading] = useState(false);
   const [showDedication, setShowDedication] = useState(false);
 
@@ -36,11 +44,11 @@ function RegisterScreen() {
 
   useEffect(() => {
     if (showDedication) {
-      const t = setTimeout(() => navigate({ to: "/home" }), 3000);
+      const t = setTimeout(() => navigate({ to: redirect || "/home" }), 3000);
       return () => clearTimeout(t);
     }
     return;
-  }, [showDedication, navigate]);
+  }, [showDedication, navigate, redirect]);
 
   const handleGoogleCredentialResponse = async (response: any) => {
     setLoading(true);
@@ -264,22 +272,6 @@ function RegisterScreen() {
             </div>
           </div>
 
-          {/* Category */}
-          <div className="rg-field rg-field-full">
-            <label className="rg-label">Choose your Path</label>
-            <div className="rg-cats">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setCategory(cat.id)}
-                  className={`rg-cat ${category === cat.id ? "rg-cat-active" : ""}`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Submit */}
           <button type="submit" disabled={loading} id="rg-submit-btn" className="rg-submit">

@@ -1,19 +1,43 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { Link } from "@tanstack/react-router";
-import { 
-  Activity, 
-  Baby, 
-  Briefcase, 
-  Clock, 
-  Sparkles, 
-  ChevronRight, 
-  ArrowRight
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useApp } from "@/lib/app-state";
+import {
+  Activity,
+  Baby,
+  Briefcase,
+  Clock,
+  Sparkles,
+  ChevronRight,
+  ArrowRight,
+  Flower2,
+  Heart,
+  Shield,
+  Users,
+  Brain,
+  BookOpen,
+  Music,
 } from "lucide-react";
 import { api } from "@/lib/api";
 
 export function SurawaliShowcase() {
-  const [activeTab, setActiveTab] = useState<"ailments" | "pregnancy" | "corporate">("ailments");
+  const { isAuthenticated } = useApp();
+  const navigate = useNavigate();
   const [catalog, setCatalog] = useState<any>(null);
+
+  const handleCardClick = (tabId: "ailments" | "pregnancy" | "corporate") => {
+    if (isAuthenticated) {
+      navigate({
+        to: "/discover",
+        search: { tab: tabId },
+      });
+    } else {
+      navigate({
+        to: "/login",
+        search: { redirect: `/discover?tab=${tabId}` },
+      });
+    }
+  };
 
   useEffect(() => {
     async function fetchCatalog() {
@@ -33,9 +57,11 @@ export function SurawaliShowcase() {
     {
       name: "Kalyani Surāwali",
       subtitle: "Raga Kalyani (Greeshma)",
-      description: "A gentle acoustic experience traditionally associated with calmness, balance, and focused listening.",
+      description:
+        "A gentle acoustic experience traditionally associated with calmness, balance, and focused listening.",
       searchKey: "Greeshma",
-      image: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=80&w=600",
+      image:
+        "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=80&w=600",
       defaultTiming: "Morning / Daytime",
       defaultAilments: ["Anxiety", "Hypertension", "Stress", "Lack of focus"],
       badgeColor: "bg-amber-500/10 text-amber-600 border-amber-500/20",
@@ -43,9 +69,11 @@ export function SurawaliShowcase() {
     {
       name: "Bhairavi Surāwali",
       subtitle: "Raga Bhairavi (Nidra Mohini)",
-      description: "A deeply calming Surāwali suited for relaxation, introspection, and peaceful listening.",
+      description:
+        "A deeply calming Surāwali suited for relaxation, introspection, and peaceful listening.",
       searchKey: "Nidra mohini",
-      image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&q=80&w=600",
+      image:
+        "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&q=80&w=600",
       defaultTiming: "Evening / Before sleep",
       defaultAilments: ["Insomnia", "Sleep difficulties", "Mental fatigue", "Stress"],
       badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
@@ -53,9 +81,11 @@ export function SurawaliShowcase() {
     {
       name: "Yaman Surāwali",
       subtitle: "Raga Yaman (Anand Mohini)",
-      description: "A serene and uplifting Surāwali designed for relaxation, emotional balance, and peaceful listening.",
+      description:
+        "A serene and uplifting Surāwali designed for relaxation, emotional balance, and peaceful listening.",
       searchKey: "Anand mohini",
-      image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=600",
+      image:
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=600",
       defaultTiming: "Evening",
       defaultAilments: ["Stress", "Anxiety", "Mental fatigue", "Restlessness"],
       badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
@@ -63,9 +93,11 @@ export function SurawaliShowcase() {
     {
       name: "Todi Surāwali",
       subtitle: "Raga Todi (Prabhaati)",
-      description: "A focused and contemplative Surāwali suited for attentive listening and a calm start to the day.",
+      description:
+        "A focused and contemplative Surāwali suited for attentive listening and a calm start to the day.",
       searchKey: "Prabhaati",
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=600",
+      image:
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=600",
       defaultTiming: "Morning",
       defaultAilments: ["Lack of concentration", "Mental fatigue", "Stress"],
       badgeColor: "bg-blue-500/10 text-blue-600 border-blue-500/20",
@@ -73,7 +105,7 @@ export function SurawaliShowcase() {
   ];
 
   // Helper function to map dynamic catalog data to the card
-  const getMappedCardData = (card: typeof cards[0]) => {
+  const getMappedCardData = (card: (typeof cards)[0]) => {
     if (!catalog) {
       return {
         ...card,
@@ -85,7 +117,7 @@ export function SurawaliShowcase() {
 
     // Find the Surawali record in the dynamic database
     const sRecord = catalog.surawalis?.find((s: any) =>
-      s.name.toLowerCase().includes(card.searchKey.toLowerCase())
+      s.name.toLowerCase().includes(card.searchKey.toLowerCase()),
     );
 
     if (!sRecord) {
@@ -98,14 +130,20 @@ export function SurawaliShowcase() {
     }
 
     // Get all ailment relationships for this Surawali
-    const mappings = catalog.ailmentSurawalis?.filter((m: any) => m.surawaliId === sRecord.id) || [];
+    const mappings =
+      catalog.ailmentSurawalis?.filter((m: any) => m.surawaliId === sRecord.id) || [];
 
     // Map to unique ailment names
     const ailmentNames: string[] = [];
     mappings.forEach((m: any) => {
       const aRecord = catalog.ailments?.find((a: any) => a.id === m.ailmentId);
       // Exclude generic placeholders like "Name of Disorder"
-      if (aRecord && aRecord.name && aRecord.name.toLowerCase() !== "name of disorder" && !ailmentNames.includes(aRecord.name)) {
+      if (
+        aRecord &&
+        aRecord.name &&
+        aRecord.name.toLowerCase() !== "name of disorder" &&
+        !ailmentNames.includes(aRecord.name)
+      ) {
         ailmentNames.push(aRecord.name);
       }
     });
@@ -132,116 +170,11 @@ export function SurawaliShowcase() {
     };
   };
 
-  const tabs = [
-    {
-      id: "ailments" as const,
-      label: "Disorder & Ailment Relief",
-      icon: Activity,
-      colorClass: "text-amber-600 bg-amber-500/10 border-amber-500/20",
-      description: "Sound frequency compositions calibrated for physical and neurological conditions. These streams act as non-invasive supportive therapy based on Raga Chikitsa.",
-    },
-    {
-      id: "pregnancy" as const,
-      label: "Pregnancy Care (Garbha Sanskar)",
-      icon: Baby,
-      colorClass: "text-pink-600 bg-pink-500/10 border-pink-500/20",
-      description: "Month-by-month acoustic guidance calibrated to support maternal hormonal equilibrium, reduce stress, and enhance healthy fetal cognitive development.",
-    },
-    {
-      id: "corporate" as const,
-      label: "Corporate Wellness & Productivity",
-      icon: Briefcase,
-      colorClass: "text-blue-600 bg-blue-500/10 border-blue-500/20",
-      description: "Circadian-aligned ragas designed to lower stress levels, enhance workspace focus, and restore mental clarity during the workweek.",
-    },
-  ];
-
-  const highlights = {
-    ailments: [
-      {
-        name: "Nidra Mohini",
-        condition: "Insomnia & Sleeplessness",
-        timing: "Before Sleep",
-        desc: "A soothing frequency sequence that slows brainwave activity, guiding the nervous system into restorative deep sleep states.",
-      },
-      {
-        name: "Smrutigandha",
-        condition: "Alzheimer's & Dementia",
-        timing: "Any Time",
-        desc: "Calibrated microtones designed to stimulate neural plasticity and enhance cognitive focus and recall.",
-      },
-      {
-        name: "Greeshma",
-        condition: "Anxiety, Stress & Fear",
-        timing: "Any Time",
-        desc: "A stabilizing, grounded sonic vibration that pacifies elevated Vata, reducing mental restlessness and tension.",
-      },
-      {
-        name: "Pad Dukh Harini",
-        condition: "Lower Back & Joint Pain",
-        timing: "4:00 AM - 6:00 AM",
-        desc: "Deep resonance compositions to aid early morning joint stiffness and support physical recovery.",
-      },
-    ],
-    pregnancy: [
-      {
-        name: "Santul (Month 2)",
-        condition: "Hormonal Balance",
-        timing: "6:00 AM - 9:00 AM",
-        desc: "Supports early maternal adjustment, calming morning nausea and promoting metabolic balance.",
-      },
-      {
-        name: "Marut (Month 3)",
-        condition: "Physical Grounding",
-        timing: "6:00 AM - 8:00 AM",
-        desc: "Nurturing morning vibrations helping ease fatigue and fostering early fetal cellular development.",
-      },
-      {
-        name: "Dwaimadhyam (Month 4)",
-        condition: "Emotional Stability",
-        timing: "After Lunch",
-        desc: "Pacifies midday stress hormones, establishing positive emotional connections between mother and child.",
-      },
-      {
-        name: "Karnawati (Month 7)",
-        condition: "Fetal Sensory Stimulus",
-        timing: "Any Time",
-        desc: "Targeted auditory frequencies optimized for developing fetal hearing and sensory processing.",
-      },
-    ],
-    corporate: [
-      {
-        name: "Madhuprabhat",
-        condition: "Monday morning focus",
-        timing: "6:00 AM - 8:00 AM",
-        desc: "An energizing, clarifying raga to start the work week with high focus, productivity, and mental readiness.",
-      },
-      {
-        name: "Ahir Bhairav",
-        condition: "Tuesday calm & clarity",
-        timing: "6:00 AM - 8:00 AM",
-        desc: "A balancing, serene melody that anchors thoughts, keeping workspace stress from accumulating early in the week.",
-      },
-      {
-        name: "Madhmaad Sarang",
-        condition: "Friday stress release",
-        timing: "6:00 AM - 8:00 AM",
-        desc: "A light, uplifting frequency to clear accumulated professional fatigue and prepare the mind for peaceful rest.",
-      },
-      {
-        name: "Mishra Bhairavi",
-        condition: "Daily evening transition",
-        timing: "6:00 PM - 11:00 PM",
-        desc: "Ideal for listening during the commute back home or before bed to dissolve work stress and transition into a peaceful evening.",
-      },
-    ],
-  };
-
-  const activeTabDetails = tabs.find((t) => t.id === activeTab)!;
-
   return (
-    <div id="surawalis" className="border-t border-border/80 bg-gradient-to-b from-surface to-background relative overflow-hidden">
-      
+    <div
+      id="surawalis"
+      className="border-t border-border/80 bg-gradient-to-b from-surface to-background relative overflow-hidden"
+    >
       {/* ── PART 1: EXPLORE BY SURĀWALIS (VISUAL CARDS + ALIGNED AILMENTS) ── */}
       <section className="py-20 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-12">
@@ -278,7 +211,7 @@ export function SurawaliShowcase() {
                     className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-700 filter brightness-[0.98] contrast-[1.03]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-transparent to-transparent pointer-events-none" />
-                  
+
                   {/* Subtle Efficacy Time */}
                   <div className="absolute bottom-3.5 left-4 z-10 flex items-center gap-1 text-[10px] font-semibold text-foreground/80 font-sans">
                     <Clock className="h-3 w-3 text-cat" />
@@ -325,146 +258,508 @@ export function SurawaliShowcase() {
         </div>
       </section>
 
-      {/* ── PART 2: THERAPEUTIC CORE PATHWAYS (3 TABS) ── */}
-      <section className="py-20 sm:py-24 border-t border-border/60 bg-surface/30 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold font-serif tracking-tight text-foreground">
-              Therapeutic Core Pathways
+      {/* ── PART 2: THERAPEUTIC CORE PATHWAYS (3 CARDS SIDE-BY-SIDE) ── */}
+      <section className="py-20 sm:py-24 border-t border-border/60 bg-gradient-to-b from-[#FAF8F5] to-[#F5F2EB] relative overflow-hidden">
+        {/* Absolute-positioned spiritual/wellness background elements */}
+        <div className="absolute top-10 left-10 text-[#C5A880]/15 select-none pointer-events-none">
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+          >
+            <path d="M12 2v20M2 12h20M5.636 5.636l12.728 12.728M5.636 18.364L18.364 5.636" />
+            <circle cx="12" cy="12" r="6" />
+          </svg>
+        </div>
+        <div className="absolute top-20 right-16 text-[#C5A880]/15 select-none pointer-events-none">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+          >
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </div>
+        {/* Center large faint mandala */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#C5A880]/5 select-none pointer-events-none">
+          <svg
+            width="600"
+            height="600"
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.15"
+          >
+            <circle cx="50" cy="50" r="45" />
+            <circle cx="50" cy="50" r="35" />
+            <circle cx="50" cy="50" r="25" />
+            <path d="M 50,5 A 45,45 0 0,0 50,95 A 45,45 0 0,0 50,5" />
+            <path d="M 5,50 A 45,45 0 0,0 95,50 A 45,45 0 0,0 5,50" />
+            <path d="M 18.2,18.2 L 81.8,81.8" />
+            <path d="M 18.2,81.8 L 81.8,18.2" />
+          </svg>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Header Section */}
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <div className="flex items-center justify-center gap-2 text-[#C5A880] text-xs font-bold uppercase tracking-widest font-sans">
+              <Sparkles className="h-3 w-3" />
+              <span>SELECT HEALING PATHWAY</span>
+              <Sparkles className="h-3 w-3" />
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#4A0E17] leading-tight">
+              Choose Your Healing Journey
             </h2>
-            <p className="mt-3 text-sm text-muted-foreground font-sans leading-relaxed">
-              Vedic raga sound therapy structured across three core areas of life: ailments recovery, month-by-month pregnancy care, and weekly corporate focus.
+
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Each pathway is a sacred blend of sound therapy and ancient wisdom, crafted to support
+              your unique well-being.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Sidebar: Interactive Tab Navigation */}
-            <div className="lg:col-span-4 space-y-3.5">
-              <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 mb-2">
-                Select Healing Pathway
-              </div>
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isSelected = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-300 flex items-start gap-4 press cursor-pointer ${
-                      isSelected
-                        ? "bg-surface border-cat/60 shadow-lift ring-2 ring-cat/10"
-                        : "bg-surface/50 border-border/80 hover:bg-surface hover:border-border"
-                    }`}
+          {/* Three Large Cards Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center items-stretch">
+            {/* Card 1: Krishna Sanjeevani */}
+            <div
+              onClick={() => handleCardClick("ailments")}
+              className="flex flex-col justify-between p-6 sm:p-8 rounded-3xl border border-[#F2D6D6] bg-gradient-to-b from-[#FFF5F5] to-[#FDF4F4] shadow-soft hover:shadow-lift transition-all duration-300 group cursor-pointer"
+            >
+              <div>
+                {/* SVG Illustration at top */}
+                <div className="relative w-40 h-40 mx-auto mb-6 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-[#7C1C24]/10 blur-xl scale-110" />
+                  <svg
+                    className="absolute w-[160px] h-[160px] pointer-events-none select-none text-[#F5D6D6]"
+                    viewBox="0 0 100 100"
+                    fill="currentColor"
                   >
-                    <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border ${
-                      isSelected ? tab.colorClass : "bg-secondary border-border text-muted-foreground"
-                    }`}>
-                       <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className={`text-sm font-bold font-serif transition-colors ${
-                        isSelected ? "text-cat font-semibold" : "text-foreground"
-                      }`}>
-                        {tab.label}
-                      </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {tab.description}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Right Column: Tab Content Details */}
-            <div className="lg:col-span-8">
-              <div className="rounded-3xl border border-border/60 bg-surface p-6 sm:p-8 shadow-lift space-y-6">
-                
-                {/* Description and Badge Header */}
-                <div className="space-y-3 pb-6 border-b border-border/60">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold uppercase tracking-wider border ${activeTabDetails.colorClass}`}>
-                      <Sparkles className="h-3 w-3" />
-                      {activeTabDetails.label}
-                    </span>
-                    <Link
-                      to="/discover"
-                      search={{ tab: activeTab }}
-                      className="text-xs font-bold text-cat hover:underline inline-flex items-center gap-1 group"
+                    <path
+                      d="M 15,50 C 15,35 25,25 35,30 C 28,38 25,48 27,58 C 18,55 15,45 15,50 Z"
+                      opacity="0.8"
+                    />
+                    <path
+                      d="M 18,65 C 10,55 15,40 25,42 C 22,48 24,56 28,62 C 22,65 18,60 18,65 Z"
+                      opacity="0.6"
+                    />
+                    <path
+                      d="M 85,50 C 85,35 75,25 65,30 C 72,38 75,48 73,58 C 82,55 85,45 85,50 Z"
+                      opacity="0.8"
+                    />
+                    <path
+                      d="M 82,65 C 90,55 85,40 75,42 C 78,48 76,56 72,62 C 78,65 82,60 82,65 Z"
+                      opacity="0.6"
+                    />
+                  </svg>
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#A72C38] to-[#5A1218] flex items-center justify-center border-4 border-white shadow-md relative overflow-hidden">
+                    <svg
+                      className="w-full h-full text-white/25 absolute inset-0"
+                      viewBox="0 0 100 100"
                     >
-                      <span>Explore full catalogue</span>
-                      <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                    </Link>
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        strokeDasharray="3 3"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="25"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeDasharray="5 5"
+                      />
+                      <path
+                        d="M 25,75 Q 35,70 50,75 T 75,75"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        opacity="0.4"
+                      />
+                      <path
+                        d="M 30,80 Q 40,77 50,80 T 70,80"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        opacity="0.3"
+                      />
+                    </svg>
+                    <svg
+                      className="w-20 h-20 text-white relative z-10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="6" r="2.5" className="fill-white/10" />
+                      <path d="M12,8.5 L12,17 M12,10 L7,13 M12,10 L17,13 M12,17 L9,22 M12,17 L15,22" />
+                      <circle
+                        cx="12"
+                        cy="11.5"
+                        r="1.5"
+                        className="fill-red-300 stroke-red-200 animate-ping"
+                      />
+                      <circle cx="12" cy="11.5" r="1" className="fill-white stroke-none" />
+                      <path d="M 8,11.5 C 6,10 6,13 8,11.5" stroke="#FFAAAA" strokeWidth="1" />
+                      <path d="M 16,11.5 C 18,10 18,13 16,11.5" stroke="#FFAAAA" strokeWidth="1" />
+                      <path d="M 7,16 C 5,14 5,18 7,16" stroke="#FFAAAA" strokeWidth="0.8" />
+                      <path d="M 17,16 C 19,14 19,18 17,16" stroke="#FFAAAA" strokeWidth="0.8" />
+                    </svg>
                   </div>
-                  
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {activeTabDetails.description}
-                  </p>
                 </div>
 
-                {/* Surawali Grid */}
-                <div className="space-y-4">
-                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                    Featured Frequencies
+                {/* Typography Hierarchy */}
+                <div className="text-center space-y-2 mb-6">
+                  <h3 className="text-2xl font-bold font-serif text-[#7C1C24] group-hover:scale-[1.01] transition-transform duration-300">
+                    Krishna Sanjeevani
+                  </h3>
+                  <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold tracking-widest text-[#7C1C24]/85 uppercase">
+                    <span>DISORDER & AILMENT RELIEF</span>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {highlights[activeTab].map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="group rounded-2xl bg-background border border-border/80 p-5 hover:border-cat/40 hover:shadow-soft transition-all duration-300 flex flex-col justify-between"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-start gap-2">
-                            <h4 className="font-display font-bold text-base text-foreground group-hover:text-cat transition-colors">
-                              {item.name}
-                            </h4>
-                            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-surface border border-border px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                              <Clock className="h-3 w-3 text-cat animate-breathe" />
-                              <span>{item.timing}</span>
-                            </span>
-                          </div>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-cat font-sans">
-                            Target: {item.condition}
-                          </p>
-                          <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-                            {item.desc}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                  {/* Subtle Ornamental line */}
+                  <div className="flex items-center justify-center gap-2 py-1">
+                    <div className="h-[1px] w-12 bg-[#7C1C24]/20" />
+                    <div className="w-1.5 h-1.5 rotate-45 bg-[#7C1C24]/40" />
+                    <div className="h-[1px] w-12 bg-[#7C1C24]/20" />
                   </div>
                 </div>
 
-                {/* Action Banner */}
-                <div className="rounded-2xl bg-gradient-to-br from-cat-light/40 via-cat-light/10 to-transparent border border-cat-accent/15 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="space-y-1 text-center sm:text-left">
-                    <h4 className="font-bold text-sm text-foreground">
-                      Ready to begin your healing journey?
-                    </h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-                      Subscribe to unlock all full-length {activeTabDetails.label.toLowerCase()} compositions.
-                    </p>
-                  </div>
-                  
-                  <Link
-                    to="/discover"
-                    search={{ tab: activeTab }}
-                    className="press rounded-btn bg-cat text-cat-foreground px-5 py-2.5 text-xs font-bold shadow-soft hover:brightness-105 transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap"
-                  >
-                    <span>Get My Surāwali Plan</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground text-center leading-relaxed mb-6">
+                  Therapeutic sound frequencies calibrated to support physical and neurological
+                  conditions naturally through Raga Chikitsa.
+                </p>
 
+                {/* Benefits List */}
+                <ul className="space-y-3.5 mb-8 max-w-[260px] mx-auto">
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#7C1C24]/10 flex items-center justify-center shrink-0">
+                      <Activity className="h-3.5 w-3.5 text-[#7C1C24]" />
+                    </div>
+                    <span>Targeted relief for various ailments</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#7C1C24]/10 flex items-center justify-center shrink-0">
+                      <Flower2 className="h-3.5 w-3.5 text-[#7C1C24]" />
+                    </div>
+                    <span>Non-invasive & natural support</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#7C1C24]/10 flex items-center justify-center shrink-0">
+                      <Shield className="h-3.5 w-3.5 text-[#7C1C24]" />
+                    </div>
+                    <span>Rooted in ancient Indian wisdom</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Action button */}
+              <div className="w-full press py-3.5 px-6 rounded-full bg-[#7C1C24] hover:bg-[#68141B] text-white text-xs sm:text-sm font-bold shadow-soft transition-all text-center flex items-center justify-center gap-2 group/btn cursor-pointer">
+                <span>Explore Krishna Sanjeevani</span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
               </div>
             </div>
 
+            {/* Card 2: Arogya Sanjeevani */}
+            <div
+              onClick={() => handleCardClick("corporate")}
+              className="flex flex-col justify-between p-6 sm:p-8 rounded-3xl border border-[#DDEBE4] bg-gradient-to-b from-[#F4F8F6] to-[#ECF2EF] shadow-soft hover:shadow-lift transition-all duration-300 group cursor-pointer"
+            >
+              <div>
+                {/* SVG Illustration at top */}
+                <div className="relative w-40 h-40 mx-auto mb-6 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-[#1C5D4B]/10 blur-xl scale-110" />
+                  <svg
+                    className="absolute w-[160px] h-[160px] pointer-events-none select-none text-[#DDEBE4]"
+                    viewBox="0 0 100 100"
+                    fill="currentColor"
+                  >
+                    <path d="M 22,30 C 15,35 15,48 20,55 C 23,48 27,45 25,38 Z" opacity="0.8" />
+                    <path d="M 15,48 C 8,53 10,65 18,68 C 18,60 21,55 21,50 Z" opacity="0.6" />
+                    <path d="M 78,30 C 85,35 85,48 80,55 C 77,48 73,45 75,38 Z" opacity="0.8" />
+                    <path d="M 85,48 C 92,53 90,65 82,68 C 82,60 79,55 79,50 Z" opacity="0.6" />
+                  </svg>
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#247D64] to-[#124335] flex items-center justify-center border-4 border-white shadow-md relative overflow-hidden">
+                    <svg
+                      className="w-full h-full text-white/20 absolute inset-0"
+                      viewBox="0 0 100 100"
+                    >
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="32"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeDasharray="4 4"
+                      />
+                      <path d="M 30,72 Q 50,65 70,72 T 30,72" fill="currentColor" opacity="0.15" />
+                    </svg>
+                    <svg
+                      className="w-18 h-18 text-white relative z-10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="5.5" r="2" className="fill-white/10" />
+                      <path d="M12,7.5 L12,16" />
+                      <path d="M6,16 C7,12.5 10,11.5 12,11.5 C14,11.5 17,12.5 18,16" />
+                      <path d="M4,19.5 C8,19.5 9,16.5 12,16.5 C15,16.5 16,19.5 20,19.5" />
+                      <path d="M6,18 C9,18 10,19.5 12,19.5 C14,19.5 15,18 18,18" />
+                      <circle
+                        cx="12"
+                        cy="11"
+                        r="1"
+                        className="fill-emerald-200 stroke-none animate-pulse"
+                      />
+                      <circle
+                        cx="12"
+                        cy="5.5"
+                        r="3.5"
+                        stroke="rgba(255,255,255,0.25)"
+                        strokeWidth="0.5"
+                        strokeDasharray="1 1"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Typography Hierarchy */}
+                <div className="text-center space-y-2 mb-6">
+                  <h3 className="text-2xl font-bold font-serif text-[#1C5D4B] group-hover:scale-[1.01] transition-transform duration-300">
+                    Arogya Sanjeevani
+                  </h3>
+                  <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold tracking-widest text-[#1C5D4B]/85 uppercase">
+                    <span>CORPORATE WELLNESS & PRODUCTIVITY</span>
+                  </div>
+                  {/* Subtle Ornamental line */}
+                  <div className="flex items-center justify-center gap-2 py-1">
+                    <div className="h-[1px] w-12 bg-[#1C5D4B]/20" />
+                    <div className="w-1.5 h-1.5 rotate-45 bg-[#1C5D4B]/40" />
+                    <div className="h-[1px] w-12 bg-[#1C5D4B]/20" />
+                  </div>
+                </div>
+
+                <p className="text-xs sm:text-sm text-muted-foreground text-center leading-relaxed mb-6">
+                  Circadian-aligned sound therapy designed to reduce stress, boost focus, and
+                  enhance well-being in the workplace.
+                </p>
+
+                {/* Benefits List */}
+                <ul className="space-y-3.5 mb-8 max-w-[260px] mx-auto">
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#1C5D4B]/10 flex items-center justify-center shrink-0">
+                      <Brain className="h-3.5 w-3.5 text-[#1C5D4B]" />
+                    </div>
+                    <span>Enhances focus & mental clarity</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#1C5D4B]/10 flex items-center justify-center shrink-0">
+                      <Shield className="h-3.5 w-3.5 text-[#1C5D4B]" />
+                    </div>
+                    <span>Reduces stress & burnout</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#1C5D4B]/10 flex items-center justify-center shrink-0">
+                      <Users className="h-3.5 w-3.5 text-[#1C5D4B]" />
+                    </div>
+                    <span>Improves team well-being</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Action button */}
+              <div className="w-full press py-3.5 px-6 rounded-full bg-[#1C5D4B] hover:bg-[#154638] text-white text-xs sm:text-sm font-bold shadow-soft transition-all text-center flex items-center justify-center gap-2 group/btn cursor-pointer">
+                <span>Explore Arogya Sanjeevani</span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+              </div>
+            </div>
+
+            {/* Card 3: Garbh Sanjeevani */}
+            <div
+              onClick={() => handleCardClick("pregnancy")}
+              className="flex flex-col justify-between p-6 sm:p-8 rounded-3xl border border-[#ECE6F5] bg-gradient-to-b from-[#F8F6FB] to-[#F0ECF6] shadow-soft hover:shadow-lift transition-all duration-300 group md:col-span-2 lg:col-span-1 md:max-w-md md:mx-auto lg:max-w-none cursor-pointer"
+            >
+              <div>
+                {/* SVG Illustration at top */}
+                <div className="relative w-40 h-40 mx-auto mb-6 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-[#D01C5C]/10 blur-xl scale-110" />
+                  <svg
+                    className="absolute w-[160px] h-[160px] pointer-events-none select-none text-[#ECE6F5]"
+                    viewBox="0 0 100 100"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M 16,28 C 12,25 10,32 15,35 C 13,38 18,40 20,35 C 22,30 20,30 16,28 Z"
+                      opacity="0.7"
+                    />
+                    <path
+                      d="M 84,28 C 88,25 90,32 85,35 C 87,38 82,40 80,35 C 78,30 80,30 84,28 Z"
+                      opacity="0.7"
+                    />
+                    <path d="M 22,70 C 26,62 38,62 40,70 C 35,74 28,74 22,70 Z" opacity="0.5" />
+                    <path d="M 78,70 C 74,62 62,62 60,70 C 65,74 72,74 78,70 Z" opacity="0.5" />
+                  </svg>
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#8A57AA] to-[#4E2A66] flex items-center justify-center border-4 border-white shadow-md relative overflow-hidden">
+                    <svg
+                      className="w-full h-full text-white/20 absolute inset-0"
+                      viewBox="0 0 100 100"
+                    >
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="30"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        strokeDasharray="3 3"
+                      />
+                      <path
+                        d="M 20,50 A 30,30 0 0,0 80,50"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        opacity="0.2"
+                      />
+                    </svg>
+                    <svg
+                      className="w-18 h-18 text-white relative z-10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="13" cy="4.5" r="1.8" className="fill-white/10" />
+                      <path d="M12.5,6.3 C11.5,8 10,11 10,14 C10,17 11.5,19 12.5,20.5" />
+                      <path d="M13,6.3 C14.5,7.5 15,9 14.5,10" />
+                      <path d="M14.5,10 C16.5,11.5 17,14 15.5,16.5 C14.5,18 13.5,18.5 12.5,20.5" />
+                      <path d="M13.5,9 C12.5,10 11.5,12.5 12,14.5 C12.5,16 14.2,16 14.8,14.8" />
+                      <path
+                        d="M14.5,13.5 C14.2,13 13.5,13.3 13.5,13.7 C13.5,14 14.2,14.4 14.5,14.6 C14.8,14.4 15.5,14 15.5,13.7 C15.5,13.3 14.8,13 14.5,13.5 Z"
+                        fill="rgba(253,244,255,0.85)"
+                        stroke="none"
+                        className="animate-pulse"
+                      />
+                      <circle cx="18" cy="10" r="0.5" className="fill-purple-200 stroke-none" />
+                      <circle
+                        cx="17.5"
+                        cy="15"
+                        r="0.7"
+                        className="fill-purple-200 stroke-none animate-ping"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Typography Hierarchy */}
+                <div className="text-center space-y-2 mb-6">
+                  <h3 className="text-2xl font-bold font-serif text-[#D01C5C] group-hover:scale-[1.01] transition-transform duration-300">
+                    Garbh Sanjeevani
+                  </h3>
+                  <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold tracking-widest text-[#D01C5C]/85 uppercase">
+                    <span>PREGNANCY CARE (GARBHA SANSKAR)</span>
+                  </div>
+                  {/* Subtle Ornamental line */}
+                  <div className="flex items-center justify-center gap-2 py-1">
+                    <div className="h-[1px] w-12 bg-[#D01C5C]/20" />
+                    <div className="w-1.5 h-1.5 rotate-45 bg-[#D01C5C]/40" />
+                    <div className="h-[1px] w-12 bg-[#D01C5C]/20" />
+                  </div>
+                </div>
+
+                <p className="text-xs sm:text-sm text-muted-foreground text-center leading-relaxed mb-6">
+                  Sacred sound guidance for a harmonious pregnancy journey and positive fetal
+                  development.
+                </p>
+
+                {/* Benefits List */}
+                <ul className="space-y-3.5 mb-8 max-w-[260px] mx-auto">
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#D01C5C]/10 flex items-center justify-center shrink-0">
+                      <Music className="h-3.5 w-3.5 text-[#D01C5C]" />
+                    </div>
+                    <span>Supports fetal development</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#D01C5C]/10 flex items-center justify-center shrink-0">
+                      <Heart className="h-3.5 w-3.5 text-[#D01C5C]" />
+                    </div>
+                    <span>Promotes emotional balance</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80">
+                    <div className="h-6 w-6 rounded-full bg-[#D01C5C]/10 flex items-center justify-center shrink-0">
+                      <BookOpen className="h-3.5 w-3.5 text-[#D01C5C]" />
+                    </div>
+                    <span>Guided by Garbha Sanskar wisdom</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Action button */}
+              <div className="w-full press py-3.5 px-6 rounded-full bg-[#D01C5C] hover:bg-[#A90F43] text-white text-xs sm:text-sm font-bold shadow-soft transition-all text-center flex items-center justify-center gap-2 group/btn cursor-pointer">
+                <span>Explore Garbh Sanjeevani</span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Note/Music Banner */}
+          <div className="mt-16 flex justify-center">
+            <div className="inline-flex flex-col sm:flex-row items-center gap-3 px-6 py-3.5 rounded-full bg-[#C5A880]/10 border border-[#C5A880]/20 text-[#4A0E17] text-xs sm:text-sm font-medium shadow-sm max-w-xl text-center sm:text-left">
+              <div className="h-7 w-7 rounded-full bg-[#C5A880]/25 flex items-center justify-center shrink-0">
+                <Music className="h-4 w-4 text-[#4A0E17]" />
+              </div>
+              <span>
+                All sound frequencies are based on Raga Chikitsa and personalized for your
+                well-being.
+              </span>
+            </div>
           </div>
         </div>
       </section>
-
     </div>
   );
 }

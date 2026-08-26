@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarBody } from "@/components/AppSidebar";
 import { useApp } from "@/lib/app-state";
-import { categories } from "@/lib/content";
+import { categories, sanjeevaniConfigs, type CategoryId } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 const notificationIcons: Record<string, any> = {
@@ -120,6 +120,11 @@ export function TopBar({
               <h1 className="truncate font-display text-[19px] leading-tight font-semibold md:text-[22px]">
                 {userName}
               </h1>
+              {category && category !== "unset" && sanjeevaniConfigs[category as Exclude<CategoryId, "unset">] && (
+                <p className="truncate text-[11px] text-muted-foreground/80 font-medium italic mt-0.5 max-w-full overflow-hidden block">
+                  {sanjeevaniConfigs[category as Exclude<CategoryId, "unset">].greetingText}
+                </p>
+              )}
             </>
           )}
         </div>
@@ -129,40 +134,14 @@ export function TopBar({
           className="press hidden min-h-11 w-full max-w-sm items-center gap-3 rounded-field border border-border bg-surface px-4 text-left text-[13px] text-muted-foreground hover:border-cat/40 md:flex"
         >
           <SearchIcon className="h-4 w-4 shrink-0" />
-          Search ragas, purposes, programs
+          <span>
+            {category && category !== "unset" && sanjeevaniConfigs[category as Exclude<CategoryId, "unset">]
+              ? sanjeevaniConfigs[category as Exclude<CategoryId, "unset">].placeholderSearch
+              : "Search ragas, purposes, programs"}
+          </span>
         </button>
 
         <div className="flex shrink-0 items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="press hidden min-h-11 items-center gap-2 rounded-btn border border-border bg-surface px-3.5 text-[13px] font-medium sm:inline-flex">
-              <span className="h-2.5 w-2.5 rounded-full bg-cat" />
-              {active?.name ?? "Theme"}
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Listening theme</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {categories.map((c) => (
-                <DropdownMenuItem
-                  key={c.id}
-                  onClick={() => setCategory(c.id)}
-                  className={cn("gap-2", c.id === category && "font-semibold")}
-                >
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{
-                      background:
-                        c.id === "devotional"
-                          ? "#7A1E2C"
-                          : c.id === "secular"
-                            ? "#0F766E"
-                            : "#C97B8A",
-                    }}
-                  />
-                  {c.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
 
           <Link
             to="/subscription"

@@ -162,6 +162,16 @@ function RouteGuard({ children }: { children: ReactNode }) {
 
     if (!user && !isPublic) {
       navigate({ to: "/login" });
+      return;
+    }
+
+    if (user) {
+      const selectedPathway = user.profile?.category;
+      if (!selectedPathway || selectedPathway === "unset") {
+        if (location.pathname !== "/category") {
+          navigate({ to: "/category" });
+        }
+      }
     }
   }, [user, authLoading, location.pathname, navigate]);
 

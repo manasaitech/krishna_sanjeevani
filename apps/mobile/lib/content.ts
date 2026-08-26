@@ -3,7 +3,7 @@ export const artDevotional = require("@/assets/images/art-devotional.jpg");
 export const artSecular = require("@/assets/images/art-secular.jpg");
 export const artPregnancy = require("@/assets/images/art-pregnancy.jpg");
 
-export type CategoryId = "devotional" | "secular" | "pregnancy";
+export type CategoryId = "devotional" | "secular" | "pregnancy" | "unset";
 
 export type Category = {
   id: CategoryId;

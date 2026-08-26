@@ -156,6 +156,8 @@ export const api = {
     changePassword: (password: string) => http.post("/auth/change-password", { password }),
     googleLogin: (idToken: string, category?: string) =>
       http.post("/auth/google", { idToken, category }),
+    updateProfile: (data: { fullName?: string; language?: string; category?: string }) =>
+      http.patch("/auth/profile", data),
   },
 
   // ── Tracks ──

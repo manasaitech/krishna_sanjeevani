@@ -1,913 +1,773 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { Play, Sparkles, Loader2, Heart, Waves, Info, Clock, Lock } from "lucide-react";
+import {
+  Play,
+  Sparkles,
+  Loader2,
+  Heart,
+  Waves,
+  Info,
+  Clock,
+  BookOpen,
+  CheckCircle,
+  TrendingUp,
+  Search,
+  SlidersHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  Crown,
+  AlertTriangle
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { CardGrid, Chip, Panel, Rail, Section } from "@/components/layout-bits";
-import { ContinueCard, ProgramCard, TrackCard, TrackRow, TrackTile } from "@/components/cards";
 import { useApp } from "@/lib/app-state";
-import { categories, purposes, type Track, type CategoryId } from "@/lib/content";
+import { sanjeevaniConfigs, type CategoryId, type Track } from "@/lib/content";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { MockPaymentModal } from "@/components/discover/MockPaymentModal";
 
 export const Route = createFileRoute("/home")({
-  validateSearch: (search: Record<string, unknown>): { search?: string } => {
-    const sVal = search["search"] as string | undefined;
-    return sVal ? { search: sVal } : {};
-  },
   head: () => ({
     meta: [
-      { title: "Home — Krishna Sanjeevani" },
+      { title: "Home — Sanjeevani Healing" },
       {
         name: "description",
-        content:
-          "Your therapeutic listening home: recommended surāvalis, continue listening, stress relief, focus, sleep and pregnancy programs.",
-      },
-      { property: "og:title", content: "Home — Krishna Sanjeevani" },
-      {
-        property: "og:description",
-        content: "Recommended ragas, therapeutic programs, and your listening history.",
+        content: "Your unified personal wellness dashboard.",
       },
     ],
   }),
-  component: Home,
+  component: HomeDashboard,
 });
 
-function Home() {
-  const { search } = Route.useSearch();
-  const searchQuery = search || "";
-  const navigate = useNavigate();
+interface Ailment {
+  id: string;
+  name: string;
+}
 
+interface Surawali {
+  id: string;
+  name: string;
+}
+
+interface Timing {
+  id: string;
+  name: string;
+}
+
+interface AilmentSurawali {
+  id: string;
+  ailmentId: string;
+  surawaliId: string;
+  timingId: string;
+}
+
+interface PregnancyMapping {
+  id: string;
+  pregnancyMonth: number;
+  surawaliId: string;
+  timingId: string;
+  musicTrack: string;
+}
+
+interface CorporateRaga {
+  id: string;
+  ragaName: string;
+  weekDay: string;
+  timingId: string;
+}
+
+interface ActiveSub {
+  id: string;
+  surawaliId: string;
+  surawaliName: string;
+  status: string;
+  endDate: number;
+}
+
+function HomeDashboard() {
   const {
     category,
-    setCategory,
     current,
+    playing,
     play,
-    continueListeningList,
     user,
-    loading,
     tracks,
-    programs,
   } = useApp();
 
-  const [purpose, setPurpose] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Discover catalog states for search results
-  const [catalog, setCatalog] = useState<any>(null);
-  const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [catalogLoading, setCatalogLoading] = useState(false);
+  // Redirect guest or unset users to register/login or onboarding
+  const activeCategory = (!category || category === "unset") ? "devotional" : category;
+  const config = sanjeevaniConfigs[activeCategory as Exclude<CategoryId, "unset">];
 
-  // Subscription modal state
+  // Master Data & Subscriptions
+  const [catalog, setCatalog] = useState<{
+    ailments: Ailment[];
+    surawalis: Surawali[];
+    timings: Timing[];
+    ailmentSurawalis: AilmentSurawali[];
+    pregnancyMappings: PregnancyMapping[];
+    corporateRagas: CorporateRaga[];
+  } | null>(null);
+
+  const [subscriptions, setSubscriptions] = useState<ActiveSub[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filters State
+  const [activeChip, setActiveChip] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedParam, setSelectedParam] = useState(""); // Ailment ID, Pregnancy Month, or Corporate Weekday
+  const [selectedTimingId, setSelectedTimingId] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState("");
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+  // Mock Payment Modal State
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [subscribingSurawali, setSubscribingSurawali] = useState<any | null>(null);
+  const [subscribingSurawali, setSubscribingSurawali] = useState<{ id: string; name: string } | null>(null);
+
+  const greetingName = user?.profile?.fullName || user?.email?.split("@")[0] || "Guest";
 
   useEffect(() => {
-    if (searchQuery) {
-      setCatalogLoading(true);
-      Promise.all([
-        api.discover.getCatalog(),
-        user ? api.discover.listSubscriptions() : Promise.resolve({ success: false, data: [] }),
-      ])
-        .then(([catRes, subRes]) => {
-          if (catRes.success) {
-            setCatalog(catRes.data);
-          }
-          if (subRes.success && subRes.data) {
-            setSubscriptions(
-              subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now()),
-            );
-          }
-        })
-        .catch((err) => console.error("Failed to load search catalog", err))
-        .finally(() => setCatalogLoading(false));
+    async function loadData() {
+      try {
+        const [catRes, subRes] = await Promise.all([
+          api.discover.getCatalog(),
+          api.discover.listSubscriptions(),
+        ]);
+        if (catRes.success) setCatalog(catRes.data);
+        if (subRes.success) {
+          const active = subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now());
+          setSubscriptions(active);
+        }
+      } catch (err) {
+        console.error("Failed to load catalog or subscriptions", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [searchQuery, user]);
+    if (user) loadData();
+  }, [user]);
 
-  // Subscribe Action
-  const handleSubscribeClick = (surawali: any) => {
-    if (!user) {
-      toast.error("Please login to subscribe");
-      navigate({ to: "/login" });
-      return;
+  // Helper resolvers
+  const getSurawaliName = (id: string) => catalog?.surawalis.find(s => s.id === id)?.name || "Unknown Surawali";
+  const getTimingName = (id: string) => catalog?.timings.find(t => t.id === id)?.name || "Any Time";
+
+  // Filtered Subscriptions list for the active category
+  const filteredSubscriptions = useMemo(() => {
+    if (!catalog) return [];
+    return subscriptions.filter(sub => {
+      // Exclude Greeshma from pregnancy pathway subscriptions
+      if (activeCategory === "pregnancy" && (sub.surawaliName === "Greeshma" || sub.surawaliId === "sur_b719ad07-c4a5-51db-aaa5-48027611b68d")) {
+        return false;
+      }
+      if (activeCategory === "devotional") {
+        return catalog.ailmentSurawalis.some(m => m.surawaliId === sub.surawaliId);
+      } else if (activeCategory === "pregnancy") {
+        return catalog.pregnancyMappings.some(m => m.surawaliId === sub.surawaliId);
+      } else {
+        // Corporate users do not have direct subscriptions in the seed database
+        return false;
+      }
+    });
+  }, [subscriptions, catalog, activeCategory]);
+
+  // Dynamic filter lists for dropdowns
+  const paramDropdownList = useMemo(() => {
+    if (!catalog) return [];
+    if (activeCategory === "devotional") {
+      return catalog.ailments.map(a => ({ label: a.name, value: a.id }));
+    } else if (activeCategory === "pregnancy") {
+      return Array.from({ length: 9 }).map((_, i) => ({ label: `Month ${i + 1}`, value: String(i + 1) }));
+    } else {
+      return [
+        { label: "Monday", value: "Monday" },
+        { label: "Tuesday", value: "Tuesday" },
+        { label: "Wednesday", value: "Wednesday" },
+        { label: "Thursday", value: "Thursday" },
+        { label: "Friday", value: "Friday" },
+        { label: "Saturday", value: "Saturday" },
+        { label: "Sunday", value: "Sunday" },
+      ];
     }
+  }, [catalog, activeCategory]);
+
+  // Filtered master recommendations for exploration
+  const exploreResults = useMemo(() => {
+    if (!catalog) return [];
+    
+    if (activeCategory === "devotional") {
+      // Krishna Sanjeevani: Ailments
+      return catalog.ailmentSurawalis.filter(m => {
+        const sName = getSurawaliName(m.surawaliId);
+        const aName = catalog.ailments.find(a => a.id === m.ailmentId)?.name || "";
+        
+        // Chip tag filter
+        const matchesChip = activeChip === "All" || 
+          (activeChip === "Disorder Relief" && ["Anxiety", "Migraine", "Hypertension", "Insomnia"].some(d => aName.includes(d))) ||
+          (activeChip === "Stress Relief" && ["Stress", "Anxiety"].some(d => aName.includes(d))) ||
+          (activeChip === "Focus" && ["Focus", "Concentration"].some(d => aName.includes(d))) ||
+          (activeChip === "Sleep" && ["Sleep", "Insomnia"].some(d => aName.includes(d)));
+
+        const matchesSearch = searchQuery.trim() 
+          ? sName.toLowerCase().includes(searchQuery.toLowerCase()) || aName.toLowerCase().includes(searchQuery.toLowerCase())
+          : true;
+
+        const matchesParam = selectedParam ? m.ailmentId === selectedParam : true;
+        const matchesTiming = selectedTimingId ? m.timingId === selectedTimingId : true;
+
+        return matchesChip && matchesSearch && matchesParam && matchesTiming;
+      }).map(m => ({
+        id: m.id,
+        surawaliId: m.surawaliId,
+        title: getSurawaliName(m.surawaliId),
+        purpose: catalog.ailments.find(a => a.id === m.ailmentId)?.name || "Therapeutic",
+        timing: getTimingName(m.timingId),
+        duration: "30 min",
+        description: "Curated harmonic resonance session optimized for restorative bio-acoustic alignment.",
+        type: "ailment"
+      }));
+
+    } else if (activeCategory === "pregnancy") {
+      // Garbh Sanjeevani: Pregnancy Month mappings
+      return catalog.pregnancyMappings.filter(m => {
+        const sName = getSurawaliName(m.surawaliId);
+        
+        // Exclude Greeshma
+        if (sName === "Greeshma" || m.surawaliId === "sur_b719ad07-c4a5-51db-aaa5-48027611b68d") {
+          return false;
+        }
+
+        const matchesChip = activeChip === "All" ||
+          (activeChip === "Month 1-3" && [1, 2, 3].includes(m.pregnancyMonth)) ||
+          (activeChip === "Month 4-6" && [4, 5, 6].includes(m.pregnancyMonth)) ||
+          (activeChip === "Month 7-9" && [7, 8, 9].includes(m.pregnancyMonth));
+
+        const matchesSearch = searchQuery.trim() 
+          ? sName.toLowerCase().includes(searchQuery.toLowerCase()) 
+          : true;
+
+        const matchesParam = selectedParam ? String(m.pregnancyMonth) === selectedParam : true;
+        const matchesTiming = selectedTimingId ? m.timingId === selectedTimingId : true;
+
+        return matchesChip && matchesSearch && matchesParam && matchesTiming;
+      }).map(m => ({
+        id: m.id,
+        surawaliId: m.surawaliId,
+        title: getSurawaliName(m.surawaliId),
+        purpose: `Pregnancy Care (Month ${m.pregnancyMonth})`,
+        timing: getTimingName(m.timingId),
+        duration: "28 min",
+        description: "Delicate and calming sound therapy to support maternal comfort and healthy fetal cognitive development.",
+        type: "pregnancy"
+      }));
+
+    } else {
+      // Arogya Sanjeevani: Corporate Wellness Weekday Ragas
+      return catalog.corporateRagas.filter(m => {
+        const matchesChip = activeChip === "All" ||
+          (activeChip === "Workplace Stress" && ["Monday", "Wednesday", "Friday"].includes(m.weekDay)) ||
+          (activeChip === "Focus Boost" && ["Tuesday", "Thursday"].includes(m.weekDay));
+
+        const matchesSearch = searchQuery.trim() 
+          ? m.ragaName.toLowerCase().includes(searchQuery.toLowerCase()) 
+          : true;
+
+        const matchesParam = selectedParam ? m.weekDay === selectedParam : true;
+        const matchesTiming = selectedTimingId ? m.timingId === selectedTimingId : true;
+
+        return matchesChip && matchesSearch && matchesParam && matchesTiming;
+      }).map(m => ({
+        id: m.id,
+        surawaliId: m.id, // Ragas act as their own unique identity
+        title: m.ragaName,
+        purpose: `Workspace Wellness (${m.weekDay})`,
+        timing: getTimingName(m.timingId),
+        duration: "32 min",
+        description: "Professional auditory composition calibrated to suppress cognitive fatigue and elevate office focus.",
+        type: "corporate"
+      }));
+    }
+  }, [catalog, activeCategory, activeChip, searchQuery, selectedParam, selectedTimingId]);
+
+  // Paginated Explore list
+  const totalPages = Math.ceil(exploreResults.length / itemsPerPage);
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return exploreResults.slice(start, start + itemsPerPage);
+  }, [exploreResults, currentPage]);
+
+  const handlePlayPreview = (surawaliName: string, subtext: string, forceSubscribed = false) => {
+    toast.info(`Playing ${forceSubscribed ? "session" : "preview"} for ${surawaliName}`);
+    play({
+      id: forceSubscribed ? `session_${surawaliName}` : `preview_${surawaliName}`,
+      title: surawaliName + (forceSubscribed ? "" : " (Preview)"),
+      artist: config.name,
+      subtitle: subtext,
+      duration: forceSubscribed ? 1800 : 90,
+      category: activeCategory,
+      playlistKey: "",
+      art: "/govinda-bhakta-pr-seminars-mukund.mp3"
+    } as any);
+  };
+
+  const handleSubscribeClick = (surawali: { id: string; name: string }) => {
     setSubscribingSurawali(surawali);
     setPaymentModalOpen(true);
   };
 
-  const handlePaymentSuccess = async (txnId: string) => {
+  const handlePaymentSubmit = async () => {
     if (!subscribingSurawali) return;
     try {
+      const txnId = `mock_txn_${Math.random().toString(36).substring(7)}`;
       const res = await api.discover.subscribe(subscribingSurawali.id, "monthly", txnId);
       if (res.success) {
         toast.success(`Successfully subscribed to ${subscribingSurawali.name}!`);
-        // Refresh subscriptions list
-        if (user) {
-          const subRes = await api.discover.listSubscriptions();
-          if (subRes.success && subRes.data) {
-            setSubscriptions(
-              subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now()),
-            );
-          }
+        // Reload subscriptions list
+        const subRes = await api.discover.listSubscriptions();
+        if (subRes.success) {
+          const active = subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now());
+          setSubscriptions(active);
         }
-        window.dispatchEvent(new Event("subscription-updated"));
       }
     } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || "Failed to create subscription");
+      toast.error(err.message || "Failed to subscribe");
     } finally {
       setPaymentModalOpen(false);
       setSubscribingSurawali(null);
     }
   };
 
-  const isSubscribed = (surawaliId: string) => {
-    return subscriptions.some((sub) => sub.surawaliId === surawaliId);
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedParam("");
+    setSelectedTimingId("");
+    setSelectedDuration("");
+    setActiveChip("All");
+    setCurrentPage(1);
   };
 
-  const getAilmentName = (id: string) =>
-    catalog?.ailments.find((a: any) => a.id === id)?.name || "";
-  const getSurawaliName = (id: string) =>
-    catalog?.surawalis.find((s: any) => s.id === id)?.name || "";
-  const getTimingName = (id: string) => catalog?.timings.find((t: any) => t.id === id)?.name || "";
-
-  // Play Preview Action (for matching surawalis)
-  const handlePlayPreview = (surawaliName: string, subtext: string, forceSubscribed = false) => {
-    toast.info(`Playing ${forceSubscribed ? "session" : "preview"} for ${surawaliName}`);
-    if (forceSubscribed) {
-      play({
-        id: `mock_${surawaliName}`,
-        title: surawaliName,
-        artist: "Krishna Sanjeevani Therapeutic",
-        subtitle: subtext,
-        duration: 558,
-        category: "secular",
-        playlistKey: "",
-        art: "/govinda-bhakta-pr-seminars-mukund.mp3",
-      } as any);
-      return;
-    }
-
-    const existingTrack = tracks.find((t) =>
-      t.title.toLowerCase().includes(surawaliName.toLowerCase()),
-    );
-    if (existingTrack) {
-      play(existingTrack);
-    } else {
-      play({
-        id: `mock_${surawaliName}`,
-        title: surawaliName,
-        artist: "Krishna Sanjeevani Therapeutic",
-        subtitle: subtext,
-        duration: 558,
-        category: "secular",
-        playlistKey: "",
-        art: "/govinda-bhakta-pr-seminars-mukund.mp3",
-      } as any);
-    }
-  };
-
-  // Filter search results
-  const searchResults = useMemo(() => {
-    const needle = searchQuery.trim().toLowerCase();
-    if (!needle) return { tracks: [], programs: [], surawalis: [] };
-
-    // 1. Matches Tracks
-    const matchedTracks = tracks.filter((t) => {
-      const searchFields = [
-        t.title,
-        t.raga,
-        t.purpose,
-        t.subtitle,
-        ...(t.purposeTags?.map((tag: any) => tag.name) || []),
-      ];
-      return searchFields.filter(Boolean).some((f) => f.toLowerCase().includes(needle));
-    });
-
-    // 2. Matches Programs
-    const matchedPrograms = programs.filter((p) =>
-      [p.title, p.subtitle, p.description]
-        .filter(Boolean)
-        .some((f) => f.toLowerCase().includes(needle)),
-    );
-
-    // 3. Matches Surawali-Disorder from Discover catalog
-    const matchedSurawalis = catalog
-      ? catalog.ailmentSurawalis.filter((m: any) => {
-          const sRecord = catalog.surawalis?.find((s: any) => s.id === m.surawaliId);
-          const aRecord = catalog.ailments?.find((a: any) => a.id === m.ailmentId);
-          if (
-            sRecord?.name?.toLowerCase() === "name of surawali" ||
-            aRecord?.name?.toLowerCase() === "name of disorder"
-          ) {
-            return false;
-          }
-          const sName = sRecord?.name || "";
-          const aName = aRecord?.name || "";
-          return sName.toLowerCase().includes(needle) || aName.toLowerCase().includes(needle);
-        })
-      : [];
-
-    return {
-      tracks: matchedTracks,
-      programs: matchedPrograms,
-      surawalis: matchedSurawalis,
-    };
-  }, [searchQuery, tracks, programs, catalog]);
-
-  const catTracks = useMemo(
-    () => tracks.filter((t) => t.category === category),
-    [category, tracks],
-  );
-
-  const filtered = useMemo(() => {
-    if (!purpose) return catTracks;
-    return catTracks.filter((t) => {
-      const matchesTag = t.purposeTags?.some(
-        (tag: any) => tag.name && tag.name.toLowerCase().trim() === purpose.toLowerCase().trim(),
-      );
-      const matchesFallback =
-        t.purpose && t.purpose.toLowerCase().trim() === purpose.toLowerCase().trim();
-      return matchesTag || matchesFallback;
-    });
-  }, [purpose, catTracks]);
-
-  const featured = catTracks[0] ?? tracks[0];
-
-  const catPrograms = useMemo(
-    () => programs.filter((p) => p.category === category),
-    [category, programs],
-  );
-
-  const byPurpose = (p: string) => {
-    return tracks.filter((t) => {
-      const matchesTag = t.purposeTags?.some(
-        (tag: any) => tag.name && tag.name.toLowerCase().trim() === p.toLowerCase().trim(),
-      );
-      const matchesFallback =
-        t.purpose && t.purpose.toLowerCase().trim() === p.toLowerCase().trim();
-      return matchesTag || matchesFallback;
-    });
-  };
-
-  const premiumTracks = useMemo(() => tracks.filter((t) => t.premium), [tracks]);
-
-  const recentlyAdded = useMemo(() => tracks.slice(-4).reverse(), [tracks]);
-
-  const handlePurposeClick = (p: string | null) => {
-    setPurpose(p);
-    const el = document.getElementById("recommended-sessions");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
-  if (loading) {
-    return (
-      <AppShell>
-        <div className="flex min-h-[400px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-cat" />
-        </div>
-      </AppShell>
-    );
-  }
-
-  if (searchQuery) {
-    const hasResults =
-      searchResults.tracks.length > 0 ||
-      searchResults.programs.length > 0 ||
-      searchResults.surawalis.length > 0;
-
-    return (
-      <AppShell title={`Search Results`} subtitle={`Showing matches for "${searchQuery}"`}>
-        {catalogLoading ? (
-          <div className="flex min-h-[300px] items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-cat" />
-          </div>
-        ) : !hasResults ? (
-          <div className="rounded-card border border-dashed border-border/80 p-16 text-center space-y-3">
-            <Waves className="h-10 w-10 mx-auto text-muted-foreground/60" />
-            <p className="font-semibold text-foreground text-lg">No results found</p>
-            <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
-              We couldn't find any ragas, programs, surāwalis, or ailments matching "{searchQuery}".
-              Try searching for "BP", "acidity", "sleep", "Kalyani", or "Bhairavi".
-            </p>
-            <button
-              onClick={() => navigate({ to: "/home", search: {} })}
-              className="press mt-4 rounded-btn border border-border px-5 py-2 text-xs font-semibold hover:bg-secondary"
-            >
-              Clear Search
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-10">
-            {/* 1. Surawalis / Ailments Results */}
-            {searchResults.surawalis.length > 0 && (
-              <Section
-                title="Matched Surāwalis & Ailments"
-                hint={`${searchResults.surawalis.length} therapeutic plans`}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {searchResults.surawalis.map((rec: any) => {
-                    const sName = getSurawaliName(rec.surawaliId);
-                    const aName = getAilmentName(rec.ailmentId);
-                    const tName = getTimingName(rec.timingId);
-                    const subscribed = isSubscribed(rec.surawaliId);
-
-                    return (
-                      <div
-                        key={rec.id}
-                        className="rounded-card border border-border/60 bg-surface p-5 hover:border-cat/60 hover:shadow-soft transition-all duration-300 flex flex-col justify-between"
-                      >
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <span className="inline-flex rounded-full bg-cat-light px-2.5 py-0.5 text-[10px] font-bold text-cat uppercase tracking-wider">
-                              {aName}
-                            </span>
-                            {subscribed && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-[10px] font-bold text-green-700 border border-green-200">
-                                Subscribed
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            <h4 className="font-display font-semibold text-lg text-stone-900">
-                              {sName}
-                            </h4>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                              <Clock className="h-3.5 w-3.5 text-cat" />
-                              <span>Time: {tName}</span>
-                            </div>
-                          </div>
-                          <p className="text-xs text-stone-500 leading-relaxed">
-                            Vedic sound frequency composition calibrated specifically to assist with
-                            the treatment of {aName.toLowerCase()} symptoms.
-                          </p>
-                        </div>
-
-                        <div className="mt-5 pt-4 border-t border-border/60 flex items-center gap-3">
-                          <button
-                            onClick={() => handlePlayPreview(sName, `${aName} therapeutic preview`)}
-                            className="press flex-1 min-h-9 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1.5"
-                          >
-                            <Play className="h-3.5 w-3.5 fill-current" />
-                            <span>Preview</span>
-                          </button>
-
-                          {subscribed ? (
-                            <button
-                              onClick={() =>
-                                handlePlayPreview(sName, `${aName} full session`, true)
-                              }
-                              className="press flex-1 min-h-9 rounded-btn bg-cat text-cat-foreground text-xs font-bold hover:brightness-105 flex items-center justify-center gap-1.5"
-                            >
-                              <Waves className="h-3.5 w-3.5" />
-                              <span>Listen Full</span>
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                handleSubscribeClick({ id: rec.surawaliId, name: sName })
-                              }
-                              className="press flex-1 min-h-9 rounded-btn bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-hover flex items-center justify-center gap-1"
-                            >
-                              <Lock className="h-3 w-3 mr-1" />
-                              <span>Subscribe</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Section>
-            )}
-
-            {/* 2. Tracks / Ragas Results */}
-            {searchResults.tracks.length > 0 && (
-              <Section
-                title="Matched Ragas & Frequencies"
-                hint={`${searchResults.tracks.length} sessions`}
-              >
-                <CardGrid>
-                  {searchResults.tracks.map((t: Track) => (
-                    <TrackTile key={t.id} track={t} />
-                  ))}
-                </CardGrid>
-              </Section>
-            )}
-
-            {/* 3. Programs Results */}
-            {searchResults.programs.length > 0 && (
-              <Section
-                title="Matched Wellness Programs"
-                hint={`${searchResults.programs.length} programs`}
-              >
-                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {searchResults.programs.map((p: any) => (
-                    <ProgramCard key={p.id} program={p} wide />
-                  ))}
-                </div>
-              </Section>
-            )}
-          </div>
-        )}
-
-        {/* Mock Payment Checkout Modal */}
-        {paymentModalOpen && subscribingSurawali && (
-          <MockPaymentModal
-            open={paymentModalOpen}
-            onClose={() => {
-              setPaymentModalOpen(false);
-              setSubscribingSurawali(null);
-            }}
-            surawaliName={subscribingSurawali.name}
-            price={299}
-            onSuccess={handlePaymentSuccess}
-          />
-        )}
-      </AppShell>
-    );
-  }
   return (
     <AppShell>
-      {/* Hero Section: Pregnancy Specific vs. General */}
-      {category === "pregnancy" ? (
-        <div className="space-y-6">
-          {/* Welcome Banner */}
-          <div className="relative overflow-hidden rounded-card bg-gradient-to-r from-rose-100 via-rose-50 to-amber-50 p-6 md:p-8 border border-rose-200/50 shadow-soft">
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="space-y-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-rose-200/60 px-3 py-1 text-[10px] font-semibold tracking-wider text-rose-800 uppercase">
-                  <Sparkles className="h-3 w-3" /> Gestational Stage
-                </span>
-                <h1 className="font-serif text-3xl font-bold text-stone-900 md:text-4xl">
-                  Welcome, {user?.profile?.fullName || "Vasudha"}
-                </h1>
-                <p className="font-serif italic text-rose-700 text-base font-semibold">
-                  Gestational Week 24, Day 3
-                </p>
-                <p className="text-xs sm:text-sm text-stone-600 max-w-xl leading-relaxed pt-1">
-                  Healthy womb development through circadian acoustic frequencies. Today is an ideal
-                  day to balance your Doshas with Bhairavi and Yaman Surāvalis.
-                </p>
+      <div 
+        className="space-y-8 max-w-[1600px] mx-auto pb-24"
+        style={{ "--theme-color": config.theme.primary } as React.CSSProperties}
+      >
+        {/* Dynamic Sloka Block */}
+        <div 
+          className="rounded-card border p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 shadow-soft"
+          style={{ 
+            borderColor: config.theme.primary + "20",
+            background: `linear-gradient(135deg, ${config.theme.primary}05, ${config.theme.primary}0a)` 
+          }}
+        >
+          <div className="space-y-1">
+            <p className="text-[12px] text-muted-foreground font-semibold uppercase tracking-wider">Active Sanjeevani Pathway</p>
+            <h2 className="font-display font-bold text-2xl text-foreground" style={{ color: config.theme.primary }}>
+              {config.name}
+            </h2>
+            <p className="text-sm text-muted-foreground/90 max-w-xl">{config.description}</p>
+          </div>
+          <div className="shrink-0 rounded-btn px-4 py-3 border font-display text-xs leading-normal font-semibold text-center italic text-muted-foreground/80 bg-background max-w-md" style={{ borderColor: config.theme.primary + "30" }}>
+            {config.greetingText}
+          </div>
+        </div>
+
+
+        {/* Subscribed Surawalis Section */}
+        <div id="subscribed-surawalis" className="space-y-4 scroll-mt-20">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="font-semibold text-foreground text-lg">Your Subscribed Surawalis</h3>
+            <span className="text-xs text-muted-foreground font-medium">{filteredSubscriptions.length} subscriptions active</span>
+          </div>
+
+          {loading ? (
+            <div className="flex min-h-[120px] items-center justify-center border border-dashed border-border rounded-card">
+              <Loader2 className="h-6 w-6 animate-spin text-cat" />
+            </div>
+          ) : filteredSubscriptions.length > 0 ? (
+            <div className="flex gap-4 overflow-x-auto no-scrollbar py-1">
+              {filteredSubscriptions.map(sub => (
+                <div 
+                  key={sub.id} 
+                  className="press min-w-[280px] max-w-[280px] bg-surface rounded-card border border-border/60 hover:border-cat/60 hover:shadow-soft transition-all duration-300 p-4 flex flex-col justify-between space-y-4"
+                >
+                  <div className="space-y-2">
+                    <div className="relative h-28 w-full rounded-xl overflow-hidden bg-muted">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
+                      <div className="absolute top-2.5 left-2.5 z-20 rounded bg-white/20 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-white tracking-wider uppercase">
+                        Subscribed
+                      </div>
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center text-white/90 text-2xl font-bold font-display uppercase tracking-widest z-0 bg-gradient-to-br"
+                        style={{ from: config.theme.primary, to: "#2d3748" } as any}
+                      >
+                        {sub.surawaliName.substring(0, 2)}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-display font-bold text-[15px] truncate text-foreground">
+                        {sub.surawaliName}
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide mt-0.5">
+                        {activeCategory === "devotional" ? "Raga Chikitsa" : "Garbha Sanskar"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>30 min</span>
+                    </div>
+                    <button
+                      onClick={() => handlePlayPreview(sub.surawaliName, "Subscribed active session", true)}
+                      className="press h-8 w-8 rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform"
+                      style={{ backgroundColor: config.theme.primary }}
+                    >
+                      <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-card border border-dashed border-border p-8 text-center bg-surface/50">
+              <p className="text-sm text-muted-foreground">
+                Your Surawali journey starts here. Explore and subscribe to curated Surawalis for your pathway.
+              </p>
+              <button
+                onClick={() => {
+                  const exploreElement = document.getElementById("explore-surawalis");
+                  if (exploreElement) exploreElement.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="press mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-btn text-xs font-bold text-white transition-all"
+                style={{ backgroundColor: config.theme.primary }}
+              >
+                <span>Explore Surawalis</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Dynamic Journey Progress Banner */}
+        <div 
+          className="rounded-card border p-4 flex items-center gap-4 transition-all duration-300 shadow-soft"
+          style={{ 
+            borderColor: config.theme.primary + "1f", 
+            background: `${config.theme.primary}05` 
+          }}
+        >
+          <div className="p-2 rounded-full bg-white shrink-0 shadow-sm border border-border/40">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ stroke: config.theme.primary }} strokeWidth="2">
+              <path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z" />
+            </svg>
+          </div>
+          <p className="text-xs font-medium text-foreground leading-relaxed">
+            {config.bannerText}
+          </p>
+        </div>
+
+        {/* Explore / Catalog Inline section */}
+        <div id="explore-surawalis" className="space-y-6 scroll-mt-20">
+          <div className="px-1 space-y-1">
+            <h3 className="font-semibold text-foreground text-lg">Explore Surawalis</h3>
+            <p className="text-xs text-muted-foreground">Discover other auditory medicine sequences sequenced for your condition</p>
+          </div>
+
+          {/* Chips categories filter */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+            {config.filters.map(filterName => (
+              <button
+                key={filterName}
+                onClick={() => {
+                  setActiveChip(filterName);
+                  setCurrentPage(1);
+                }}
+                className="press px-4 py-2 rounded-full text-xs font-semibold border transition-all select-none cursor-pointer"
+                style={{
+                  backgroundColor: activeChip === filterName ? config.theme.primary : "transparent",
+                  color: activeChip === filterName ? "#fff" : "inherit",
+                  borderColor: activeChip === filterName ? config.theme.primary : "#e2e8f0"
+                }}
+              >
+                {filterName}
+              </button>
+            ))}
+          </div>
+
+          {/* Detailed filters toolbar panel */}
+          <div className="rounded-card border border-border/60 bg-surface p-5 shadow-soft space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+              
+              {/* Search bar */}
+              <div className="lg:col-span-2 relative w-full">
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    placeholder="Search by name, tags..."
+                    className="w-full min-h-10 pl-9 pr-4 rounded-btn border border-border bg-background text-sm outline-none focus-visible:ring-1 focus-visible:ring-cat focus-visible:border-cat transition-all text-foreground"
+                  />
+                </div>
               </div>
 
-              {/* Daily Progress Card */}
-              <div className="w-full md:w-80 rounded-2xl bg-white/80 backdrop-blur-md p-5 border border-rose-200/40 shadow-sm flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs font-semibold text-stone-700">
-                    <span>Daily Progress</span>
-                    <span className="text-rose-700 font-mono">15 min / 30 min completed</span>
-                  </div>
-                  {/* Progress Bar */}
-                  <div className="h-2 w-full rounded-full bg-stone-100 overflow-hidden">
-                    <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-rose-400 to-rose-600 transition-all duration-500" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center justify-between text-[11px] text-stone-500">
-                  <span>Target: 30m</span>
-                  <span className="flex items-center gap-1 font-medium text-rose-700">
-                    <Waves className="h-3 w-3 animate-pulse" /> Circadian wave active
-                  </span>
-                </div>
+              {/* Pathway-specific dynamic dropdown selector */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                  {activeCategory === "devotional" ? "Disorder / Ailment" : activeCategory === "pregnancy" ? "Pregnancy Month" : "Corporate Day"}
+                </label>
+                <select
+                  value={selectedParam}
+                  onChange={(e) => {
+                    setSelectedParam(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:ring-1 focus-visible:ring-cat"
+                >
+                  <option value="">-- All Options --</option>
+                  {paramDropdownList.map(item => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
+                  ))}
+                </select>
               </div>
+
+              {/* Best Listening Time filter */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Best Listening Time</label>
+                <select
+                  value={selectedTimingId}
+                  onChange={(e) => {
+                    setSelectedTimingId(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:ring-1 focus-visible:ring-cat"
+                >
+                  <option value="">-- Any Time --</option>
+                  {catalog?.timings.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Reset filters button */}
+              <div className="flex items-end">
+                <button
+                  onClick={resetFilters}
+                  className="press w-full min-h-10 px-4 rounded-btn border border-border bg-background text-xs font-bold text-muted-foreground hover:bg-secondary flex items-center justify-center gap-1.5"
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  <span>Reset Filters</span>
+                </button>
+              </div>
+
             </div>
           </div>
 
-          {/* Recommended Streams Grid */}
-          <Section title="Recommended Womb Care Streams" hint="Circadian-aligned auditory paths">
-            <div className="grid gap-6 sm:grid-cols-2">
-              {[
-                {
-                  title: "Midnight Ragas",
-                  description:
-                    "Circadian calming waves to soothe maternal sleep cycles and optimize gestational rest.",
-                  ragaList: "Raga Yaman, Bhairavi",
-                  purpose: "Deep Rest & Calm",
-                  trackId:
-                    tracks.find(
-                      (t) =>
-                        t.category === "pregnancy" &&
-                        (t.raga?.includes("Yaman") || t.title.includes("Yaman")),
-                    )?.id ||
-                    tracks.find((t) => t.category === "pregnancy")?.id ||
-                    tracks[0]?.id,
-                },
-                {
-                  title: "Evening Suravali",
-                  description:
-                    "Circadian transition frequencies designed to pacify Pitta and bring emotional stability.",
-                  ragaList: "Raga Kalyani, Bhairav",
-                  purpose: "Dosha Balancing",
-                  trackId:
-                    tracks.find(
-                      (t) =>
-                        t.category === "pregnancy" &&
-                        (t.raga?.includes("Kalyani") || t.title.includes("Kalyani")),
-                    )?.id ||
-                    tracks.find((t) => t.category === "pregnancy")?.id ||
-                    tracks[0]?.id,
-                },
-              ].map((stream) => {
-                const tr = tracks.find((t) => t.id === stream.trackId) || featured;
+          {/* Results rows list */}
+          <div className="space-y-4">
+            {loading ? (
+              <div className="flex min-h-[200px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-cat" />
+              </div>
+            ) : exploreResults.length > 0 ? (
+              paginatedResults.map(item => {
+                const isSubscribed = activeCategory === "devotional" 
+                  ? subscriptions.some(s => s.surawaliId === item.surawaliId)
+                  : activeCategory === "pregnancy"
+                    ? subscriptions.some(s => s.surawaliId === item.surawaliId)
+                    : true; // Corporate has free preview access
+
                 return (
-                  <div
-                    key={stream.title}
-                    className="group relative overflow-hidden rounded-card bg-surface border border-border p-5 shadow-soft hover:shadow-lift transition-all flex flex-col justify-between"
+                  <div 
+                    key={item.id} 
+                    className="rounded-card border border-border/60 bg-surface p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-soft hover:border-cat/40 transition-all duration-300"
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex rounded-full bg-rose-50 border border-rose-100 px-2.5 py-0.5 text-[9px] font-bold text-rose-800 uppercase">
-                          {stream.purpose}
-                        </span>
-                        <span className="text-[10px] font-mono text-muted-foreground">
-                          {stream.ragaList}
-                        </span>
+                    <div className="flex items-center gap-4 flex-1">
+                      <div 
+                        className="h-16 w-16 rounded-xl shrink-0 flex items-center justify-center font-display text-white font-bold text-lg select-none uppercase tracking-wider"
+                        style={{ backgroundColor: config.theme.primary }}
+                      >
+                        {item.title.substring(0, 2)}
                       </div>
-                      <h3 className="font-serif text-lg font-bold text-stone-900 group-hover:text-rose-800 transition-colors">
-                        {stream.title}
-                      </h3>
-                      <p className="text-xs text-stone-500 leading-relaxed">{stream.description}</p>
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h4 className="font-display font-semibold text-base text-foreground">{item.title}</h4>
+                          <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            {item.purpose}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed max-w-xl">
+                          {item.description}
+                        </p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            <span>Timing: {item.timing}</span>
+                          </span>
+                          <span>&bull;</span>
+                          <span>Duration: {item.duration}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="mt-5 pt-3 border-t border-border/50 flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground italic">
-                        Circadian aligned
-                      </span>
+                    <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
                       <button
-                        onClick={() => tr && play(tr)}
-                        className="press inline-flex h-9 items-center gap-1.5 rounded-lg bg-rose-800 text-white px-4 text-xs font-semibold hover:bg-rose-900 cursor-pointer"
+                        onClick={() => handlePlayPreview(item.title, `Preview of ${item.title}`)}
+                        className="press flex-1 md:flex-none min-h-10 px-4 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1.5"
                       >
-                        <Play className="h-3 w-3" fill="currentColor" /> Play stream
+                        <Play className="h-3.5 w-3.5 fill-current" />
+                        <span>Preview</span>
                       </button>
+                      
+                      {isSubscribed ? (
+                        <button
+                          onClick={() => handlePlayPreview(item.title, `Full session: ${item.title}`, true)}
+                          className="press flex-1 md:flex-none min-h-10 px-5 rounded-btn text-xs font-bold text-white hover:brightness-105 flex items-center justify-center gap-1.5"
+                          style={{ backgroundColor: config.theme.primary }}
+                        >
+                          <Waves className="h-3.5 w-3.5" />
+                          <span>Listen Now</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleSubscribeClick({ id: item.surawaliId, name: item.title })}
+                          className="press flex-1 md:flex-none min-h-10 px-5 rounded-btn bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-hover flex items-center justify-center gap-1"
+                        >
+                          <Lock className="h-3.5 w-3.5" />
+                          <span>Subscribe</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
+              })
+            ) : (
+              <div className="rounded-card border border-border bg-surface/60 p-8 text-center shadow-soft">
+                <Waves className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2 animate-pulse" />
+                <p className="text-[13px] font-semibold text-foreground">No Surāwalis matched your criteria</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Try resetting the filters or tweaking your keywords.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-4">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                className="press h-9 w-9 rounded-btn border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-secondary"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const pageNum = i + 1;
+                const isSelected = currentPage === pageNum;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className="press h-9 w-9 rounded-btn text-xs font-bold border transition-all"
+                    style={{
+                      backgroundColor: isSelected ? config.theme.primary : "transparent",
+                      color: isSelected ? "#fff" : "inherit",
+                      borderColor: isSelected ? config.theme.primary : "#e2e8f0"
+                    }}
+                  >
+                    {pageNum}
+                  </button>
+                );
               })}
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                className="press h-9 w-9 rounded-btn border border-border flex items-center justify-center text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-secondary"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
-          </Section>
+          )}
+
         </div>
-      ) : featured ? (
-        <section className="animate-rise grid gap-6 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
-          <div className="relative overflow-hidden rounded-card shadow-lift">
-            <img
-              src={featured.art}
-              alt={`Artwork for ${featured.title}`}
-              width={1600}
-              height={800}
-              className="h-[260px] w-full object-cover md:h-[320px] xl:h-[380px]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-foreground/80 via-foreground/45 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end gap-4 p-6 md:p-10">
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-background/95 px-3 py-1 text-[10px] font-semibold tracking-wider text-cat uppercase">
-                <Sparkles className="h-3 w-3" /> Today's session
-              </span>
-              <div>
-                <h2 className="font-display text-[26px] leading-tight font-semibold text-background md:text-[38px] xl:text-[44px]">
-                  {featured.title}
-                </h2>
-                <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-background/85 md:text-[15px]">
-                  {featured.raga} · {featured.purpose} — {featured.frequency}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => play(featured)}
-                  className="press inline-flex min-h-12 items-center gap-2 rounded-btn bg-background px-6 text-[14px] font-semibold text-foreground hover:bg-background/90 cursor-pointer"
-                >
-                  <Play className="h-4 w-4" fill="currentColor" /> Begin session
-                </button>
-                <Link
-                  to="/player"
-                  className="press inline-flex min-h-12 items-center rounded-btn border border-background/40 px-6 text-[14px] font-semibold text-background hover:bg-background/10"
-                >
-                  Listening guidance
-                </Link>
-              </div>
-            </div>
-          </div>
 
-          <Panel title="Your practice" className="flex flex-col justify-between">
-            <div className="space-y-5">
-              {[
-                { label: "Sessions this week", value: "5 of 7" },
-                { label: "Total listening", value: "6h 12m" },
-                { label: "Current theme", value: category },
-              ].map((s) => (
-                <div key={s.label} className="flex items-baseline justify-between gap-4">
-                  <span className="text-[13px] text-muted-foreground">{s.label}</span>
-                  <span className="font-display text-[17px] font-semibold capitalize">
-                    {s.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 rounded-2xl bg-cat-light p-4">
-              <p className="text-[11px] font-semibold tracking-wider text-cat uppercase">
-                Now in your queue
-              </p>
-              <p className="mt-1.5 text-[13px] leading-relaxed">
-                {(current ?? featured)?.title || "No track playing"} —{" "}
-                {(current ?? featured)?.instructions || "Choose a track to begin"}
-              </p>
-            </div>
-          </Panel>
-        </section>
-      ) : (
-        <section className="animate-rise bg-surface border border-border rounded-card p-8 text-center shadow-soft">
-          <Sparkles className="mx-auto h-12 w-12 text-cat mb-4" />
-          <h2 className="text-xl font-semibold">Welcome to Krishna Sanjeevani</h2>
-          {user?.role === "admin" || user?.role === "super_admin" ? (
-            <>
-              <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                Get started by adding therapeutic tracks and wellness programs via the Admin Panel,
-                or switch your category/theme.
-              </p>
-              <div className="mt-6 flex justify-center gap-4">
-                <Link
-                  to="/admin"
-                  className="press inline-flex min-h-11 items-center rounded-btn bg-cat text-cat-foreground px-6 text-[14px] font-semibold"
-                >
-                  Go to Admin Panel
-                </Link>
-              </div>
-            </>
-          ) : (
-            <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-              Your personalized therapeutic listening space is ready. Choose a theme below or select
-              a purpose to begin your wellness journey.
+        {/* Bottom medical disclaimer and info */}
+        <div className="rounded-card border border-amber-500/25 bg-amber-500/5 p-4 flex gap-3.5 items-start mt-8">
+          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h4 className="font-semibold text-xs text-amber-800">Professional Auditory Wellness Statement</h4>
+            <p className="text-[11px] leading-relaxed text-amber-700/90">
+              All therapeutic frequencies are sequenced based on Vedic Raga Chikitsa standards and physical acoustic measures. Auditory therapy is a safe, natural support mechanism and is not a replacement for professional clinical advice, diagnoses, or prescriptions.
             </p>
-          )}
-        </section>
-      )}
-
-      {tracks.length > 0 && (
-        <>
-          {/* Continue Listening */}
-          <Section title="Continue listening" hint="Picks up where you paused">
-            {continueListeningList.length ? (
-              <Rail>
-                {continueListeningList.map((item, i) => (
-                  <ContinueCard
-                    key={`${item.track.id}-${i}`}
-                    track={item.track}
-                    progress={item.progressPercentage}
-                    programId={item.programId || undefined}
-                  />
-                ))}
-              </Rail>
-            ) : (
-              <div className="rounded-card border border-border/80 bg-surface/50 p-4 text-center">
-                <p className="text-[12px] text-muted-foreground italic">
-                  Start listening to discover your personalized recommendations.
-                </p>
-              </div>
-            )}
-          </Section>
-
-          {/* Explore Themes (Category Cards from Browse Page) */}
-          <Section title="Explore by Theme" hint="Category-adaptive therapeutic soundscapes">
-            <div className="grid gap-4 sm:grid-cols-3">
-              {categories.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setCategory(c.id as CategoryId)}
-                  aria-pressed={category === c.id}
-                  className={`press group relative overflow-hidden rounded-card text-left shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift cursor-pointer ${
-                    category === c.id ? "ring-2 ring-cat" : ""
-                  }`}
-                >
-                  <img
-                    src={c.art}
-                    alt=""
-                    className="h-36 w-full object-cover transition-transform duration-[250ms] group-hover:scale-[1.04] md:h-44"
-                  />
-                  <span className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent" />
-                  <span className="absolute inset-x-0 bottom-0 p-5">
-                    <span className="block font-display text-[17px] font-semibold text-background">
-                      {c.name}
-                    </span>
-                    <span className="mt-1 block text-[12px] text-background/80">
-                      {c.description}
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </Section>
-
-          {/* Explore by Surāwalis */}
-          <Section
-            title="Explore by Surāwalis"
-            hint="Vedic acoustic frequencies for target healing"
-          >
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-              {[
-                {
-                  name: "Kalyani Surāwali",
-                  description: "For Anxiety relief, Hypertension, and focus.",
-                  searchKey: "Kalyani",
-                  image:
-                    "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&q=80&w=400",
-                },
-                {
-                  name: "Bhairavi Surāwali",
-                  description: "For Insomnia, deep sleep, and meditation.",
-                  searchKey: "Bhairavi",
-                  image:
-                    "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&q=80&w=400",
-                },
-                {
-                  name: "Yaman Surāwali",
-                  description: "For stress relief and evening relaxation.",
-                  searchKey: "Yaman",
-                  image:
-                    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=400",
-                },
-                {
-                  name: "Todi Surāwali",
-                  description: "For focus, concentration, and morning energy.",
-                  searchKey: "Todi",
-                  image:
-                    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=400",
-                },
-              ].map((s) => (
-                <Link
-                  key={s.name}
-                  to="/discover"
-                  search={{ search: s.searchKey }}
-                  className="press group relative overflow-hidden rounded-card text-left shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift cursor-pointer bg-surface border border-border/40"
-                >
-                  <img
-                    src={s.image}
-                    alt={s.name}
-                    className="h-28 w-full object-cover transition-transform duration-[250ms] group-hover:scale-[1.04]"
-                  />
-                  <div className="p-4 space-y-1">
-                    <span className="block font-display text-[15px] font-semibold text-foreground group-hover:text-cat transition-colors">
-                      {s.name}
-                    </span>
-                    <span className="block text-[11px] text-muted-foreground leading-normal">
-                      {s.description}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Section>
-
-          {/* Recommended / Sessions Grid (from Browse Page) */}
-          <div id="recommended-sessions" className="scroll-mt-20">
-            <div className="no-scrollbar -mx-5 mt-12 flex gap-2.5 overflow-x-auto px-5 md:-mx-8 md:px-8">
-              <Chip active={purpose === null} onClick={() => handlePurposeClick(null)}>
-                All purposes
-              </Chip>
-              {purposes.map((p) => (
-                <Chip key={p} active={purpose === p} onClick={() => handlePurposeClick(p)}>
-                  {p}
-                </Chip>
-              ))}
-            </div>
-
-            <Section
-              title={purpose ? `Sessions for ${purpose.toLowerCase()}` : "Recommended for you"}
-              hint={`${filtered.length} sessions`}
-              className="mt-6"
-            >
-              {filtered.length === 0 ? (
-                <div className="rounded-card border border-border bg-surface/60 p-8 text-center shadow-soft">
-                  <Waves className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2" />
-                  <p className="text-[13px] font-semibold text-foreground">Nothing sequenced yet</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    We haven't sequenced a surāvali for this purpose in this theme. Try another
-                    filter.
-                  </p>
-                </div>
-              ) : (
-                <CardGrid>
-                  {filtered.map((t) => (
-                    <TrackTile key={t.id} track={t} />
-                  ))}
-                </CardGrid>
-              )}
-            </Section>
           </div>
+        </div>
 
-          {/* Popular Tracks */}
-          {tracks.length > 3 && (
-            <Section title="Popular today" hint="Across all listeners">
-              <Rail>
-                {tracks.slice(3, 10).map((t) => (
-                  <TrackCard key={t.id} track={t} />
-                ))}
-              </Rail>
-            </Section>
-          )}
+      </div>
 
-          {/* Explore by Purpose Rails */}
-          {["Stress Relief", "Focus", "Sleep"].map((p) => (
-            <Section
-              key={p}
-              title={p}
-              hint={`${byPurpose(p).length} sessions`}
-              onClick={() => handlePurposeClick(p)}
-            >
-              <Rail>
-                {(byPurpose(p).length ? byPurpose(p) : tracks.slice(0, 4)).map((t) => (
-                  <TrackCard key={t.id} track={t} />
-                ))}
-              </Rail>
-            </Section>
-          ))}
-
-          {/* Premium Sequences */}
-          {premiumTracks.length > 0 && (
-            <Section title="Premium sequences" hint="Exclusive healing ragas">
-              <Rail>
-                {premiumTracks.map((t) => (
-                  <TrackCard key={t.id} track={t} />
-                ))}
-              </Rail>
-            </Section>
-          )}
-
-          {/* Recently Added */}
-          {recentlyAdded.length > 0 && (
-            <Section title="Recently added" hint="New therapeutic additions">
-              <Rail>
-                {recentlyAdded.map((t) => (
-                  <TrackCard key={t.id} track={t} />
-                ))}
-              </Rail>
-            </Section>
-          )}
-        </>
-      )}
-
-      {/* Programs Sections */}
-      {programs.length > 0 && (
-        <>
-          {/* Programs in this theme (from Browse page) */}
-          <Section title="Programs in this theme" hint={`${catPrograms.length} programs`}>
-            {catPrograms.length === 0 ? (
-              <div className="rounded-card border border-border/80 bg-surface/50 p-4 text-center">
-                <p className="text-[12px] text-muted-foreground italic">
-                  Programs will appear here when available.
-                </p>
+      {/* Mock Subscription Payment Modal */}
+      {paymentModalOpen && subscribingSurawali && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-card border border-border bg-surface p-6 shadow-lift space-y-4 animate-scaleUp">
+            <div className="flex items-center gap-3">
+              <div 
+                className="h-10 w-10 rounded-full flex items-center justify-center text-white"
+                style={{ backgroundColor: config.theme.primary }}
+              >
+                <Crown className="h-5 w-5" />
               </div>
-            ) : (
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {catPrograms.map((p) => (
-                  <ProgramCard key={p.id} program={p} wide />
-                ))}
+              <div>
+                <h4 className="font-display font-semibold text-base text-foreground">Confirm Subscription</h4>
+                <p className="text-xs text-muted-foreground">Premium Raga Chikitsa Sequence</p>
               </div>
-            )}
-          </Section>
-
-          {/* Corporate wellness programs (Secular category) */}
-          <Section title="Corporate wellness" hint="Secular sequences for teams">
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {programs
-                .filter((p) => p.category === "secular")
-                .map((p) => (
-                  <ProgramCard key={p.id} program={p} wide />
-                ))}
             </div>
-          </Section>
 
-          {/* Pregnancy programs */}
-          <Section title="Pregnancy programs" hint="Open dashboard" href="/journey">
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {programs
-                .filter((p) => p.category === "pregnancy")
-                .map((p) => (
-                  <ProgramCard key={p.id} program={p} wide />
-                ))}
+            <div className="p-4 rounded-btn border border-border/80 bg-background space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Sequence:</span>
+                <span className="font-bold text-foreground">{subscribingSurawali.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Pathway:</span>
+                <span className="font-bold text-foreground capitalize">{activeCategory}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Price Tier:</span>
+                <span className="font-bold text-emerald-600">₹299 / month</span>
+              </div>
             </div>
-          </Section>
 
-          {/* Trending programs */}
-          <Section title="Trending programs">
-            <Rail>
-              {(catPrograms.length ? catPrograms : programs).map((p) => (
-                <ProgramCard key={p.id} program={p} />
-              ))}
-            </Rail>
-          </Section>
-        </>
-      )}
-
-      {/* Recently Played */}
-      {tracks.length > 0 && (
-        <Section title="Recently played" href="/recent">
-          <div className="rounded-card border border-border bg-surface/60 p-2 md:p-3">
-            {tracks.slice(0, 6).map((t, i) => (
-              <TrackRow key={t.id} track={t} index={i} />
-            ))}
+            <div className="flex gap-2.5 pt-2">
+              <button
+                onClick={() => {
+                  setPaymentModalOpen(false);
+                  setSubscribingSurawali(null);
+                }}
+                className="press flex-1 min-h-10 px-4 rounded-btn border border-border bg-background text-xs font-bold text-muted-foreground hover:bg-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePaymentSubmit}
+                className="press flex-1 min-h-10 px-4 rounded-btn text-xs font-bold text-white shadow-lift"
+                style={{ backgroundColor: config.theme.primary }}
+              >
+                Mock Success Payment
+              </button>
+            </div>
           </div>
-        </Section>
+        </div>
       )}
+
     </AppShell>
   );
 }
