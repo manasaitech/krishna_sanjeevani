@@ -107,9 +107,6 @@ function TheBeginningPage() {
                   <span className="text-xs font-semibold text-amber-200">
                     ISKCON Kharghar · 30 May 2026
                   </span>
-                  <span className="text-[11px] uppercase tracking-wider text-stone-300 font-sans">
-                    Historic Unveiling
-                  </span>
                 </div>
               </div>
             </div>
