@@ -2,9 +2,7 @@ const isDev =
   (typeof process !== "undefined" && process.env?.["NODE_ENV"] === "development") ||
   (typeof import.meta !== "undefined" && import.meta.env?.DEV);
 
-export const BASE_URL = isDev
-  ? "http://localhost:8787/api/v1"
-  : "https://backend.astrosutraai.workers.dev/api/v1";
+export const BASE_URL = "https://backend.astrosutraai.workers.dev/api/v1";
 
 const TOKEN_KEYS = {
   ACCESS: "ks_access_token",
