@@ -55,7 +55,7 @@ export function SurawaliShowcase() {
 
   const cards = [
     {
-      name: "Kalyani Surāwali",
+      name: "Greeshma Surāwali",
       subtitle: "Raga Kalyani (Greeshma)",
       description:
         "A gentle acoustic experience traditionally associated with calmness, balance, and focused listening.",
@@ -67,7 +67,7 @@ export function SurawaliShowcase() {
       badgeColor: "bg-amber-500/10 text-amber-600 border-amber-500/20",
     },
     {
-      name: "Bhairavi Surāwali",
+      name: "Nidra Mohini Surāwali",
       subtitle: "Raga Bhairavi (Nidra Mohini)",
       description:
         "A deeply calming Surāwali suited for relaxation, introspection, and peaceful listening.",
@@ -79,7 +79,7 @@ export function SurawaliShowcase() {
       badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
     },
     {
-      name: "Yaman Surāwali",
+      name: "Anand Mohini Surāwali",
       subtitle: "Raga Yaman (Anand Mohini)",
       description:
         "A serene and uplifting Surāwali designed for relaxation, emotional balance, and peaceful listening.",
@@ -91,7 +91,7 @@ export function SurawaliShowcase() {
       badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
     },
     {
-      name: "Todi Surāwali",
+      name: "Prabhaati Surāwali",
       subtitle: "Raga Todi (Prabhaati)",
       description:
         "A focused and contemplative Surāwali suited for attentive listening and a calm start to the day.",
