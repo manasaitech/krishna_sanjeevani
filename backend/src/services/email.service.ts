@@ -153,7 +153,38 @@ export class EmailService {
   ): Promise<boolean> {
     const from = env.EMAIL_FROM || "onboarding@resend.dev";
 
-    // 1. Check if SMTP is configured
+    // 1. Check if Hostinger Mail API is configured
+    if (env.HOSTINGER_MAIL_TOKEN && env.HOSTINGER_MAILBOX_ID) {
+      logger.info(`Sending email via Hostinger Mail API to ${to}`);
+      try {
+        const response = await fetch(`https://api.mail.hostinger.com/api/v1/mailboxes/${env.HOSTINGER_MAILBOX_ID}/send`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${env.HOSTINGER_MAIL_TOKEN}`,
+          },
+          body: JSON.stringify({
+            to: [to],
+            displayName: "Krishna Sanjeevani",
+            subject,
+            text,
+            html,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          logger.error("Failed to send email via Hostinger Mail API", { status: response.status, error: errorText });
+        } else {
+          logger.info("Email sent successfully via Hostinger Mail API", { to, subject });
+          return true;
+        }
+      } catch (error: any) {
+        logger.error("Error sending email via Hostinger Mail API", { error: error.message });
+      }
+    }
+
+    // 2. Check if SMTP is configured
     if (env.SMTP_HOST) {
       const port = parseInt(env.SMTP_PORT || "465");
       logger.info(`Sending email via SMTP to ${to} using host ${env.SMTP_HOST}:${port}`);

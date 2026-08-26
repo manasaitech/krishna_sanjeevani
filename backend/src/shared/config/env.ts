@@ -17,4 +17,6 @@ export interface Env {
   SMTP_PORT?: string;
   SMTP_USER?: string;
   SMTP_PASS?: string;
+  HOSTINGER_MAIL_TOKEN?: string;
+  HOSTINGER_MAILBOX_ID?: string;
 }
