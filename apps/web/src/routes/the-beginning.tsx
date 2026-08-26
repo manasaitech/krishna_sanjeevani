@@ -9,7 +9,6 @@ import {
   inaugurationImg,
   templeSunriseImg,
   ragaMusiciansImg,
-  launchImg,
 } from "@/lib/home-data";
 import {
   Calendar,
@@ -98,7 +97,7 @@ function TheBeginningPage() {
             <div className="relative rounded-3xl overflow-hidden border-2 border-cat/30 shadow-lift bg-surface max-w-5xl mx-auto mb-10 group">
               <div className="relative aspect-[21/9] sm:aspect-[16/7] w-full overflow-hidden bg-background">
                 <img
-                  src={launchImg}
+                  src={inaugurationImg}
                   alt="Inauguration Ceremony at ISKCON Kharghar"
                   className="h-full w-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-700 filter brightness-[0.98] contrast-[1.03]"
                 />
