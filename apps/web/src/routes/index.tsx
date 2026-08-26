@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
 import { useVerseAudio } from "@/lib/use-verse-audio";
-import { OpeningExperience } from "@/components/home/OpeningExperience";
 import { VerseMiniPlayer } from "@/components/home/VerseMiniPlayer";
 import { VersePlayerModal } from "@/components/home/VersePlayerModal";
 import { HomeNavbar } from "@/components/home/HomeNavbar";
@@ -38,25 +36,12 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-// Module-scoped variable to track if the opening experience was completed during this JS application session.
-// This allows the flash screen to show on page refreshes (for testing) but prevents it from showing
-// when navigating back and forth between pages/routes within the single page application.
-let globalOpeningFinished = false;
-
 function HomePage() {
   const audio = useVerseAudio();
-  const [openingFinished, setOpeningFinished] = useState(globalOpeningFinished);
   const { user } = useApp();
-
-  const handleOpeningComplete = () => {
-    globalOpeningFinished = true;
-    setOpeningFinished(true);
-  };
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-cat-light selection:text-cat flex flex-col">
-      {/* 1. 3-Second Cinematic Opening Experience */}
-      {!openingFinished && <OpeningExperience audio={audio} onComplete={handleOpeningComplete} />}
 
       {/* 2. Persistent Floating Mini Verse Player (Bottom-Right) */}
       <VerseMiniPlayer audio={audio} />

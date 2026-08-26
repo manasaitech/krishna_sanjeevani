@@ -9,9 +9,11 @@ import {
   useLocation,
   useNavigate,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { OpeningExperience } from "../components/home/OpeningExperience";
+import { useVerseAudio } from "../lib/use-verse-audio";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider, useApp } from "../lib/app-state";
 import { Toaster } from "../components/ui/sonner";
@@ -140,8 +142,17 @@ function RouteGuard({ children }: { children: ReactNode }) {
   const { user, authLoading } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
+  const audio = useVerseAudio();
+
+  const [isSplashActive, setIsSplashActive] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("opening_experience_dismissed") !== "true";
+    }
+    return true;
+  });
 
   useEffect(() => {
+    if (isSplashActive) return;
     console.log("RouteGuard user state:", user);
     if (authLoading) return;
 
@@ -199,6 +210,15 @@ function RouteGuard({ children }: { children: ReactNode }) {
       }
     }
   }, [user, authLoading, location.pathname, navigate]);
+
+  if (isSplashActive) {
+    return (
+      <OpeningExperience
+        audio={audio}
+        onComplete={() => setIsSplashActive(false)}
+      />
+    );
+  }
 
   if (authLoading) {
     return (
