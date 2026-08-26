@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
+import '../../features/auth/screens/verify_email_screen.dart';
+import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/auth/screens/reset_password_screen.dart';
 import '../../features/history/screens/history_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
@@ -52,13 +55,35 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState.isAuthenticated;
       final isAuthRoute = state.matchedLocation == '/splash' ||
           state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
+          state.matchedLocation == '/register' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/reset-password';
 
       if (!isAuthenticated && !isAuthRoute) {
         return '/login';
       }
 
       if (isAuthenticated) {
+        // Enforce OTP verification gating
+        final emailVerified = authState.user?['emailVerified'] ?? 1;
+        final isUnverified = emailVerified == 0;
+
+        if (isUnverified) {
+          if (state.matchedLocation != '/verify-email') {
+            return '/verify-email';
+          }
+          return null;
+        }
+
+        if (state.matchedLocation == '/verify-email') {
+          final profile = authState.user?['profile'];
+          final categoryStr = (profile is Map<String, dynamic>) ? profile['category'] as String? : null;
+          if (categoryStr == null || categoryStr == 'unset') {
+            return '/choose-sanjeevani';
+          }
+          return categoryStr == 'pregnancy' ? '/journey' : '/home';
+        }
+
         final profile = authState.user?['profile'];
         final categoryStr = (profile is Map<String, dynamic>) ? profile['category'] as String? : null;
         
@@ -95,6 +120,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => RegisterScreen(
           onNavigateToLogin: () => context.go('/login'),
         ),
+      ),
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) => const VerifyEmailScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) {
+          final email = state.uri.queryParameters['email'] ?? '';
+          return ResetPasswordScreen(email: email);
+        },
       ),
       GoRoute(
         path: '/choose-sanjeevani',

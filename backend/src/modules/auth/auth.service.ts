@@ -7,9 +7,12 @@ import { ConflictError, UnauthorizedError, NotFoundError, ValidationError } from
 import { logger } from "../../shared/logger";
 import { and, eq, gt } from "drizzle-orm";
 import { subscriptions } from "../../shared/db/schema";
+import { EmailService } from "../../services/email.service";
+import { Env } from "../../shared/config/env";
 
 export class AuthService {
   constructor(
+    private env: Env,
     private repo: AuthRepository,
     private accessSecret: string,
     private refreshSecret: string
@@ -137,6 +140,13 @@ export class AuthService {
       createdAt: now,
     });
 
+    // Generate and send email verification OTP
+    try {
+      await this.sendOtp(input.email, "verification");
+    } catch (err: any) {
+      logger.error("Failed to send verification OTP on register", { error: err.message });
+    }
+
     logger.info("Registration successful", { userId });
 
     return {
@@ -144,10 +154,11 @@ export class AuthService {
         id: userId,
         email: input.email,
         role: "user",
+        emailVerified: 0,
         profile: {
           fullName: input.fullName,
           category: input.category,
-          language: input.language || "hi",
+          language: (input as any).language || "hi",
           profileImage: null,
         },
       },
@@ -204,6 +215,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         role: resolvedRole,
+        emailVerified: user.emailVerified,
         profile: profile
           ? {
               fullName: profile.fullName,
@@ -434,6 +446,7 @@ export class AuthService {
         email,
         passwordHash,
         role: "user",
+        emailVerified: 1,
         createdAt: now,
         updatedAt: now,
       });
@@ -508,5 +521,116 @@ export class AuthService {
       },
       tokens,
     };
+  }
+
+  // ── OTP & Password Recovery ──────────────────────────
+
+  private generateOtpCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  async sendOtp(email: string, purpose: "verification" | "reset_password"): Promise<string> {
+    const code = this.generateOtpCode();
+    const now = Date.now();
+    const expiry = now + 15 * 60 * 1000; // 15 minutes validity
+
+    // Store in DB
+    await this.repo.createOtp({
+      id: this.generateId(),
+      email: email.toLowerCase().trim(),
+      code,
+      purpose,
+      expiresAt: expiry,
+      createdAt: now,
+    });
+
+    // Send email
+    const subject = purpose === "verification"
+      ? "Verify your Krishna Sanjeevani account"
+      : "Reset your Krishna Sanjeevani password";
+
+    const title = purpose === "verification"
+      ? "Verify your email address"
+      : "Reset your password";
+
+    const desc = purpose === "verification"
+      ? "Thank you for registering. Please use the following One-Time Password (OTP) to verify your account:"
+      : "You recently requested to reset your password. Please use the following One-Time Password (OTP) to set a new password:";
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+        <h2 style="color: #7A1E2C; text-align: center;">${title}</h2>
+        <p>${desc}</p>
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #7A1E2C; margin: 20px 0;">
+          ${code}
+        </div>
+        <p>This code is valid for 15 minutes. If you did not make this request, you can safely ignore this email.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #888; text-align: center;">Krishna Sanjeevani curatives.</p>
+      </div>
+    `;
+
+    const text = `${title}\n\n${desc}\n\nCode: ${code}\n\nThis code is valid for 15 minutes.`;
+
+    await EmailService.sendEmail(this.env, {
+      to: email.toLowerCase().trim(),
+      subject,
+      html,
+      text,
+    });
+
+    return code;
+  }
+
+  async verifyOtp(email: string, code: string, purpose: "verification" | "reset_password"): Promise<void> {
+    const record = await this.repo.findOtp(email.toLowerCase().trim(), code, purpose);
+    if (!record) {
+      throw new ValidationError("Invalid verification code");
+    }
+
+    if (record.expiresAt < Date.now()) {
+      await this.repo.deleteOtp(record.id);
+      throw new ValidationError("Verification code has expired. Please request a new one");
+    }
+
+    // Success! Delete the OTP record
+    await this.repo.deleteOtp(record.id);
+
+    if (purpose === "verification") {
+      const user = await this.repo.findUserByEmail(email.toLowerCase().trim());
+      if (user) {
+        await this.repo.verifyUserEmail(user.id);
+      }
+    }
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.repo.findUserByEmail(email.toLowerCase().trim());
+    if (!user) {
+      // Return success to avoid email enumeration, but log it
+      logger.info("Forgot password requested for non-existent user", { email });
+      return;
+    }
+
+    await this.sendOtp(user.email, "reset_password");
+  }
+
+  async resetPassword(email: string, code: string, newPasswordStr: string): Promise<void> {
+    const user = await this.repo.findUserByEmail(email.toLowerCase().trim());
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    // Verify OTP first
+    await this.verifyOtp(email, code, "reset_password");
+
+    // Update password
+    const newHash = await this.hashPassword(newPasswordStr);
+    await this.repo.updateUserPassword(user.id, newHash);
+
+    // Invalidate all active sessions for security
+    await this.repo.deleteSessionByUserId(user.id);
+
+    logger.info("Password reset successful", { userId: user.id });
   }
 }

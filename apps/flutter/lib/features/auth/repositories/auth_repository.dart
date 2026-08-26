@@ -74,4 +74,58 @@ class AuthRepository {
       },
     );
   }
+
+  Future<ApiResponse<dynamic>> verifyOtp({
+    required String email,
+    required String code,
+    required String purpose,
+  }) {
+    return apiClient.post(
+      '/auth/verify-otp',
+      data: {
+        'email': email,
+        'code': code,
+        'purpose': purpose,
+      },
+    );
+  }
+
+  Future<ApiResponse<dynamic>> resendOtp({
+    required String email,
+    required String purpose,
+  }) {
+    return apiClient.post(
+      '/auth/resend-otp',
+      data: {
+        'email': email,
+        'purpose': purpose,
+      },
+    );
+  }
+
+  Future<ApiResponse<dynamic>> forgotPassword({
+    required String email,
+  }) {
+    return apiClient.post(
+      '/auth/forgot-password',
+      data: {
+        'email': email,
+      },
+    );
+  }
+
+  Future<ApiResponse<dynamic>> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) {
+    return apiClient.post(
+      '/auth/reset-password',
+      data: {
+        'email': email,
+        'code': code,
+        'newPassword': newPassword,
+      },
+    );
+  }
 }

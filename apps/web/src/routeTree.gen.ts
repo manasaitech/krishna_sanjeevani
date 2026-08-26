@@ -16,6 +16,7 @@ import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as CategoryRouteImport } from './routes/category'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as InspirationRouteImport } from './routes/inspiration'
 import { Route as JourneyRouteImport } from './routes/journey'
@@ -28,6 +29,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgramsRouteImport } from './routes/programs'
 import { Route as RecentRouteImport } from './routes/recent'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SessionCompleteRouteImport } from './routes/session-complete'
 import { Route as SubscriptionRouteImport } from './routes/subscription'
@@ -35,6 +37,7 @@ import { Route as TeamRouteImport } from './routes/team'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TheBeginningRouteImport } from './routes/the-beginning'
 import { Route as VedicScienceRouteImport } from './routes/vedic-science'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as ProgramProgramIdRouteImport } from './routes/program.$programId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -70,6 +73,11 @@ const DiscoverRoute = DiscoverRouteImport.update({
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -132,6 +140,11 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -167,6 +180,11 @@ const VedicScienceRoute = VedicScienceRouteImport.update({
   path: '/vedic-science',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProgramProgramIdRoute = ProgramProgramIdRouteImport.update({
   id: '/program/$programId',
   path: '/program/$programId',
@@ -181,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/category': typeof CategoryRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/inspiration': typeof InspirationRoute
   '/journey': typeof JourneyRoute
@@ -193,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/programs': typeof ProgramsRoute
   '/recent': typeof RecentRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -200,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/the-beginning': typeof TheBeginningRoute
   '/vedic-science': typeof VedicScienceRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRoutesByTo {
@@ -210,6 +231,7 @@ export interface FileRoutesByTo {
   '/category': typeof CategoryRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/inspiration': typeof InspirationRoute
   '/journey': typeof JourneyRoute
@@ -222,6 +244,7 @@ export interface FileRoutesByTo {
   '/programs': typeof ProgramsRoute
   '/recent': typeof RecentRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -229,6 +252,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/the-beginning': typeof TheBeginningRoute
   '/vedic-science': typeof VedicScienceRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRoutesById {
@@ -240,6 +264,7 @@ export interface FileRoutesById {
   '/category': typeof CategoryRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/inspiration': typeof InspirationRoute
   '/journey': typeof JourneyRoute
@@ -252,6 +277,7 @@ export interface FileRoutesById {
   '/programs': typeof ProgramsRoute
   '/recent': typeof RecentRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
@@ -259,6 +285,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/the-beginning': typeof TheBeginningRoute
   '/vedic-science': typeof VedicScienceRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/program/$programId': typeof ProgramProgramIdRoute
 }
 export interface FileRouteTypes {
@@ -271,6 +298,7 @@ export interface FileRouteTypes {
     | '/category'
     | '/discover'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/inspiration'
     | '/journey'
@@ -283,6 +311,7 @@ export interface FileRouteTypes {
     | '/programs'
     | '/recent'
     | '/register'
+    | '/reset-password'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -290,6 +319,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/the-beginning'
     | '/vedic-science'
+    | '/verify-email'
     | '/program/$programId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -300,6 +330,7 @@ export interface FileRouteTypes {
     | '/category'
     | '/discover'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/inspiration'
     | '/journey'
@@ -312,6 +343,7 @@ export interface FileRouteTypes {
     | '/programs'
     | '/recent'
     | '/register'
+    | '/reset-password'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -319,6 +351,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/the-beginning'
     | '/vedic-science'
+    | '/verify-email'
     | '/program/$programId'
   id:
     | '__root__'
@@ -329,6 +362,7 @@ export interface FileRouteTypes {
     | '/category'
     | '/discover'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/inspiration'
     | '/journey'
@@ -341,6 +375,7 @@ export interface FileRouteTypes {
     | '/programs'
     | '/recent'
     | '/register'
+    | '/reset-password'
     | '/search'
     | '/session-complete'
     | '/subscription'
@@ -348,6 +383,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/the-beginning'
     | '/vedic-science'
+    | '/verify-email'
     | '/program/$programId'
   fileRoutesById: FileRoutesById
 }
@@ -359,6 +395,7 @@ export interface RootRouteChildren {
   CategoryRoute: typeof CategoryRoute
   DiscoverRoute: typeof DiscoverRoute
   FavoritesRoute: typeof FavoritesRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HomeRoute: typeof HomeRoute
   InspirationRoute: typeof InspirationRoute
   JourneyRoute: typeof JourneyRoute
@@ -371,6 +408,7 @@ export interface RootRouteChildren {
   ProgramsRoute: typeof ProgramsRoute
   RecentRoute: typeof RecentRoute
   RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   SessionCompleteRoute: typeof SessionCompleteRoute
   SubscriptionRoute: typeof SubscriptionRoute
@@ -378,6 +416,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TheBeginningRoute: typeof TheBeginningRoute
   VedicScienceRoute: typeof VedicScienceRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   ProgramProgramIdRoute: typeof ProgramProgramIdRoute
 }
 
@@ -430,6 +469,13 @@ declare module '@tanstack/react-router' {
       path: '/favorites'
       fullPath: '/favorites'
       preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -516,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -565,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VedicScienceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/program/$programId': {
       id: '/program/$programId'
       path: '/program/$programId'
@@ -583,6 +643,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoryRoute: CategoryRoute,
   DiscoverRoute: DiscoverRoute,
   FavoritesRoute: FavoritesRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HomeRoute: HomeRoute,
   InspirationRoute: InspirationRoute,
   JourneyRoute: JourneyRoute,
@@ -595,6 +656,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProgramsRoute: ProgramsRoute,
   RecentRoute: RecentRoute,
   RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   SessionCompleteRoute: SessionCompleteRoute,
   SubscriptionRoute: SubscriptionRoute,
@@ -602,6 +664,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TheBeginningRoute: TheBeginningRoute,
   VedicScienceRoute: VedicScienceRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   ProgramProgramIdRoute: ProgramProgramIdRoute,
 }
 export const routeTree = rootRouteImport

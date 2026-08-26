@@ -1,10 +1,58 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { DrizzleD1Database } from "drizzle-orm/d1";
-import { users, userProfiles, sessions } from "../../shared/db/schema/user";
+import { users, userProfiles, sessions, otps } from "../../shared/db/schema/user";
 import * as schema from "../../shared/db/schema";
 
 export class AuthRepository {
   constructor(public db: DrizzleD1Database<typeof schema>) {}
+
+  // ── OTP & Verification ────────────────────────────────
+
+  async verifyUserEmail(userId: string) {
+    await this.db
+      .update(users)
+      .set({ emailVerified: 1, updatedAt: Date.now() })
+      .where(eq(users.id, userId));
+  }
+
+  async createOtp(data: {
+    id: string;
+    email: string;
+    code: string;
+    purpose: string;
+    expiresAt: number;
+    createdAt: number;
+  }) {
+    // Delete any existing OTPs for the same email and purpose
+    await this.db
+      .delete(otps)
+      .where(
+        and(
+          eq(otps.email, data.email),
+          eq(otps.purpose, data.purpose)
+        )
+      );
+    await this.db.insert(otps).values(data);
+  }
+
+  async findOtp(email: string, code: string, purpose: string) {
+    const result = await this.db
+      .select()
+      .from(otps)
+      .where(
+        and(
+          eq(otps.email, email),
+          eq(otps.code, code),
+          eq(otps.purpose, purpose)
+        )
+      )
+      .limit(1);
+    return result[0] ?? null;
+  }
+
+  async deleteOtp(otpId: string) {
+    await this.db.delete(otps).where(eq(otps.id, otpId));
+  }
 
   // ── Users ─────────────────────────────────────────────
 
@@ -31,6 +79,7 @@ export class AuthRepository {
     email: string;
     passwordHash: string;
     role: string;
+    emailVerified?: number;
     createdAt: number;
     updatedAt: number;
   }) {

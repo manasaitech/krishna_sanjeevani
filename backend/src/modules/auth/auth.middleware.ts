@@ -25,7 +25,7 @@ export function requireAuth() {
     try {
       const db = getDB(c.env);
       const repo = new AuthRepository(db);
-      const service = new AuthService(repo, c.env.JWT_ACCESS_SECRET, c.env.JWT_REFRESH_SECRET);
+      const service = new AuthService(c.env, repo, c.env.JWT_ACCESS_SECRET, c.env.JWT_REFRESH_SECRET);
 
       const payload = await service.verifyAccessToken(token);
       c.set("userId" as never, payload.sub as never);
@@ -50,7 +50,7 @@ export function optionalAuth() {
       try {
         const db = getDB(c.env);
         const repo = new AuthRepository(db);
-        const service = new AuthService(repo, c.env.JWT_ACCESS_SECRET, c.env.JWT_REFRESH_SECRET);
+        const service = new AuthService(c.env, repo, c.env.JWT_ACCESS_SECRET, c.env.JWT_REFRESH_SECRET);
 
         const payload = await service.verifyAccessToken(token);
         c.set("userId" as never, payload.sub as never);
@@ -79,7 +79,7 @@ export function requireRole(...roles: string[]) {
     try {
       const db = getDB(c.env);
       const repo = new AuthRepository(db);
-      const service = new AuthService(repo, c.env.JWT_ACCESS_SECRET, c.env.JWT_REFRESH_SECRET);
+      const service = new AuthService(c.env, repo, c.env.JWT_ACCESS_SECRET, c.env.JWT_REFRESH_SECRET);
 
       const payload = await service.verifyAccessToken(token);
       c.set("userId" as never, payload.sub as never);

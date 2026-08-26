@@ -158,6 +158,14 @@ export const api = {
       http.post("/auth/google", { idToken, category }),
     updateProfile: (data: { fullName?: string; language?: string; category?: string }) =>
       http.patch("/auth/profile", data),
+    verifyOtp: (email: string, code: string, purpose: "verification" | "reset_password") =>
+      http.post("/auth/verify-otp", { email, code, purpose }),
+    resendOtp: (email: string, purpose: "verification" | "reset_password") =>
+      http.post("/auth/resend-otp", { email, purpose }),
+    forgotPassword: (email: string) =>
+      http.post("/auth/forgot-password", { email }),
+    resetPassword: (email: string, code: string, newPasswordStr: string) =>
+      http.post("/auth/reset-password", { email, code, newPassword: newPasswordStr }),
   },
 
   // ── Tracks ──

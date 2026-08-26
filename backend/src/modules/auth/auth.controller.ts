@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { AuthService } from "./auth.service";
 import { AuthRepository } from "./auth.repository";
-import { registerSchema, loginSchema, refreshSchema, changePasswordSchema } from "./auth.validator";
+import { registerSchema, loginSchema, refreshSchema, changePasswordSchema, verifyOtpSchema, resendOtpSchema, forgotPasswordSchema, resetPasswordSchema } from "./auth.validator";
 import { ApiResponse } from "../../shared/responses";
 import { ValidationError } from "../../shared/errors";
 import { getDB } from "../../shared/db/client";
@@ -12,7 +12,7 @@ import { eq } from "drizzle-orm";
 function getAuthService(env: Env): AuthService {
   const db = getDB(env);
   const repo = new AuthRepository(db);
-  return new AuthService(repo, env.JWT_ACCESS_SECRET, env.JWT_REFRESH_SECRET);
+  return new AuthService(env, repo, env.JWT_ACCESS_SECRET, env.JWT_REFRESH_SECRET);
 }
 
 export class AuthController {
@@ -208,5 +208,61 @@ export class AuthController {
     `;
     c.header("Content-Type", "text/html");
     return c.html(html);
+  }
+
+  static async verifyOtp(c: Context<{ Bindings: Env }>) {
+    const body = await c.req.json();
+    const parsed = verifyOtpSchema.safeParse(body);
+
+    if (!parsed.success) {
+      throw new ValidationError("Validation failed", parsed.error.issues);
+    }
+
+    const service = getAuthService(c.env);
+    await service.verifyOtp(parsed.data.email, parsed.data.code, parsed.data.purpose);
+
+    return ApiResponse.success(c, null, "Verification code verified successfully");
+  }
+
+  static async resendOtp(c: Context<{ Bindings: Env }>) {
+    const body = await c.req.json();
+    const parsed = resendOtpSchema.safeParse(body);
+
+    if (!parsed.success) {
+      throw new ValidationError("Validation failed", parsed.error.issues);
+    }
+
+    const service = getAuthService(c.env);
+    await service.sendOtp(parsed.data.email, parsed.data.purpose);
+
+    return ApiResponse.success(c, null, "Verification code resent successfully");
+  }
+
+  static async forgotPassword(c: Context<{ Bindings: Env }>) {
+    const body = await c.req.json();
+    const parsed = forgotPasswordSchema.safeParse(body);
+
+    if (!parsed.success) {
+      throw new ValidationError("Validation failed", parsed.error.issues);
+    }
+
+    const service = getAuthService(c.env);
+    await service.forgotPassword(parsed.data.email);
+
+    return ApiResponse.success(c, null, "Password reset code sent successfully");
+  }
+
+  static async resetPassword(c: Context<{ Bindings: Env }>) {
+    const body = await c.req.json();
+    const parsed = resetPasswordSchema.safeParse(body);
+
+    if (!parsed.success) {
+      throw new ValidationError("Validation failed", parsed.error.issues);
+    }
+
+    const service = getAuthService(c.env);
+    await service.resetPassword(parsed.data.email, parsed.data.code, parsed.data.newPassword);
+
+    return ApiResponse.success(c, null, "Password reset successfully");
   }
 }

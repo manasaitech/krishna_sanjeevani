@@ -142,12 +142,15 @@ function RouteGuard({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
+    console.log("RouteGuard user state:", user);
     if (authLoading) return;
 
     const publicPaths = [
       "/",
       "/login",
       "/register",
+      "/forgot-password",
+      "/reset-password",
       "/vedic-science",
       "/inspiration",
       "/the-beginning",
@@ -166,10 +169,32 @@ function RouteGuard({ children }: { children: ReactNode }) {
     }
 
     if (user) {
-      const selectedPathway = user.profile?.category;
-      if (!selectedPathway || selectedPathway === "unset") {
-        if (location.pathname !== "/category") {
-          navigate({ to: "/category" });
+      const isUnverified = user.emailVerified === 0;
+      if (isUnverified) {
+        if (location.pathname !== "/verify-email") {
+          navigate({ to: "/verify-email" });
+          return;
+        }
+      } else {
+        if (location.pathname === "/verify-email") {
+          const selectedPathway = user.profile?.category;
+          if (!selectedPathway || selectedPathway === "unset") {
+            navigate({ to: "/category" });
+          } else {
+            navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
+          }
+          return;
+        }
+
+        const selectedPathway = user.profile?.category;
+        if (!selectedPathway || selectedPathway === "unset") {
+          if (location.pathname !== "/category") {
+            navigate({ to: "/category" });
+          }
+        } else {
+          if (location.pathname === "/category") {
+            navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
+          }
         }
       }
     }

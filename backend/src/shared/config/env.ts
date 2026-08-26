@@ -11,4 +11,10 @@ export interface Env {
   ENVIRONMENT: "development" | "production" | "staging";
   PAYMENT_MODE?: "mock" | "razorpay";
   GOOGLE_CLIENT_ID?: string;
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
+  SMTP_HOST?: string;
+  SMTP_PORT?: string;
+  SMTP_USER?: string;
+  SMTP_PASS?: string;
 }

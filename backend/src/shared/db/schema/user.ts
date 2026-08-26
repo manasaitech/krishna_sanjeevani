@@ -39,3 +39,13 @@ export const sessions = sqliteTable("sessions", {
   expiresAt: integer("expires_at").notNull(),
   createdAt: integer("created_at").notNull(),
 });
+
+// OTP verification table
+export const otps = sqliteTable("otps", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  code: text("code").notNull(),
+  purpose: text("purpose").notNull(), // 'verification' | 'reset_password'
+  expiresAt: integer("expires_at").notNull(),
+  createdAt: integer("created_at").notNull(),
+});

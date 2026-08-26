@@ -11,6 +11,10 @@ auth.post("/login", AuthController.login);
 auth.post("/refresh", AuthController.refresh);
 auth.post("/google", AuthController.loginWithGoogle);
 auth.get("/google/mobile", AuthController.serveGoogleMobilePage);
+auth.post("/verify-otp", AuthController.verifyOtp);
+auth.post("/resend-otp", AuthController.resendOtp);
+auth.post("/forgot-password", AuthController.forgotPassword);
+auth.post("/reset-password", AuthController.resetPassword);
 
 // ── Protected Routes ────────────────────────────────────
 auth.post("/logout", requireAuth(), AuthController.logout);

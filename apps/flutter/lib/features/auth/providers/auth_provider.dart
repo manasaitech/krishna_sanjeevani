@@ -6,6 +6,7 @@ import '../../../core/theme/category_theme.dart';
 import '../../../shared/providers/category_provider.dart';
 import '../repositories/auth_repository.dart';
 import '../services/google_auth_service.dart';
+import '../../../core/network/api_response.dart';
 
 class AuthState {
   final Map<String, dynamic>? user;
@@ -276,6 +277,39 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.read(categoryProvider.notifier).setCategory(match, syncWithBackend: false);
       }
     } catch (_) {}
+  }
+
+  Future<ApiResponse<dynamic>> verifyOtp({
+    required String email,
+    required String code,
+    required String purpose,
+  }) async {
+    return _authRepository.verifyOtp(email: email, code: code, purpose: purpose);
+  }
+
+  Future<ApiResponse<dynamic>> resendOtp({
+    required String email,
+    required String purpose,
+  }) async {
+    return _authRepository.resendOtp(email: email, purpose: purpose);
+  }
+
+  Future<ApiResponse<dynamic>> forgotPassword({
+    required String email,
+  }) async {
+    return _authRepository.forgotPassword(email: email);
+  }
+
+  Future<ApiResponse<dynamic>> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    return _authRepository.resetPassword(
+      email: email,
+      code: code,
+      newPassword: newPassword,
+    );
   }
 }
 
