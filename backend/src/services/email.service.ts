@@ -120,10 +120,13 @@ export class SMTPClient {
     await sendCommand("DATA", 354);
 
     // Format and send full email headers & body
+    const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@krishnasanjeevani.com>`;
     const emailData = [
       `From: <${config.from}>`,
       `To: <${config.to}>`,
       `Subject: ${config.subject}`,
+      `Date: ${new Date().toUTCString()}`,
+      `Message-ID: ${messageId}`,
       `MIME-Version: 1.0`,
       `Content-Type: text/html; charset=utf-8`,
       `Content-Transfer-Encoding: 7bit`,
