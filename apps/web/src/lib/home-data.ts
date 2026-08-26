@@ -9,6 +9,7 @@ import manuscriptImg from "@/assets/89e81ba6-b688-4575-9b1f-964ace72a456.jpeg";
 import meditationImg from "@/assets/70fad00b-8e20-42f8-a986-11f0bd7335f5.jpeg";
 import inaugurationImg from "@/assets/af091c30-50ed-4947-85f7-7be2e6a958f4.jpeg";
 import soundVibrationImg from "@/assets/caf22ea5-bc7e-46d8-a845-876858c2a009.jpeg";
+import launchImg from "@/assets/krishna-sanjeevani-launch.jpg";
 
 export {
   krishnaFluteImg,
@@ -22,6 +23,7 @@ export {
   meditationImg,
   inaugurationImg,
   soundVibrationImg,
+  launchImg,
 };
 
 export interface HeroSlide {

@@ -9,6 +9,7 @@ import {
   inaugurationImg,
   templeSunriseImg,
   ragaMusiciansImg,
+  launchImg,
 } from "@/lib/home-data";
 import {
   Calendar,
@@ -73,8 +74,8 @@ function TheBeginningPage() {
 
   const galleryImages = [
     {
-      src: inaugurationImg,
-      caption: "Inaugural plaque unveiling ceremony with Hon'ble Governor and leaders",
+      src: launchImg,
+      caption: "Official launching ceremony of Krishna Sanjeevani — The Divine Music Medicine",
     },
     { src: templeSunriseImg, caption: "Morning sanctum at ISKCON Kharghar campus" },
     {
