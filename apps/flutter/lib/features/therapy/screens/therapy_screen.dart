@@ -35,7 +35,8 @@ const Map<String, String> searchAliases = {
 };
 
 class TherapyScreen extends ConsumerStatefulWidget {
-  const TherapyScreen({super.key});
+  final String? initialSurawaliId;
+  const TherapyScreen({this.initialSurawaliId, super.key});
 
   @override
   ConsumerState<TherapyScreen> createState() => _TherapyScreenState();
@@ -62,6 +63,9 @@ class _TherapyScreenState extends ConsumerState<TherapyScreen> with SingleTicker
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    if (widget.initialSurawaliId != null) {
+      _selectedSurawaliId = widget.initialSurawaliId;
+    }
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/providers/network_providers.dart';
 import '../../../shared/providers/category_provider.dart';
 import '../../../shared/widgets/sanjeevani_card.dart';
@@ -16,22 +17,7 @@ final notificationsListProvider = FutureProvider<List<Map<String, dynamic>>>((re
   if (res.success && res.data != null && res.data is List) {
     return List<Map<String, dynamic>>.from(res.data as List);
   }
-  return [
-    {
-      'id': 'notif_1',
-      'title': 'Daily Garbha Sanjeevani Reminder',
-      'message': 'Your Week 24 acoustic sound session is ready.',
-      'read': false,
-      'createdAt': '2 hours ago',
-    },
-    {
-      'id': 'notif_2',
-      'title': 'New 432 Hz Sound Track Released',
-      'message': 'Explore Om Namo Bhagavate Vasudevaya therapy track.',
-      'read': true,
-      'createdAt': '1 day ago',
-    },
-  ];
+  throw Exception(res.message ?? 'Failed to load notifications');
 });
 
 class NotificationsScreen extends ConsumerWidget {
@@ -59,7 +45,38 @@ class NotificationsScreen extends ConsumerWidget {
       body: notificationsAsync.when(
         data: (notifications) {
           if (notifications.isEmpty) {
-            return const Center(child: Text('No notifications received.'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_none_outlined,
+                    size: 64,
+                    color: catColors.catAccent,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No notifications yet',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      'We will notify you here when you have session reminders, subscription updates, or new recommendations.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF7A6B58),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           return ListView.separated(
@@ -72,6 +89,8 @@ class NotificationsScreen extends ConsumerWidget {
               final isRead = notif['read'] == true || notif['read'] == 1 || notif['read'] == 'true';
               final title = notif['title']?.toString() ?? 'Notification';
               final message = notif['message']?.toString() ?? '';
+              final type = notif['type']?.toString() ?? 'system';
+              final link = notif['link']?.toString() ?? '';
               
               String time = '';
               final rawCreated = notif['createdAt'];
@@ -82,6 +101,17 @@ class NotificationsScreen extends ConsumerWidget {
                 time = rawCreated.toString();
               }
 
+              IconData leadingIcon = Icons.notifications;
+              if (type == 'welcome') {
+                leadingIcon = Icons.favorite_outline;
+              } else if (type == 'first_surawali_cta') {
+                leadingIcon = Icons.explore_outlined;
+              } else if (type == 'surawali_subscription') {
+                leadingIcon = Icons.notifications_active_outlined;
+              } else if (type == 'surawali_reminder') {
+                leadingIcon = Icons.access_time;
+              }
+
               return SanjeevaniCard(
                 onTap: () async {
                   if (!isRead) {
@@ -89,17 +119,50 @@ class NotificationsScreen extends ConsumerWidget {
                     await repo.markAsRead(notifId);
                     ref.invalidate(notificationsListProvider);
                   }
+
+                  if (link.isNotEmpty) {
+                    if (link.startsWith('/discover/surawalis/')) {
+                      final parts = link.split('/');
+                      if (parts.length >= 4) {
+                        final surawaliId = parts[3];
+                        context.go('/therapy?surawaliId=$surawaliId');
+                        return;
+                      }
+                    }
+
+                    if (link == '/home') {
+                      context.go('/home');
+                    } else if (link.startsWith('/discover/surawalis')) {
+                      context.go('/therapy');
+                    } else {
+                      context.go('/home');
+                    }
+                  }
                 },
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 10,
-                      height: 10,
-                      margin: const EdgeInsets.only(top: 4, right: 12),
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.only(top: 16, right: 8),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: isRead ? Colors.transparent : catColors.cat,
+                      ),
+                    ),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      margin: const EdgeInsets.only(right: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: catColors.catLight,
+                      ),
+                      child: Icon(
+                        leadingIcon,
+                        size: 20,
+                        color: catColors.cat,
                       ),
                     ),
                     Expanded(
@@ -134,7 +197,28 @@ class NotificationsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error loading notifications: $err')),
+        error: (err, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load notifications: $err',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.red),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.invalidate(notificationsListProvider),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

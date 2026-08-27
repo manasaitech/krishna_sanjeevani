@@ -9,6 +9,7 @@ import { and, eq, gt } from "drizzle-orm";
 import { subscriptions } from "../../shared/db/schema";
 import { EmailService } from "../../services/email.service";
 import { Env } from "../../shared/config/env";
+import { NotificationService } from "../notifications/notification.service";
 
 export class AuthService {
   constructor(
@@ -145,6 +146,14 @@ export class AuthService {
       await this.sendOtp(input.email, "verification");
     } catch (err: any) {
       logger.error("Failed to send verification OTP on register", { error: err.message });
+    }
+
+    // Create Welcome notification and schedule 1-minute Surawali CTA (idempotent)
+    try {
+      await NotificationService.createWelcomeNotification(this.repo.db, userId);
+      await NotificationService.scheduleFirstSurawaliCTA(this.repo.db, userId);
+    } catch (err: any) {
+      logger.error("Failed to create signup notifications", { userId, error: err.message });
     }
 
     logger.info("Registration successful", { userId });
@@ -463,6 +472,14 @@ export class AuthService {
       });
 
       user = await this.repo.findUserByEmail(email);
+
+      // Create Welcome notification and schedule 1-minute Surawali CTA for new Google users (idempotent)
+      try {
+        await NotificationService.createWelcomeNotification(this.repo.db, userId);
+        await NotificationService.scheduleFirstSurawaliCTA(this.repo.db, userId);
+      } catch (err: any) {
+        logger.error("Failed to create Google signup notifications", { userId, error: err.message });
+      }
     }
 
     if (!user) {

@@ -11,6 +11,7 @@ import {
   surawaliSubscriptions 
 } from "../../shared/db/schema";
 import { ValidationError, NotFoundError } from "../../shared/errors";
+import { NotificationService } from "../notifications/notification.service";
 
 export class DiscoverService {
   constructor(private env: Env) {}
@@ -128,6 +129,20 @@ export class DiscoverService {
       createdAt: now,
       updatedAt: now
     });
+
+    // Create Surawali subscription confirmation notification
+    try {
+      await NotificationService.createSubscriptionNotification(
+        db,
+        userId,
+        surawaliId,
+        id,
+        surawaliResult[0].name
+      );
+    } catch (err: any) {
+      // Log error but do not fail the subscription request itself
+      console.error("Failed to create subscription notification:", err.message);
+    }
 
     return {
       subscriptionId: id,

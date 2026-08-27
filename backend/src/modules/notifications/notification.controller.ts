@@ -1,67 +1,34 @@
 import { Context } from "hono";
 import { getDB } from "../../shared/db/client";
 import { notifications } from "../../shared/db/schema/notification";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { ApiResponse } from "../../shared/responses";
 import { NotFoundError, ValidationError } from "../../shared/errors";
 
 export class NotificationController {
+  /**
+   * GET /notifications?page=1&limit=20
+   * Read-only: returns actual notifications for the authenticated user.
+   * Never creates or seeds fake notifications.
+   */
   static async list(c: Context) {
     const userId = c.get("userId" as never) as string;
     const db = getDB(c.env);
 
-    let results = await db
+    // Pagination
+    const page = Math.max(1, parseInt(c.req.query("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "50", 10)));
+    const offset = (page - 1) * limit;
+
+    const results = await db
       .select()
       .from(notifications)
       .where(eq(notifications.userId, userId))
       .orderBy(desc(notifications.createdAt))
-      .all();
+      .limit(limit)
+      .offset(offset);
 
-    if (results.length === 0) {
-      // Seed initial notifications for rich user-testing
-      const initialNotes = [
-        {
-          id: crypto.randomUUID(),
-          userId,
-          title: "Welcome to Krishna Sanjeevani",
-          message: "Hare Krishna! Thank you for starting your wellness and devotion path with us.",
-          read: 0,
-          type: "system",
-          createdAt: Date.now(),
-        },
-        {
-          id: crypto.randomUUID(),
-          userId,
-          title: "Daily Listening Reminder",
-          message: "Your devotional music session for healing is ready for playback today.",
-          read: 0,
-          type: "track_alert",
-          createdAt: Date.now() - 3600000, // 1 hour ago
-        },
-        {
-          id: crypto.randomUUID(),
-          userId,
-          title: "Pregnancy Tips Loaded",
-          message: "Check out the new healthy lifestyle recommendations in the pregnancy section.",
-          read: 0,
-          type: "pregnancy",
-          createdAt: Date.now() - 7200000, // 2 hours ago
-        }
-      ];
-
-      for (const note of initialNotes) {
-        await db.insert(notifications).values(note);
-      }
-
-      results = await db
-        .select()
-        .from(notifications)
-        .where(eq(notifications.userId, userId))
-        .orderBy(desc(notifications.createdAt))
-        .all();
-    }
-
-    // Convert numeric read status (0 or 1) to boolean for easy frontend mapping
+    // Convert numeric read status (0 or 1) to boolean for frontend
     const formatted = results.map((r) => ({
       ...r,
       read: r.read === 1,

@@ -130,35 +130,7 @@ export const pregnancyTips = [
   "Baby is developing sleep-wake cycles. Play soothing Neelambari tracks around bedtime to establish positive circadian associations.",
 ];
 
-export const notifications = [
-  {
-    id: "n1",
-    kind: "reminder",
-    title: "Evening Wind-Down",
-    time: "8:00 PM",
-    body: "Your evening meditation is scheduled in 15 minutes. Prepare a quiet space.",
-    unread: true,
-    group: "Today",
-  },
-  {
-    id: "n2",
-    kind: "new",
-    title: "New Program Available",
-    time: "Yesterday",
-    body: "Stress Relief Arc for Corporate Professionals is now available in Secular.",
-    unread: false,
-    group: "Earlier",
-  },
-  {
-    id: "n3",
-    kind: "progress",
-    title: "Trimester Transition!",
-    time: "3 days ago",
-    body: "You've entered Week 28. Your pregnancy journey programs have updated to Third Trimester.",
-    unread: false,
-    group: "Earlier",
-  },
-];
+
 
 export const recentSearches = ["Raga Neelambari", "Sleep Sequence", "Stress Relief", "Focus"];
 

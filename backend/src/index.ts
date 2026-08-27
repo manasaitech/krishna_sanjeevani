@@ -6,6 +6,7 @@ import { tracks } from "./shared/db/schema/track";
 import { eq } from "drizzle-orm";
 import { StorageService } from "./modules/storage/storage.service";
 import { segmentMp3 } from "./shared/audio/segmenter";
+import { NotificationService } from "./modules/notifications/notification.service";
 
 export default {
   // Serve incoming HTTP/API requests
@@ -131,5 +132,27 @@ export default {
         throw err;
       }
     }
+  },
+
+  // Cloudflare Cron Trigger: runs every 5 minutes to process notification jobs and scheduled reminders
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+    const db = getDB(env);
+    logger.info("Cron: Notification scheduler triggered", { scheduledTime: event.scheduledTime });
+
+    try {
+      // 1. Process pending notification jobs (e.g. 1-minute delayed first Surawali CTA)
+      await NotificationService.processJobs(db);
+    } catch (err: any) {
+      logger.error("Cron: Failed to process notification jobs", { error: err.message });
+    }
+
+    try {
+      // 2. Generate Surawali scheduled reminders for active subscriptions
+      await NotificationService.generateSurawaliReminders(db);
+    } catch (err: any) {
+      logger.error("Cron: Failed to generate Surawali reminders", { error: err.message });
+    }
+
+    logger.info("Cron: Notification scheduler completed");
   },
 };

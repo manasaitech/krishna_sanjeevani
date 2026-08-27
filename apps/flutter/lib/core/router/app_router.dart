@@ -181,7 +181,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/therapy',
-                builder: (context, state) => const TherapyScreen(),
+                builder: (context, state) {
+                  final surawaliId = state.uri.queryParameters['surawaliId'];
+                  return TherapyScreen(initialSurawaliId: surawaliId);
+                },
               ),
             ],
           ),

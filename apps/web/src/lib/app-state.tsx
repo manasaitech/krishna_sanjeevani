@@ -13,7 +13,6 @@ import {
   type Track,
   tracks as staticTracks,
   programs as staticPrograms,
-  notifications as staticNotifications,
 } from "@/lib/content";
 import { api, storeTokens, clearTokens, getAccessToken, BASE_URL } from "@/lib/api";
 import Hls from "hls.js";
@@ -98,6 +97,7 @@ type AppState = {
     body: string;
     unread: boolean;
     group: string;
+    link?: string | null;
   }>;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
