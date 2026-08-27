@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useApp } from "@/lib/app-state";
 import logoWithoutText from "@/assets/logo-without-text.webp";
-import { Menu, X, Sparkles, User, LogIn, ArrowRight } from "lucide-react";
+import { Menu, X, Sparkles, User, LogIn, ArrowRight, Sun, Moon } from "lucide-react";
 
 export function HomeNavbar() {
-  const { user } = useApp();
+  const { user, theme, toggleTheme } = useApp();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -80,6 +80,15 @@ export function HomeNavbar() {
 
         {/* Auth CTA / Enter App Button */}
         <div className="hidden sm:flex items-center gap-3">
+          {/* Theme Toggle */}
+          <button
+            onClick={() => toggleTheme(theme === "dark" ? "light" : "dark")}
+            className="press p-2 rounded-lg text-foreground hover:bg-muted transition-colors mr-1"
+            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5" />}
+          </button>
           {user ? (
             <Link
               to="/home"
@@ -110,7 +119,15 @@ export function HomeNavbar() {
         </div>
 
         {/* Mobile Menu Toggle Button */}
-        <div className="flex items-center gap-2 sm:hidden">
+        <div className="flex items-center gap-1 sm:hidden">
+          <button
+            onClick={() => toggleTheme(theme === "dark" ? "light" : "dark")}
+            className="p-2 rounded-lg text-foreground hover:bg-muted transition-colors"
+            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5" />}
+          </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-foreground hover:bg-muted transition-colors"
