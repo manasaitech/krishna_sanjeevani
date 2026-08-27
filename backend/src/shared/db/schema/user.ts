@@ -21,6 +21,7 @@ export const userProfiles = sqliteTable("user_profiles", {
   category: text("category").notNull(), // chosen raga category
   language: text("language").default("en"),
   preferences: text("preferences"), // JSON string of user preferences
+  timezone: text("timezone").default("Asia/Kolkata"),
   
   // Pregnancy configuration columns
   pregnancyEdd: text("pregnancy_edd"), // Optional ISO date "YYYY-MM-DD"

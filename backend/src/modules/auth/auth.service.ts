@@ -6,7 +6,7 @@ import { RegisterInput, LoginInput, AuthTokens, TokenPayload } from "./auth.type
 import { ConflictError, UnauthorizedError, NotFoundError, ValidationError } from "../../shared/errors";
 import { logger } from "../../shared/logger";
 import { and, eq, gt } from "drizzle-orm";
-import { subscriptions } from "../../shared/db/schema";
+import { subscriptions, users } from "../../shared/db/schema";
 import { EmailService } from "../../services/email.service";
 import { Env } from "../../shared/config/env";
 import { NotificationService } from "../notifications/notification.service";
@@ -484,6 +484,14 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundError("User could not be created or retrieved");
+    }
+
+    if (user.emailVerified === 0) {
+      await this.repo.db
+        .update(users)
+        .set({ emailVerified: 1, updatedAt: now })
+        .where(eq(users.id, user.id));
+      user.emailVerified = 1;
     }
 
     if (user.status === "suspended") {
