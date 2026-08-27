@@ -26,7 +26,10 @@ export class AuthController {
     }
 
     const service = getAuthService(c.env);
-    const result = await service.register(parsed.data);
+    const result = await service.register(
+      parsed.data,
+      c.executionCtx?.waitUntil ? c.executionCtx.waitUntil.bind(c.executionCtx) : undefined
+    );
 
     return ApiResponse.success(c, result, "Account created successfully", 201);
   }
