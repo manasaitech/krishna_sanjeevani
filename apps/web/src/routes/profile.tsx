@@ -50,7 +50,7 @@ function Row({
   icon: typeof Bell;
   label: string;
   value?: string;
-  to?: "/subscription" | "/category";
+  to?: any;
   onClick?: () => void;
 }) {
   const inner = (
@@ -113,6 +113,7 @@ function Profile() {
   // Preferences & Modals State
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   const name = user?.profile?.fullName || "Guest User";
   const email = user?.email || "guest@example.com";
@@ -339,9 +340,22 @@ function Profile() {
 
       <Section title={t("support")}>
         <div className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft">
-          <Row icon={ShieldCheck} label={t("privacyPolicy")} />
-          <Row icon={FileText} label={t("termsOfUse")} />
-          <Row icon={CircleHelp} label={t("helpContact")} />
+          <Row icon={ShieldCheck} label={t("privacyPolicy")} to="/privacy" />
+          <Row icon={FileText} label={t("termsOfUse")} to="/terms" />
+          <Row icon={CircleHelp} label={t("helpContact")} onClick={() => setShowContact(!showContact)} />
+          {showContact && (
+            <div className="px-4 py-3.5 bg-background/50 border-t border-border flex flex-col gap-2 text-sm animate-fade-in">
+              <p className="text-muted-foreground text-xs font-medium">
+                {lang === "hindi" ? "सहायता और पूछताछ के लिए संपर्क करें:" : lang === "sanskrit" ? "सहायतार्थं सम्पर्कं कुर्वन्तु:" : "For support and inquiries, reach out to us at:"}
+              </p>
+              <a 
+                href="mailto:contact@krishnasanjeevani.com" 
+                className="font-semibold text-cat hover:underline flex items-center gap-1.5 w-fit"
+              >
+                contact@krishnasanjeevani.com
+              </a>
+            </div>
+          )}
         </div>
       </Section>
 
