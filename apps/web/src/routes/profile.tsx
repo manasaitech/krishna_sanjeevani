@@ -80,7 +80,7 @@ function Row({
 }
 
 function Profile() {
-  const { category, setCategory, restoreSession, user, logout, lang, changeLanguage, t } = useApp();
+  const { category, setCategory, restoreSession, user, logout, lang, changeLanguage, t, theme, toggleTheme } = useApp();
   const navigate = useNavigate();
   const cat = categories.find((c) => c.id === category)!;
 
@@ -111,29 +111,8 @@ function Profile() {
   };
 
   // Preferences & Modals State
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedTheme = (localStorage.getItem("theme") as "light" | "dark") || "light";
-      setTheme(savedTheme);
-    }
-  }, []);
-
-  const toggleTheme = (selectedTheme: "light" | "dark") => {
-    setTheme(selectedTheme);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("theme", selectedTheme);
-      if (selectedTheme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-      toast.success(`Appearance set to ${selectedTheme === "dark" ? "Dark" : "Light"} Mode`);
-    }
-  };
 
   const name = user?.profile?.fullName || "Guest User";
   const email = user?.email || "guest@example.com";

@@ -105,6 +105,8 @@ type AppState = {
   lang: "english" | "hindi" | "sanskrit";
   changeLanguage: (newLang: "english" | "hindi" | "sanskrit") => Promise<void>;
   t: (key: TranslationKey) => string;
+  theme: "light" | "dark";
+  toggleTheme: (selectedTheme: "light" | "dark") => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -293,7 +295,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       });
     }
-    return audioRef.current;
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = (localStorage.getItem("theme") as "light" | "dark") || "light";
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  const toggleTheme = useCallback((selectedTheme: "light" | "dark") => {
+    setTheme(selectedTheme);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("theme", selectedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    }
+  }, [theme]);
+
+  return audioRef.current;
   }, []);
 
   const [lang, setLang] = useState<"english" | "hindi" | "sanskrit">("english");
@@ -975,6 +1003,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       lang,
       changeLanguage,
       t,
+      theme,
+      toggleTheme,
     }),
     [
       user,
@@ -1015,6 +1045,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       lang,
       changeLanguage,
       t,
+      theme,
+      toggleTheme,
     ],
   );
 

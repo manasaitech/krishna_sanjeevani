@@ -20,7 +20,7 @@ import logoWithoutText from "@/assets/logo-without-text.webp";
 import { api } from "@/lib/api";
 
 export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
-  const { favorites, play, category } = useApp();
+  const { favorites, play, category, t, lang } = useApp();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Map favorites IDs to full tracks
@@ -28,6 +28,18 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
 
   const activeCategory = (!category || category === "unset") ? "devotional" : category;
   const activeConfig = sanjeevaniConfigs[activeCategory as Exclude<CategoryId, "unset">];
+
+  const localizedName = activeCategory === "devotional" 
+    ? t("krishnaSanjeevani") 
+    : activeCategory === "pregnancy" 
+      ? t("garbhaSanjeevani") 
+      : t("nirvanaSanjeevani");
+
+  const localizedSubtitle = activeCategory === "devotional"
+    ? (lang === "hindi" ? "वैदिक स्वर विज्ञान और राग चिकित्सा" : lang === "sanskrit" ? "वैदिकस्वरविज्ञानं रागचिकित्सा च" : "Vedic Sound Therapy")
+    : activeCategory === "pregnancy"
+      ? (lang === "hindi" ? "गर्भ संस्कार कल्याण" : lang === "sanskrit" ? "गर्भसंस्कारकल्याणम्" : "Garbha Sanskar Wellness")
+      : (lang === "hindi" ? "कॉर्पोरेट कल्याण" : lang === "sanskrit" ? "उद्योगकल्याणम्" : "Corporate Sound Healing");
 
   const getLinkClass = (to: string, hash?: string) => {
     const active = pathname === to && (!hash || window.location.hash === `#${hash}`);
@@ -51,15 +63,15 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
         >
           <img
             src={logoWithoutText}
-            alt={`${activeConfig.name} Logo`}
+            alt={`${localizedName} Logo`}
             className="h-10 w-10 shrink-0 object-contain"
           />
           <div className="min-w-0">
             <span className="block truncate font-display text-[15px] leading-tight font-semibold">
-              {activeConfig.name}
+              {localizedName}
             </span>
             <span className="block truncate text-[11px] text-muted-foreground">
-              {activeConfig.subtitle}
+              {localizedSubtitle}
             </span>
           </div>
         </Link>
@@ -70,7 +82,7 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
             <li>
               <Link to="/home" onClick={onNavigate} className={getLinkClass("/home")}>
                 <House className="h-[18px] w-[18px] shrink-0" />
-                <span className="truncate">Home</span>
+                <span className="truncate">{t("home")}</span>
               </Link>
             </li>
           </ul>
@@ -83,7 +95,9 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2.5 text-muted-foreground">
             <Library className="h-[18px] w-[18px] shrink-0" />
-            <span className="text-[13px] font-bold tracking-tight uppercase">Your Library</span>
+            <span className="text-[13px] font-bold tracking-tight uppercase">
+              {lang === "hindi" ? "आपकी लाइब्रेरी" : lang === "sanskrit" ? "पुस्तकालयः" : "Your Library"}
+            </span>
           </div>
         </div>
 
@@ -103,10 +117,10 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold truncate group-hover:text-cat transition-colors">
-                Liked Songs
+                {lang === "hindi" ? "पसंद किए गए गीत" : lang === "sanskrit" ? "इष्टगीतानि" : "Liked Songs"}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Playlist · {favoriteTracksList.length} songs
+                {lang === "hindi" ? `प्लेलिस्ट · ${favoriteTracksList.length} गीत` : lang === "sanskrit" ? `गीतसङ्ग्रहः · ${favoriteTracksList.length} गीतानि` : `Playlist · ${favoriteTracksList.length} songs`}
               </p>
             </div>
           </Link>
@@ -118,10 +132,10 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold truncate">
-                My Playlists
+                {lang === "hindi" ? "मेरी प्लेलिस्ट" : lang === "sanskrit" ? "मम गीतसङ्ग्रहाः" : "My Playlists"}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                0 playlists
+                {lang === "hindi" ? "0 प्लेलिस्ट" : lang === "sanskrit" ? "0 गीतसङ्ग्रहः" : "0 playlists"}
               </p>
             </div>
           </div>
@@ -129,9 +143,11 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
 
         {/* Streaming Info Box */}
         <div className="rounded-xl border border-border/80 bg-background/50 p-3 mt-auto shrink-0">
-          <p className="text-[10px] font-bold tracking-wider text-cat uppercase">Streaming only</p>
+          <p className="text-[10px] font-bold tracking-wider text-cat uppercase">
+            {lang === "hindi" ? "केवल स्ट्रीमिंग" : lang === "sanskrit" ? "केवलप्रसारणम्" : "Streaming only"}
+          </p>
           <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-            Sessions are guided in-app and never downloaded or shared.
+            {lang === "hindi" ? "सत्र इन-ऐप निर्देशित होते हैं और कभी भी डाउनलोड या साझा नहीं किए जाते हैं।" : lang === "sanskrit" ? "सत्राणि अन्तस्तन्त्र्यामेव भवन्ति, कदापि न अधोभारितानि न वा साझितानि।" : "Sessions are guided in-app and never downloaded or shared."}
           </p>
         </div>
       </div>
