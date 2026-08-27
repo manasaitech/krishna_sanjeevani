@@ -156,6 +156,37 @@
   --sidebar-ring: oklch(0.362 0.043 213.5);
 }
 
+.dark {
+  --background: oklch(0.12 0.01 240);
+  --surface: oklch(0.16 0.015 240);
+  --foreground: oklch(0.92 0.005 240);
+  --card: oklch(0.16 0.015 240);
+  --card-foreground: oklch(0.92 0.005 240);
+  --popover: oklch(0.14 0.015 240);
+  --popover-foreground: oklch(0.92 0.005 240);
+  --primary: oklch(0.55 0.12 213.5);
+  --primary-foreground: oklch(0.985 0.004 90);
+  --primary-hover: oklch(0.6 0.12 213.5);
+  --secondary: oklch(0.22 0.015 240);
+  --secondary-foreground: oklch(0.92 0.005 240);
+  --muted: oklch(0.22 0.015 240);
+  --muted-foreground: oklch(0.65 0.015 240);
+  --accent: oklch(0.22 0.015 240);
+  --accent-foreground: oklch(0.92 0.005 240);
+  --border: oklch(0.26 0.015 240);
+  --input: oklch(0.26 0.015 240);
+  --ring: oklch(0.55 0.12 213.5);
+
+  --sidebar: oklch(0.14 0.015 240);
+  --sidebar-foreground: oklch(0.92 0.005 240);
+  --sidebar-primary: oklch(0.55 0.12 213.5);
+  --sidebar-primary-foreground: oklch(0.985 0.004 90);
+  --sidebar-accent: oklch(0.22 0.015 240);
+  --sidebar-accent-foreground: oklch(0.92 0.005 240);
+  --sidebar-border: oklch(0.26 0.015 240);
+  --sidebar-ring: oklch(0.55 0.12 213.5);
+}
+
 [data-category="devotional"] {
   --cat: oklch(0.372 0.121 15.7);
   --cat-light: oklch(0.945 0.019 12);
