@@ -295,6 +295,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       });
     }
+    return audioRef.current;
+  }, []);
+
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
@@ -320,9 +323,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [theme]);
-
-  return audioRef.current;
-  }, []);
 
   const [lang, setLang] = useState<"english" | "hindi" | "sanskrit">("english");
 
