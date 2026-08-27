@@ -183,51 +183,54 @@ function RouteGuard({ children }: { children: ReactNode }) {
 
   const isPublic = publicPaths.includes(location.pathname);
 
-  useEffect(() => {
-    if (isSplashActive) return;
-    console.log("RouteGuard user state:", user);
-    if (authLoading) return;
+  // Synchronous check of the current routing requirements
+  const getRedirectTarget = (): string | null => {
+    if (authLoading || isSplashActive) return null;
 
-    if (!user && !isPublic) {
+    if (!user) {
+      return isPublic ? null : "/login";
+    }
+
+    const isUnverified = user.emailVerified === 0;
+    if (isUnverified) {
+      return location.pathname !== "/verify-email" ? "/verify-email" : null;
+    }
+
+    // Verified user
+    if (location.pathname === "/verify-email") {
+      const selectedPathway = user.profile?.category;
+      if (!selectedPathway || selectedPathway === "unset") {
+        return "/category";
+      }
+      return selectedPathway === "pregnancy" ? "/journey" : "/home";
+    }
+
+    const selectedPathway = user.profile?.category;
+    if (!selectedPathway || selectedPathway === "unset") {
+      return location.pathname !== "/category" ? "/category" : null;
+    }
+
+    if (location.pathname === "/category") {
+      return selectedPathway === "pregnancy" ? "/journey" : "/home";
+    }
+
+    return null;
+  };
+
+  useEffect(() => {
+    const target = getRedirectTarget();
+    if (!target) return;
+
+    if (target === "/login") {
       const redirectUrl = location.pathname + location.search;
       navigate({
         to: "/login",
         search: { redirect: redirectUrl },
       });
-      return;
+    } else {
+      navigate({ to: target as any });
     }
-
-    if (user) {
-      const isUnverified = user.emailVerified === 0;
-      if (isUnverified) {
-        if (location.pathname !== "/verify-email") {
-          navigate({ to: "/verify-email" });
-          return;
-        }
-      } else {
-        if (location.pathname === "/verify-email") {
-          const selectedPathway = user.profile?.category;
-          if (!selectedPathway || selectedPathway === "unset") {
-            navigate({ to: "/category" });
-          } else {
-            navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
-          }
-          return;
-        }
-
-        const selectedPathway = user.profile?.category;
-        if (!selectedPathway || selectedPathway === "unset") {
-          if (location.pathname !== "/category") {
-            navigate({ to: "/category" });
-          }
-        } else {
-          if (location.pathname === "/category") {
-            navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
-          }
-        }
-      }
-    }
-  }, [user, authLoading, location.pathname, navigate]);
+  }, [user, authLoading, isSplashActive, location.pathname, location.search, navigate]);
 
   if (isSplashActive) {
     return (
@@ -251,13 +254,14 @@ function RouteGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user && !isPublic) {
+  const redirectTarget = getRedirectTarget();
+  if (redirectTarget) {
     return (
       <div className="grid min-h-dvh place-items-center bg-background">
         <div className="flex flex-col items-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-cat-light border-t-cat" />
           <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">
-            Redirecting to login...
+            Redirecting...
           </p>
         </div>
       </div>
