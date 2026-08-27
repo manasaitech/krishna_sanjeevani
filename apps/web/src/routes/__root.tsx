@@ -152,6 +152,22 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const publicPaths = [
+  "/",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/vedic-science",
+  "/inspiration",
+  "/the-beginning",
+  "/origin",
+  "/about",
+  "/team",
+  "/terms",
+  "/privacy",
+];
+
 function RouteGuard({ children }: { children: ReactNode }) {
   const { user, authLoading } = useApp();
   const navigate = useNavigate();
@@ -165,27 +181,12 @@ function RouteGuard({ children }: { children: ReactNode }) {
     return true;
   });
 
+  const isPublic = publicPaths.includes(location.pathname);
+
   useEffect(() => {
     if (isSplashActive) return;
     console.log("RouteGuard user state:", user);
     if (authLoading) return;
-
-    const publicPaths = [
-      "/",
-      "/login",
-      "/register",
-      "/forgot-password",
-      "/reset-password",
-      "/vedic-science",
-      "/inspiration",
-      "/the-beginning",
-      "/origin",
-      "/about",
-      "/team",
-      "/terms",
-      "/privacy",
-    ];
-    const isPublic = publicPaths.includes(location.pathname);
 
     if (!user && !isPublic) {
       const redirectUrl = location.pathname + location.search;
@@ -244,6 +245,19 @@ function RouteGuard({ children }: { children: ReactNode }) {
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-cat-light border-t-cat" />
           <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">
             Restoring calm...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user && !isPublic) {
+    return (
+      <div className="grid min-h-dvh place-items-center bg-background">
+        <div className="flex flex-col items-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-cat-light border-t-cat" />
+          <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">
+            Redirecting to login...
           </p>
         </div>
       </div>
