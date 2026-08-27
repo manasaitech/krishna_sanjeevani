@@ -184,12 +184,15 @@ function RouteGuard({ children }: { children: ReactNode }) {
       "/team",
       "/terms",
       "/privacy",
-      "/discover",
     ];
     const isPublic = publicPaths.includes(location.pathname);
 
     if (!user && !isPublic) {
-      navigate({ to: "/login" });
+      const redirectUrl = location.pathname + location.search;
+      navigate({
+        to: "/login",
+        search: { redirect: redirectUrl },
+      });
       return;
     }
 
