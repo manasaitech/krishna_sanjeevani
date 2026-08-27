@@ -187,17 +187,20 @@ function RouteGuard({ children }: { children: ReactNode }) {
   const getRedirectTarget = (): string | null => {
     if (authLoading || isSplashActive) return null;
 
+    const currentPath = location.pathname.replace(/\/$/, "") || "/";
+
     if (!user) {
-      return isPublic ? null : "/login";
+      const cleanPublic = publicPaths.map(p => p.replace(/\/$/, "") || "/");
+      return cleanPublic.includes(currentPath) ? null : "/login";
     }
 
     const isUnverified = user.emailVerified === 0;
     if (isUnverified) {
-      return location.pathname !== "/verify-email" ? "/verify-email" : null;
+      return currentPath !== "/verify-email" ? "/verify-email" : null;
     }
 
     // Verified user
-    if (location.pathname === "/verify-email") {
+    if (currentPath === "/verify-email") {
       const selectedPathway = user.profile?.category;
       if (!selectedPathway || selectedPathway === "unset") {
         return "/category";
@@ -208,13 +211,14 @@ function RouteGuard({ children }: { children: ReactNode }) {
     const selectedPathway = user.profile?.category;
     if (!selectedPathway || selectedPathway === "unset") {
       const allowedWithoutCategory = ["/category", "/subscription", "/admin", "/profile", ...publicPaths];
-      if (!allowedWithoutCategory.includes(location.pathname)) {
+      const cleanAllowed = allowedWithoutCategory.map(p => p.replace(/\/$/, "") || "/");
+      if (!cleanAllowed.includes(currentPath)) {
         return "/category";
       }
       return null;
     }
 
-    if (location.pathname === "/category") {
+    if (currentPath === "/category") {
       return selectedPathway === "pregnancy" ? "/journey" : "/home";
     }
 

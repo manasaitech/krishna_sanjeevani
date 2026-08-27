@@ -238,18 +238,28 @@ class HomeScreen extends ConsumerWidget {
                             child: SanjeevaniCard(
                               padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
                               onTap: () {
-                                _handlePlaySurawali(context, ref, surawaliName);
+                                final sId = sub['surawaliId'] as String?;
+                                if (sId != null && sId.isNotEmpty) {
+                                  context.push('/therapy?surawaliId=$sId');
+                                } else {
+                                  _handlePlaySurawali(context, ref, surawaliName);
+                                }
                               },
                               child: Row(
                                 children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: catColors.catLight,
-                                      shape: BoxShape.circle,
+                                  GestureDetector(
+                                    onTap: () {
+                                      _handlePlaySurawali(context, ref, surawaliName);
+                                    },
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: catColors.catLight,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.play_arrow_rounded, color: catColors.cat, size: 24),
                                     ),
-                                    child: Icon(Icons.play_arrow_rounded, color: catColors.cat, size: 24),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(

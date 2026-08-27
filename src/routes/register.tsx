@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useApp } from "@/lib/app-state";
 import { categories } from "@/lib/content";
 import prabhupadaImg from "@/assets/prabhupada.webp";
+import logoWithoutText from "@/assets/logo-without-text.webp";
 
 export const Route = createFileRoute("/register")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -182,7 +183,7 @@ function RegisterScreen() {
         {/* Header */}
         <div className="rg-header">
           <div className="rg-medallion-sm">
-            <img src="/images/krishna-medallion.webp" alt="" className="rg-medallion-img" />
+            <img src={logoWithoutText} alt="Krishna Sanjeevani Logo" className="rg-medallion-img object-contain p-1" />
           </div>
           <div className="rg-heading-group">
             <h1 className="rg-title">Create Account</h1>

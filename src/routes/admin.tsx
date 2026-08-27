@@ -3172,6 +3172,7 @@ function Admin() {
                           <thead>
                             <tr className="border-b border-border bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground select-none">
                               <th className="px-5 py-3.5">Subscriber</th>
+                              <th className="px-5 py-3.5">Surāwali</th>
                               <th className="px-5 py-3.5">Plan Tier</th>
                               <th className="px-5 py-3.5">Status</th>
                               <th className="px-5 py-3.5">Start Date</th>
@@ -3182,7 +3183,7 @@ function Admin() {
                           <tbody className="divide-y divide-border/60 text-xs">
                             {loadingSubs ? (
                               <tr>
-                                <td colSpan={6} className="px-5 py-14 text-center">
+                                <td colSpan={7} className="px-5 py-14 text-center">
                                   <div className="flex items-center justify-center gap-2">
                                     <Loader2 className="h-5 w-5 animate-spin text-cat" />
                                     <span className="text-muted-foreground font-medium">Loading subscriptions list...</span>
@@ -3196,6 +3197,9 @@ function Admin() {
                                     <p className="font-bold text-foreground">{s.fullName || "Anonymous"}</p>
                                     <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[180px]">{s.email}</p>
                                   </div>
+                                </td>
+                                <td className="px-5 py-4 font-bold text-foreground">
+                                  {s.surawaliName || "—"}
                                 </td>
                                 <td className="px-5 py-4 capitalize font-bold text-cat">
                                   {s.planName || s.planId}
@@ -3250,7 +3254,7 @@ function Admin() {
                             ))}
                             {subsList.length === 0 && !loadingSubs && (
                               <tr>
-                                <td colSpan={6} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
+                                <td colSpan={7} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
                                   No subscriptions match your query parameter filters.
                                 </td>
                               </tr>
@@ -6023,6 +6027,10 @@ function Admin() {
                         <div className="flex justify-between items-center">
                           <span className="font-semibold text-muted-foreground">Subscription ID</span>
                           <span className="font-mono text-[10px] text-foreground font-bold">{selectedSub.subscription.id}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-muted-foreground">Surāwali</span>
+                          <span className="font-bold text-foreground">{selectedSub.subscription.surawaliName || "—"}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="font-semibold text-muted-foreground">Pricing Tier Plan</span>

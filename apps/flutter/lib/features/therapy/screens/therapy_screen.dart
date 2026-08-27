@@ -59,6 +59,8 @@ class _TherapyScreenState extends ConsumerState<TherapyScreen> with SingleTicker
   // Corporate Wellness state
   String _selectedDay = "Monday";
 
+  bool _initialTabSelected = false;
+
   @override
   void initState() {
     super.initState();
@@ -391,6 +393,44 @@ class _TherapyScreenState extends ConsumerState<TherapyScreen> with SingleTicker
           final mappings = catalog.ailmentSurawalis;
           final pregnancy = catalog.pregnancyMappings;
           final corporate = catalog.corporateRagas;
+
+          // Auto-select correct category tab and filters if initialSurawaliId is specified
+          if (!_initialTabSelected && widget.initialSurawaliId != null) {
+            _initialTabSelected = true;
+            final targetId = widget.initialSurawaliId!;
+            
+            final isPregnancy = pregnancy.any((p) => p['surawaliId'] == targetId);
+            final isCorporate = corporate.any((c) => c['surawaliId'] == targetId);
+            
+            int targetTab = 0;
+            if (isPregnancy) {
+              targetTab = 1;
+              final match = pregnancy.firstWhere((p) => p['surawaliId'] == targetId, orElse: () => {});
+              if (match.isNotEmpty) {
+                final month = (match['pregnancyMonth'] as num? ?? 1).toInt();
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) setState(() => _selectedMonth = month);
+                });
+              }
+            } else if (isCorporate) {
+              targetTab = 2;
+              final match = corporate.firstWhere((c) => c['surawaliId'] == targetId, orElse: () => {});
+              if (match.isNotEmpty) {
+                final day = match['day'] as String? ?? 'Monday';
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) setState(() => _selectedDay = day);
+                });
+              }
+            }
+            
+            if (targetTab > 0) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  _tabController.animateTo(targetTab);
+                }
+              });
+            }
+          }
 
           // Helper lookups
           String getAilmentName(String id) =>

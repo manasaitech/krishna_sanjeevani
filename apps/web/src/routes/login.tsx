@@ -2,9 +2,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Music, Headphones, User, UserPlus, Mail, Lock, ArrowRight } from "lucide-react";
+import { Music, Headphones, User, UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/lib/app-state";
+import logoWithoutText from "@/assets/logo-without-text.webp";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -17,8 +18,7 @@ export const Route = createFileRoute("/login")({
       { title: "Sign In — Krishna Sanjeevani" },
       {
         name: "description",
-        content:
-          "Therapeutic ragas & surāvalis, sequenced by therapists for stress relief, sleep, focus, and pregnancy wellbeing.",
+        content: "Sign in to your personalized sound therapy and raga healing space.",
       },
     ],
   }),
@@ -29,12 +29,11 @@ function LoginScreen() {
   const { login, loginWithGoogle } = useApp();
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
-  
+  const [_googleLoading, setGoogleLoading] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(false);
-  const [_googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleCredentialResponse = async (response: any) => {
     setGoogleLoading(true);
@@ -53,24 +52,23 @@ function LoginScreen() {
     }
   };
 
-  const handleManualLogin = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("Please enter email and password");
       return;
     }
-
     setLoading(true);
     try {
       const res = await login(email, password);
       if (res.success) {
-        toast.success("Welcome back!");
+        toast.success("Welcome to Krishna Sanjeevani!");
         navigate({ to: redirect || "/home" });
       } else {
-        toast.error(res.message || "Invalid email or password");
+        toast.error(res.message);
       }
     } catch {
-      toast.error("Login failed. Please try again.");
+      toast.error("Failed to sign in. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -118,112 +116,89 @@ function LoginScreen() {
 
       {/* Single viewport frame — no scroll */}
       <div className="ks-frame">
-        {showEmailForm ? (
-          <div className="ks-card w-full">
-            <h2 className="ks-card-title">Sign In</h2>
-            <p className="ks-card-subtitle">Access your therapeutic listening journey</p>
-            
-            <form onSubmit={handleManualLogin} className="ks-form">
-              <div className="ks-input-wrap">
-                <label className="ks-label" htmlFor="lg-email">Email Address</label>
-                <div className="ks-input-container">
-                  <Mail className="ks-input-icon" />
-                  <input
-                    id="lg-email"
-                    type="email"
-                    required
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="ks-input-field"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <div className="ks-input-wrap">
-                <div className="flex justify-between items-center">
-                  <label className="ks-label" htmlFor="lg-password">Password</label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-[11px] text-[#8B6914] hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-                <div className="ks-input-container">
-                  <Lock className="ks-input-icon" />
-                  <input
-                    id="lg-password"
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="ks-input-field"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <button type="submit" disabled={loading} className="ks-submit-btn">
-                {loading ? "Signing in..." : "Sign In"}
-                {!loading && <ArrowRight className="w-4 h-4 ml-1.5" />}
-              </button>
-            </form>
-
-            <button
-              onClick={() => setShowEmailForm(false)}
-              className="mt-4 text-xs font-semibold text-muted-foreground hover:text-[#1a3323] transition-colors"
-            >
-              Cancel
-            </button>
+        {/* Medallion */}
+        <div className="ks-medallion-wrap">
+          <div className="ks-ring ks-ring-3" />
+          <div className="ks-ring ks-ring-2" />
+          <div className="ks-ring ks-ring-1" />
+          <div className="ks-medallion-inner">
+            <img
+              src={logoWithoutText}
+              alt="Krishna Sanjeevani Logo"
+              className="ks-medallion-img object-contain p-2"
+            />
           </div>
+          <div className="ks-badge">
+            <Headphones className="ks-badge-icon" />
+          </div>
+        </div>
+
+        {/* Audio wave */}
+        <div className="ks-wave" aria-hidden="true">
+          {waveHeights.map((h, i) => (
+            <span
+              key={i}
+              className="ks-bar"
+              style={{ animationDelay: `${i * 0.12}s`, "--wh": h } as React.CSSProperties}
+            />
+          ))}
+        </div>
+
+        {/* Title */}
+        <h1 className="ks-title">Krishna Sanjeevani</h1>
+        <p className="ks-subtitle">Healing Through Divine Sound</p>
+        <div className="ks-rule-row" aria-hidden="true">
+          <span className="ks-rule" />
+          <span className="ks-lotus">🪷</span>
+          <span className="ks-rule" />
+        </div>
+
+        {/* Description */}
+        <p className="ks-desc">
+          Therapeutic ragas &amp; surāvalis, sequenced by therapists for stress relief, sleep,
+          focus, and pregnancy wellbeing.
+        </p>
+
+        {showEmailForm ? (
+          <form onSubmit={handleEmailSubmit} className="w-full max-w-[340px] flex flex-col gap-3">
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="ks-social px-5 placeholder:text-muted-foreground outline-none text-sm text-foreground focus:ring-1 focus:ring-cat focus:border-cat transition-all"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="ks-social px-5 placeholder:text-muted-foreground outline-none text-sm text-foreground focus:ring-1 focus:ring-cat focus:border-cat transition-all"
+              required
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="ks-primary cursor-pointer w-full flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <User className="ks-ico" aria-hidden="true" />
+              )}
+              <span>{loading ? "Signing in..." : "Sign In"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowEmailForm(false)}
+              className="ks-secondary cursor-pointer w-full flex items-center justify-center"
+            >
+              Back to options
+            </button>
+          </form>
         ) : (
           <>
-            {/* Medallion */}
-            <div className="ks-medallion-wrap">
-              <div className="ks-ring ks-ring-3" />
-              <div className="ks-ring ks-ring-2" />
-              <div className="ks-ring ks-ring-1" />
-              <div className="ks-medallion-inner">
-                <img
-                  src="/images/krishna-medallion.webp"
-                  alt="Krishna medallion"
-                  className="ks-medallion-img"
-                />
-              </div>
-              <div className="ks-badge">
-                <Headphones className="ks-badge-icon" />
-              </div>
-            </div>
-
-            {/* Audio wave */}
-            <div className="ks-wave" aria-hidden="true">
-              {waveHeights.map((h, i) => (
-                <span
-                  key={i}
-                  className="ks-bar"
-                  style={{ animationDelay: `${i * 0.12}s`, "--wh": h } as React.CSSProperties}
-                />
-              ))}
-            </div>
-
-            {/* Title */}
-            <h1 className="ks-title">Krishna Sanjeevani</h1>
-            <p className="ks-subtitle">Healing Through Divine Sound</p>
-            <div className="ks-rule-row" aria-hidden="true">
-              <span className="ks-rule" />
-              <span className="ks-lotus">🪷</span>
-              <span className="ks-rule" />
-            </div>
-
-            {/* Description */}
-            <p className="ks-desc">
-              Therapeutic ragas &amp; surāvalis, sequenced by therapists for stress relief, sleep,
-              focus, and pregnancy wellbeing.
-            </p>
-
             {/* CTA */}
             <Link
               to="/register"
@@ -238,9 +213,10 @@ function LoginScreen() {
 
             <div className="ks-pair">
               <button
+                type="button"
                 onClick={() => setShowEmailForm(true)}
                 id="ks-sign-in-btn"
-                className="ks-secondary"
+                className="ks-secondary cursor-pointer"
                 aria-label="Sign in"
               >
                 <User className="ks-ico-sm" aria-hidden="true" />
@@ -309,21 +285,21 @@ function LoginScreen() {
               </svg>
               <span>Continue with Apple</span>
             </button>
-
-            {/* Legal */}
-            <p className="ks-legal">
-              By continuing you agree to our{" "}
-              <Link to="/terms" className="ks-link">
-                Terms
-              </Link>{" "}
-              and{" "}
-              <Link to="/privacy" className="ks-link">
-                Privacy Policy
-              </Link>
-              .
-            </p>
           </>
         )}
+
+        {/* Legal */}
+        <p className="ks-legal">
+          By continuing you agree to our{" "}
+          <Link to="/terms" className="ks-link">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="ks-link">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
 
       <style>{`
@@ -505,68 +481,6 @@ function LoginScreen() {
           text-decoration-color:rgba(201,168,76,0.6); font-weight:500;
         }
         .ks-link:hover { color:#1a3323; }
-
-        /* ── Email Form Card ── */
-        .ks-card {
-          width:100%; max-width:380px;
-          background:rgba(255,255,255,0.94);
-          border:1.5px solid rgba(201,168,76,0.45);
-          box-shadow:0 8px 32px rgba(122,30,44,0.15);
-          border-radius:28px; padding:30px 24px;
-          display:flex; flex-direction:column; align-items:center;
-          backdrop-filter:blur(10px);
-          box-sizing:border-box;
-        }
-        .ks-card-title {
-          font-family:'Cinzel',Georgia,serif;
-          font-size:24px; font-weight:bold; color:#1A3323;
-          margin:0 0 8px 0; text-align:center;
-        }
-        .ks-card-subtitle {
-          font-family:'Inter',sans-serif;
-          font-size:13px; color:#5C5040;
-          text-align:center; line-height:1.55; margin:0 0 20px 0;
-        }
-        .ks-form { width:100%; }
-        .ks-input-wrap {
-          display:flex; flex-direction:column; gap:6px;
-          margin-bottom:20px; text-align:left;
-        }
-        .ks-label {
-          font-family:'Inter',sans-serif;
-          font-size:11.5px; font-weight:600; color:#1A3323;
-        }
-        .ks-input-container { position:relative; width:100%; }
-        .ks-input-icon {
-          position:absolute; left:14px; top:50%;
-          transform:translateY(-50%); width:16px; height:16px;
-          color:#6B5A3E;
-        }
-        .ks-input-field {
-          width:100%; height:44px;
-          padding:0 16px 0 42px; border-radius:12px;
-          border:1px solid rgba(201,168,76,0.25);
-          background:rgba(255,255,255,0.6);
-          font-family:'Inter',sans-serif; font-size:14px;
-          color:#1A3323; box-sizing:border-box;
-          transition:border-color 180ms ease,background 180ms ease;
-        }
-        .ks-input-field:focus {
-          outline:none; border-color:#C9A84C; background:white;
-        }
-        .ks-submit-btn {
-          width:100%; height:46px; border-radius:23px;
-          background:#1A3323; color:#F2EDE0;
-          border:1.5px solid rgba(201,168,76,0.45);
-          font-family:'DM Sans',sans-serif; font-size:14.5px;
-          font-weight:bold; display:flex; align-items:center;
-          justify-content:center;
-          box-shadow:0 4px 14px rgba(26,51,35,0.25); cursor:pointer;
-          transition:transform 180ms ease,background 180ms ease;
-        }
-        .ks-submit-btn:hover { background:#122619; }
-        .ks-submit-btn:active { transform:scale(0.98); }
-        .ks-submit-btn:disabled { opacity:0.7; cursor:not-allowed; }
       `}</style>
     </div>
   );

@@ -5,6 +5,7 @@ import '../../../core/theme/category_theme.dart';
 import '../../../shared/providers/category_provider.dart';
 import '../../../shared/widgets/sanjeevani_card.dart';
 import '../providers/player_provider.dart';
+import '../../tracks/providers/tracks_provider.dart';
 
 class PlayerScreen extends ConsumerWidget {
   const PlayerScreen({super.key});
@@ -30,15 +31,36 @@ class PlayerScreen extends ConsumerWidget {
         ? '${EnvConfig.baseUrl}/storage/file/$thumbnailKey'
         : null;
 
+    final currentTrack = playerState.currentTrack;
+    final trackId = currentTrack?['id'] as String?;
+    final favorites = ref.watch(favoritesProvider).value ?? [];
+    final isFavorite = trackId != null && favorites.any((f) => f['id'] == trackId || f['trackId'] == trackId);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Now Playing'),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Icons.favorite_border, color: catColors.cat),
-            onPressed: () {},
-          ),
+          if (currentTrack != null)
+            IconButton(
+              icon: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : catColors.cat,
+              ),
+              onPressed: () async {
+                final success = await ref.read(favoritesNotifierProvider.notifier).toggleFavorite(currentTrack);
+                if (success && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isFavorite ? 'Removed from favorites' : 'Added to favorites',
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+            ),
         ],
       ),
       body: SafeArea(

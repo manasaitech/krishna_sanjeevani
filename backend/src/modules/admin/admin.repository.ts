@@ -1,6 +1,6 @@
 import { sql, eq, ne, and, gt, desc, or, like, isNull } from "drizzle-orm";
 import { DrizzleD1Database } from "drizzle-orm/d1";
-import { users, userProfiles, tracks, programs, playHistory, subscriptions, payments, plans, favorites } from "../../shared/db/schema";
+import { users, userProfiles, tracks, programs, playHistory, subscriptions, payments, plans, favorites, surawaliSubscriptions, surawalis } from "../../shared/db/schema";
 import * as schema from "../../shared/db/schema";
 import { UserFilters } from "./admin.types";
 import { SubscriptionFilters, PaymentFilters } from "./subscription.types";
@@ -24,7 +24,7 @@ export class AdminRepository {
       this.db.select({ count: sql<number>`count(*)` }).from(tracks).where(ne(tracks.publishStatus, "deleted")),
       this.db.select({ count: sql<number>`count(*)` }).from(programs).where(ne(programs.status, "deleted")),
       this.db.select({ count: sql<number>`count(*)` }).from(playHistory),
-      this.db.select({ count: sql<number>`count(*)` }).from(subscriptions).where(and(eq(subscriptions.status, "active"), gt(subscriptions.currentPeriodEnd, Date.now())))
+      this.db.select({ count: sql<number>`count(*)` }).from(surawaliSubscriptions).where(and(eq(surawaliSubscriptions.status, "active"), gt(surawaliSubscriptions.endDate, Date.now())))
     ]);
 
     return {
@@ -299,17 +299,25 @@ export class AdminRepository {
     const conditions = [];
 
     if (filters.status && filters.status !== "All") {
-      conditions.push(eq(subscriptions.status, filters.status.toLowerCase()));
+      if (filters.status.toLowerCase() === "canceled") {
+        conditions.push(or(
+          eq(surawaliSubscriptions.status, "canceled"),
+          eq(surawaliSubscriptions.status, "cancelled")
+        ));
+      } else {
+        conditions.push(eq(surawaliSubscriptions.status, filters.status.toLowerCase()));
+      }
     }
     if (filters.planId && filters.planId !== "All") {
-      conditions.push(eq(subscriptions.planId, filters.planId.toLowerCase()));
+      conditions.push(eq(surawaliSubscriptions.plan, filters.planId.toLowerCase()));
     }
     if (filters.search) {
       const pattern = `%${filters.search.toLowerCase()}%`;
       conditions.push(
         or(
           like(sql`lower(${users.email})`, pattern),
-          like(sql`lower(${userProfiles.fullName})`, pattern)
+          like(sql`lower(${userProfiles.fullName})`, pattern),
+          like(sql`lower(${surawalis.name})`, pattern)
         )
       );
     }
@@ -324,27 +332,28 @@ export class AdminRepository {
 
     let query = this.db
       .select({
-        id: subscriptions.id,
-        status: subscriptions.status,
-        currentPeriodStart: subscriptions.currentPeriodStart,
-        currentPeriodEnd: subscriptions.currentPeriodEnd,
+        id: surawaliSubscriptions.id,
+        status: surawaliSubscriptions.status,
+        currentPeriodStart: surawaliSubscriptions.startDate,
+        currentPeriodEnd: surawaliSubscriptions.endDate,
         userId: users.id,
         email: users.email,
         fullName: userProfiles.fullName,
-        planName: plans.name,
-        planId: plans.id,
+        planName: surawaliSubscriptions.plan,
+        planId: surawaliSubscriptions.plan,
+        surawaliName: surawalis.name,
       })
-      .from(subscriptions)
-      .leftJoin(users, eq(users.id, subscriptions.userId))
+      .from(surawaliSubscriptions)
+      .leftJoin(users, eq(users.id, surawaliSubscriptions.userId))
       .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
-      .leftJoin(plans, eq(plans.id, subscriptions.planId));
+      .leftJoin(surawalis, eq(surawalis.id, surawaliSubscriptions.surawaliId));
 
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as any;
     }
 
     const data = await query
-      .orderBy(desc(subscriptions.createdAt))
+      .orderBy(desc(surawaliSubscriptions.createdAt))
       .limit(limit)
       .offset(offset);
 
@@ -356,9 +365,10 @@ export class AdminRepository {
 
     let query = this.db
       .select({ count: sql<number>`count(*)` })
-      .from(subscriptions)
-      .leftJoin(users, eq(users.id, subscriptions.userId))
-      .leftJoin(userProfiles, eq(userProfiles.userId, users.id));
+      .from(surawaliSubscriptions)
+      .leftJoin(users, eq(users.id, surawaliSubscriptions.userId))
+      .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+      .leftJoin(surawalis, eq(surawalis.id, surawaliSubscriptions.surawaliId));
 
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as any;
@@ -380,36 +390,36 @@ export class AdminRepository {
     ] = await Promise.all([
       this.db
         .select({ count: sql<number>`count(*)` })
-        .from(subscriptions)
-        .where(and(eq(subscriptions.status, "active"), gt(subscriptions.currentPeriodEnd, now))),
+        .from(surawaliSubscriptions)
+        .where(and(eq(surawaliSubscriptions.status, "active"), gt(surawaliSubscriptions.endDate, now))),
       this.db
         .select({ count: sql<number>`count(*)` })
-        .from(subscriptions)
+        .from(surawaliSubscriptions)
         .where(
           and(
-            eq(subscriptions.status, "active"),
-            eq(subscriptions.planId, "standard"),
-            gt(subscriptions.currentPeriodEnd, now)
+            eq(surawaliSubscriptions.status, "active"),
+            eq(surawaliSubscriptions.plan, "monthly"),
+            gt(surawaliSubscriptions.endDate, now)
           )
         ),
       this.db
         .select({ count: sql<number>`count(*)` })
-        .from(subscriptions)
+        .from(surawaliSubscriptions)
         .where(
           and(
-            eq(subscriptions.status, "active"),
-            eq(subscriptions.planId, "premium"),
-            gt(subscriptions.currentPeriodEnd, now)
+            eq(surawaliSubscriptions.status, "active"),
+            eq(surawaliSubscriptions.plan, "premium"),
+            gt(surawaliSubscriptions.endDate, now)
           )
         ),
       this.db
         .select({ count: sql<number>`count(*)` })
-        .from(subscriptions)
+        .from(surawaliSubscriptions)
         .where(
           and(
-            eq(subscriptions.status, "active"),
-            gt(subscriptions.currentPeriodEnd, now),
-            sql`${subscriptions.currentPeriodEnd} <= ${sevenDaysLater}`
+            eq(surawaliSubscriptions.status, "active"),
+            gt(surawaliSubscriptions.endDate, now),
+            sql`${surawaliSubscriptions.endDate} <= ${sevenDaysLater}`
           )
         )
     ]);
@@ -425,25 +435,26 @@ export class AdminRepository {
   async findSubscriptionDetails(subId: string) {
     const subRes = await this.db
       .select({
-        id: subscriptions.id,
-        status: subscriptions.status,
-        currentPeriodStart: subscriptions.currentPeriodStart,
-        currentPeriodEnd: subscriptions.currentPeriodEnd,
-        createdAt: subscriptions.createdAt,
-        userId: subscriptions.userId,
+        id: surawaliSubscriptions.id,
+        status: surawaliSubscriptions.status,
+        currentPeriodStart: surawaliSubscriptions.startDate,
+        currentPeriodEnd: surawaliSubscriptions.endDate,
+        createdAt: surawaliSubscriptions.createdAt,
+        userId: surawaliSubscriptions.userId,
         email: users.email,
         fullName: userProfiles.fullName,
         role: users.role,
-        planId: subscriptions.planId,
-        planName: plans.name,
-        price: plans.price,
-        currency: plans.currency,
+        planId: surawaliSubscriptions.plan,
+        planName: surawaliSubscriptions.plan,
+        price: sql<number>`0`,
+        currency: sql<string>`'INR'`,
+        surawaliName: surawalis.name,
       })
-      .from(subscriptions)
-      .leftJoin(users, eq(users.id, subscriptions.userId))
+      .from(surawaliSubscriptions)
+      .leftJoin(users, eq(users.id, surawaliSubscriptions.userId))
       .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
-      .leftJoin(plans, eq(plans.id, subscriptions.planId))
-      .where(eq(subscriptions.id, subId))
+      .leftJoin(surawalis, eq(surawalis.id, surawaliSubscriptions.surawaliId))
+      .where(eq(surawaliSubscriptions.id, subId))
       .limit(1);
 
     const subscription = subRes[0] ?? null;
@@ -452,12 +463,7 @@ export class AdminRepository {
     const paymentsHistory = await this.db
       .select()
       .from(payments)
-      .where(
-        and(
-          eq(payments.userId, subscription.userId),
-          eq(payments.planId, subscription.planId)
-        )
-      )
+      .where(eq(payments.userId, subscription.userId))
       .orderBy(desc(payments.createdAt))
       .limit(10);
 
@@ -469,29 +475,29 @@ export class AdminRepository {
 
   async cancelSubscription(subId: string) {
     await this.db
-      .update(subscriptions)
-      .set({ status: "canceled", updatedAt: Date.now() })
-      .where(eq(subscriptions.id, subId));
+      .update(surawaliSubscriptions)
+      .set({ status: "cancelled", updatedAt: Date.now() })
+      .where(eq(surawaliSubscriptions.id, subId));
   }
 
   async extendSubscription(subId: string, days: number) {
     const sub = await this.db
       .select()
-      .from(subscriptions)
-      .where(eq(subscriptions.id, subId))
+      .from(surawaliSubscriptions)
+      .where(eq(surawaliSubscriptions.id, subId))
       .limit(1);
     
     if (sub[0]) {
-      const currentEnd = Math.max(Date.now(), sub[0].currentPeriodEnd);
+      const currentEnd = Math.max(Date.now(), sub[0].endDate);
       const newEnd = currentEnd + days * 24 * 60 * 60 * 1000;
       await this.db
-        .update(subscriptions)
+        .update(surawaliSubscriptions)
         .set({
-          currentPeriodEnd: newEnd,
+          endDate: newEnd,
           status: "active",
           updatedAt: Date.now(),
         })
-        .where(eq(subscriptions.id, subId));
+        .where(eq(surawaliSubscriptions.id, subId));
     }
   }
 
@@ -692,8 +698,8 @@ export class AdminRepository {
         trackId: playHistory.trackId,
         title: tracks.title,
         artist: tracks.artist,
-        plays: sql<number>`count(*)`,
-        completions: sql<number>`sum(case when ${playHistory.completed} = 1 then 1 else 0 end)`,
+        plays: sql<number>`count(*)`.as("plays"),
+        completions: sql<number>`sum(case when ${playHistory.completed} = 1 then 1 else 0 end)`.as("completions"),
       })
       .from(playHistory)
       .leftJoin(tracks, eq(tracks.id, playHistory.trackId))
@@ -713,8 +719,8 @@ export class AdminRepository {
       .select({
         programId: playHistory.programId,
         title: programs.title,
-        starts: sql<number>`count(*)`,
-        completions: sql<number>`sum(case when ${playHistory.completed} = 1 then 1 else 0 end)`,
+        starts: sql<number>`count(*)`.as("starts"),
+        completions: sql<number>`sum(case when ${playHistory.completed} = 1 then 1 else 0 end)`.as("completions"),
       })
       .from(playHistory)
       .innerJoin(programs, eq(programs.id, playHistory.programId))
@@ -733,8 +739,8 @@ export class AdminRepository {
     const data = await this.db
       .select({
         category: tracks.category,
-        plays: sql<number>`count(*)`,
-        durationHours: sql<number>`round(sum(${playHistory.durationListened}) / 3600, 1)`,
+        plays: sql<number>`count(*)`.as("plays"),
+        durationHours: sql<number>`round(sum(${playHistory.durationListened}) / 3600, 1)`.as("durationHours"),
       })
       .from(playHistory)
       .leftJoin(tracks, eq(tracks.id, playHistory.trackId))

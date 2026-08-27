@@ -19,6 +19,7 @@ import {
   Music,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export function SurawaliShowcase() {
   const { isAuthenticated } = useApp();
@@ -39,6 +40,21 @@ export function SurawaliShowcase() {
     }
   };
 
+  const handleSurawaliClick = (searchKey: string) => {
+    if (isAuthenticated) {
+      navigate({
+        to: "/discover",
+        search: { search: searchKey },
+      });
+    } else {
+      toast.info("Please login to view Surawali details");
+      navigate({
+        to: "/login",
+        search: { redirect: `/discover?search=${encodeURIComponent(searchKey)}` },
+      });
+    }
+  };
+
   useEffect(() => {
     async function fetchCatalog() {
       try {
@@ -55,7 +71,7 @@ export function SurawaliShowcase() {
 
   const cards = [
     {
-      name: "Greeshma Surāwali",
+      name: "Kalyani Surāwali",
       subtitle: "Raga Kalyani (Greeshma)",
       description:
         "A gentle acoustic experience traditionally associated with calmness, balance, and focused listening.",
@@ -67,7 +83,7 @@ export function SurawaliShowcase() {
       badgeColor: "bg-amber-500/10 text-amber-600 border-amber-500/20",
     },
     {
-      name: "Nidra Mohini Surāwali",
+      name: "Bhairavi Surāwali",
       subtitle: "Raga Bhairavi (Nidra Mohini)",
       description:
         "A deeply calming Surāwali suited for relaxation, introspection, and peaceful listening.",
@@ -79,7 +95,7 @@ export function SurawaliShowcase() {
       badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
     },
     {
-      name: "Anand Mohini Surāwali",
+      name: "Yaman Surāwali",
       subtitle: "Raga Yaman (Anand Mohini)",
       description:
         "A serene and uplifting Surāwali designed for relaxation, emotional balance, and peaceful listening.",
@@ -91,7 +107,7 @@ export function SurawaliShowcase() {
       badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
     },
     {
-      name: "Prabhaati Surāwali",
+      name: "Todi Surāwali",
       subtitle: "Raga Todi (Prabhaati)",
       description:
         "A focused and contemplative Surāwali suited for attentive listening and a calm start to the day.",
@@ -197,10 +213,9 @@ export function SurawaliShowcase() {
           {cards.map((rawCard, idx) => {
             const card = getMappedCardData(rawCard);
             return (
-              <Link
+              <div
                 key={idx}
-                to="/discover"
-                search={{ search: card.searchKey }}
+                onClick={() => handleSurawaliClick(card.searchKey)}
                 className="snap-center shrink-0 w-[290px] md:w-auto press group relative rounded-3xl overflow-hidden border border-border/60 bg-surface shadow-soft hover:shadow-lift hover:border-cat/40 transition-all duration-300 flex flex-col justify-between cursor-pointer h-auto md:h-full"
               >
                 {/* Image & Timing Overlay */}
@@ -252,7 +267,7 @@ export function SurawaliShowcase() {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

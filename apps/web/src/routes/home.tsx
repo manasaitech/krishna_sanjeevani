@@ -91,8 +91,6 @@ function HomeDashboard() {
     play,
     user,
     tracks,
-    lang,
-    t,
   } = useApp();
 
   const navigate = useNavigate();
@@ -181,32 +179,8 @@ function HomeDashboard() {
     if (activeCategory === "devotional") {
       return catalog.ailments.map(a => ({ label: a.name, value: a.id }));
     } else if (activeCategory === "pregnancy") {
-      return Array.from({ length: 9 }).map((_, i) => ({
-        label: lang === "hindi" ? `माह ${i + 1}` : lang === "sanskrit" ? `मासः ${i + 1}` : `Month ${i + 1}`,
-        value: String(i + 1)
-      }));
+      return Array.from({ length: 9 }).map((_, i) => ({ label: `Month ${i + 1}`, value: String(i + 1) }));
     } else {
-      if (lang === "hindi") {
-        return [
-          { label: "सोमवार", value: "Monday" },
-          { label: "मंगलवार", value: "Tuesday" },
-          { label: "बुधवार", value: "Wednesday" },
-          { label: "गुरुवार", value: "Thursday" },
-          { label: "शुक्रवार", value: "Friday" },
-          { label: "शनिवार", value: "Saturday" },
-          { label: "रविवार", value: "Sunday" },
-        ];
-      } else if (lang === "sanskrit") {
-        return [
-          { label: "सोमवासरः", value: "Monday" },
-          { label: "मङ्गलवासरः", value: "Tuesday" },
-          { label: "बुधवासरः", value: "Wednesday" },
-          { label: "गुरुवासरः", value: "Thursday" },
-          { label: "शुक्रवासरः", value: "Friday" },
-          { label: "शनिवासरः", value: "Saturday" },
-          { label: "रविवासरः", value: "Sunday" },
-        ];
-      }
       return [
         { label: "Monday", value: "Monday" },
         { label: "Tuesday", value: "Tuesday" },
@@ -217,7 +191,7 @@ function HomeDashboard() {
         { label: "Sunday", value: "Sunday" },
       ];
     }
-  }, [catalog, activeCategory, lang]);
+  }, [catalog, activeCategory]);
 
   // Filtered master recommendations for exploration
   const exploreResults = useMemo(() => {
@@ -374,30 +348,6 @@ function HomeDashboard() {
     setCurrentPage(1);
   };
 
-  const localizedName = activeCategory === "devotional" 
-    ? t("krishnaSanjeevani") 
-    : activeCategory === "pregnancy" 
-      ? t("garbhaSanjeevani") 
-      : t("nirvanaSanjeevani");
-
-  const localizedDesc = activeCategory === "devotional" 
-    ? t("krishnaSanjeevaniDesc") 
-    : activeCategory === "pregnancy" 
-      ? t("garbhaSanjeevaniDesc") 
-      : t("nirvanaSanjeevaniDesc");
-
-  const localizedGreeting = activeCategory === "devotional" 
-    ? t("krishnaSanjeevaniGreeting") 
-    : activeCategory === "pregnancy" 
-      ? t("garbhaSanjeevaniGreeting") 
-      : t("nirvanaSanjeevaniGreeting");
-
-  const localizedBannerText = activeCategory === "devotional" 
-    ? (lang === "hindi" ? "आपकी पसंद के अनुसार चिकित्सकीय संगीत के व्यक्तिगत चक्र उपलब्ध हैं।" : lang === "sanskrit" ? "भवतः मानसिकशांतये सङ्गीतसत्राणि उपलब्धानि सन्ति।" : "Customized restorative therapy tracks aligned to your biological parameters are ready.") 
-    : activeCategory === "pregnancy" 
-      ? (lang === "hindi" ? "गर्भावस्था के दौरान शिशु के विकास और शांति के लिए गर्भ संस्कार मंत्र।" : lang === "sanskrit" ? "गर्भसंस्कारमन्त्राः शिशुवर्धनार्थं उपलब्धाः सन्ति।" : "Maternal sounds and development support customized to your current trimester.") 
-      : (lang === "hindi" ? "तनाव मुक्ति और ध्यान केंद्रित करने के लिए विशेष संगीत।" : lang === "sanskrit" ? "उद्योगकल्याणाय चित्तस्थैर्यं एकाग्रता च वर्धयन्तु।" : "Mindful concentration triggers tailored for professional efficiency.");
-
   return (
     <AppShell>
       <div 
@@ -413,14 +363,14 @@ function HomeDashboard() {
           }}
         >
           <div className="space-y-1">
-            <p className="text-[12px] text-muted-foreground font-semibold uppercase tracking-wider">{t("activePathway")}</p>
+            <p className="text-[12px] text-muted-foreground font-semibold uppercase tracking-wider">Active Sanjeevani Pathway</p>
             <h2 className="font-display font-bold text-2xl text-foreground" style={{ color: config.theme.primary }}>
-              {localizedName}
+              {config.name}
             </h2>
-            <p className="text-sm text-muted-foreground/90 max-w-xl">{localizedDesc}</p>
+            <p className="text-sm text-muted-foreground/90 max-w-xl">{config.description}</p>
           </div>
           <div className="shrink-0 rounded-btn px-4 py-3 border font-display text-xs leading-normal font-semibold text-center italic text-muted-foreground/80 bg-background max-w-md" style={{ borderColor: config.theme.primary + "30" }}>
-            {localizedGreeting}
+            {config.greetingText}
           </div>
         </div>
 
@@ -428,8 +378,8 @@ function HomeDashboard() {
         {/* Subscribed Surawalis Section */}
         <div id="subscribed-surawalis" className="space-y-4 scroll-mt-20">
           <div className="flex items-center justify-between px-1">
-            <h3 className="font-semibold text-foreground text-lg">{t("yourSubscribedSurawalis")}</h3>
-            <span className="text-xs text-muted-foreground font-medium">{filteredSubscriptions.length} {t("subscriptionsActive")}</span>
+            <h3 className="font-semibold text-foreground text-lg">Your Subscribed Surawalis</h3>
+            <span className="text-xs text-muted-foreground font-medium">{filteredSubscriptions.length} subscriptions active</span>
           </div>
 
           {loading ? (
@@ -441,13 +391,14 @@ function HomeDashboard() {
               {filteredSubscriptions.map(sub => (
                 <div 
                   key={sub.id} 
-                  className="press min-w-[280px] max-w-[280px] bg-surface rounded-card border border-border/60 hover:border-cat/60 hover:shadow-soft transition-all duration-300 p-4 flex flex-col justify-between space-y-4"
+                  onClick={() => navigate({ to: "/discover", search: { search: sub.surawaliName } })}
+                  className="press min-w-[280px] max-w-[280px] bg-surface rounded-card border border-border/60 hover:border-cat/60 hover:shadow-soft transition-all duration-300 p-4 flex flex-col justify-between space-y-4 cursor-pointer"
                 >
                   <div className="space-y-2">
                     <div className="relative h-28 w-full rounded-xl overflow-hidden bg-muted">
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
                       <div className="absolute top-2.5 left-2.5 z-20 rounded bg-white/20 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-white tracking-wider uppercase">
-                        {t("subscribedText")}
+                        Subscribed
                       </div>
                       <div 
                         className="absolute inset-0 flex items-center justify-center text-white/90 text-2xl font-bold font-display uppercase tracking-widest z-0 bg-gradient-to-br"
@@ -462,7 +413,7 @@ function HomeDashboard() {
                         {sub.surawaliName}
                       </h4>
                       <p className="text-[11px] text-muted-foreground uppercase tracking-wide mt-0.5">
-                        {activeCategory === "devotional" ? t("krishnaSanjeevani") : t("garbhaSanjeevani")}
+                        {activeCategory === "devotional" ? "Raga Chikitsa" : "Garbha Sanskar"}
                       </p>
                     </div>
                   </div>
@@ -470,10 +421,13 @@ function HomeDashboard() {
                   <div className="flex items-center justify-between pt-2 border-t border-border/40">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Clock className="h-3.5 w-3.5" />
-                      <span>30 {t("minute")}</span>
+                      <span>30 min</span>
                     </div>
                     <button
-                      onClick={() => handlePlayPreview(sub.surawaliName, "Subscribed active session", true)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayPreview(sub.surawaliName, "Subscribed active session", true);
+                      }}
                       className="press h-8 w-8 rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform"
                       style={{ backgroundColor: config.theme.primary }}
                     >
@@ -486,7 +440,7 @@ function HomeDashboard() {
           ) : (
             <div className="rounded-card border border-dashed border-border p-8 text-center bg-surface/50">
               <p className="text-sm text-muted-foreground">
-                {t("surawaliJourneyStart")}
+                Your Surawali journey starts here. Explore and subscribe to curated Surawalis for your pathway.
               </p>
               <button
                 onClick={() => {
@@ -496,7 +450,7 @@ function HomeDashboard() {
                 className="press mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-btn text-xs font-bold text-white transition-all"
                 style={{ backgroundColor: config.theme.primary }}
               >
-                <span>{t("exploreSurawalis")}</span>
+                <span>Explore Surawalis</span>
               </button>
             </div>
           )}
@@ -516,50 +470,36 @@ function HomeDashboard() {
             </svg>
           </div>
           <p className="text-xs font-medium text-foreground leading-relaxed">
-            {localizedBannerText}
+            {config.bannerText}
           </p>
         </div>
 
         {/* Explore / Catalog Inline section */}
         <div id="explore-surawalis" className="space-y-6 scroll-mt-20">
           <div className="px-1 space-y-1">
-            <h3 className="font-semibold text-foreground text-lg">{t("exploreSurawalis")}</h3>
-            <p className="text-xs text-muted-foreground">{t("discoverOtherSequences")}</p>
+            <h3 className="font-semibold text-foreground text-lg">Explore Surawalis</h3>
+            <p className="text-xs text-muted-foreground">Discover other auditory medicine sequences sequenced for your condition</p>
           </div>
 
           {/* Chips categories filter */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-            {config.filters.map(filterName => {
-              const getFilterDisplayName = (name: string) => {
-                if (name === "All") return lang === "hindi" ? "सभी" : lang === "sanskrit" ? "सर्वाणि" : "All";
-                if (name === "Disorder Relief") return lang === "hindi" ? "विकार निवारण" : lang === "sanskrit" ? "व्याधिनिवारणम्" : "Disorder Relief";
-                if (name === "Stress Relief") return lang === "hindi" ? "तनाव निवारण" : lang === "sanskrit" ? "तनावमुक्तिः" : "Stress Relief";
-                if (name === "Focus") return lang === "hindi" ? "एकाग्रता" : lang === "sanskrit" ? "चित्तस्थैर्यम्" : "Focus";
-                if (name === "Sleep") return lang === "hindi" ? "नींद" : lang === "sanskrit" ? "निद्रा" : "Sleep";
-                if (name === "Month 1-3") return lang === "hindi" ? "माह १-३" : lang === "sanskrit" ? "मासः १-३" : "Month 1-3";
-                if (name === "Month 4-6") return lang === "hindi" ? "माह ४-६" : lang === "sanskrit" ? "मासः ४-६" : "Month 4-6";
-                if (name === "Month 7-9") return lang === "hindi" ? "माह ७-९" : lang === "sanskrit" ? "मासः ७-९" : "Month 7-9";
-                return name;
-              };
-
-              return (
-                <button
-                  key={filterName}
-                  onClick={() => {
-                    setActiveChip(filterName);
-                    setCurrentPage(1);
-                  }}
-                  className="press px-4 py-2 rounded-full text-xs font-semibold border transition-all select-none cursor-pointer"
-                  style={{
-                    backgroundColor: activeChip === filterName ? config.theme.primary : "transparent",
-                    color: activeChip === filterName ? "#fff" : "inherit",
-                    borderColor: activeChip === filterName ? config.theme.primary : "#e2e8f0"
-                  }}
-                >
-                  {getFilterDisplayName(filterName)}
-                </button>
-              );
-            })}
+            {config.filters.map(filterName => (
+              <button
+                key={filterName}
+                onClick={() => {
+                  setActiveChip(filterName);
+                  setCurrentPage(1);
+                }}
+                className="press px-4 py-2 rounded-full text-xs font-semibold border transition-all select-none cursor-pointer"
+                style={{
+                  backgroundColor: activeChip === filterName ? config.theme.primary : "transparent",
+                  color: activeChip === filterName ? "#fff" : "inherit",
+                  borderColor: activeChip === filterName ? config.theme.primary : "#e2e8f0"
+                }}
+              >
+                {filterName}
+              </button>
+            ))}
           </div>
 
           {/* Detailed filters toolbar panel */}
@@ -568,7 +508,7 @@ function HomeDashboard() {
               
               {/* Search bar */}
               <div className="lg:col-span-2 relative w-full">
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">{t("search")}</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Search</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <input
@@ -578,7 +518,7 @@ function HomeDashboard() {
                       setSearchQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    placeholder={t("searchPlaceholder")}
+                    placeholder="Search by name, tags..."
                     className="w-full min-h-10 pl-9 pr-4 rounded-btn border border-border bg-background text-sm outline-none focus-visible:ring-1 focus-visible:ring-cat focus-visible:border-cat transition-all text-foreground"
                   />
                 </div>
@@ -587,7 +527,7 @@ function HomeDashboard() {
               {/* Pathway-specific dynamic dropdown selector */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
-                  {activeCategory === "devotional" ? t("disorderAilment") : activeCategory === "pregnancy" ? t("pregnancyMonth") : t("corporateDay")}
+                  {activeCategory === "devotional" ? "Disorder / Ailment" : activeCategory === "pregnancy" ? "Pregnancy Month" : "Corporate Day"}
                 </label>
                 <select
                   value={selectedParam}
@@ -597,7 +537,7 @@ function HomeDashboard() {
                   }}
                   className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:ring-1 focus-visible:ring-cat"
                 >
-                  <option value="">{t("allOptions")}</option>
+                  <option value="">-- All Options --</option>
                   {paramDropdownList.map(item => (
                     <option key={item.value} value={item.value}>{item.label}</option>
                   ))}
@@ -606,7 +546,7 @@ function HomeDashboard() {
 
               {/* Best Listening Time filter */}
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">{t("bestListeningTime")}</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Best Listening Time</label>
                 <select
                   value={selectedTimingId}
                   onChange={(e) => {
@@ -615,19 +555,10 @@ function HomeDashboard() {
                   }}
                   className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:ring-1 focus-visible:ring-cat"
                 >
-                  <option value="">{t("anyTime")}</option>
-                  {catalog?.timings.map(t => {
-                    const getTimingDisplayName = (name: string) => {
-                      if (name === "Morning") return lang === "hindi" ? "प्रातःकाल" : lang === "sanskrit" ? "प्रातःकालः" : "Morning";
-                      if (name === "Afternoon") return lang === "hindi" ? "मध्याह्न" : lang === "sanskrit" ? "मध्याह्नः" : "Afternoon";
-                      if (name === "Evening") return lang === "hindi" ? "सायंकाल" : lang === "sanskrit" ? "सायङ्कालः" : "Evening";
-                      if (name === "Night") return lang === "hindi" ? "रात्रि" : lang === "sanskrit" ? "रात्रिः" : "Night";
-                      return name;
-                    };
-                    return (
-                      <option key={t.id} value={t.id}>{getTimingDisplayName(t.name)}</option>
-                    );
-                  })}
+                  <option value="">-- Any Time --</option>
+                  {catalog?.timings.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -638,7 +569,7 @@ function HomeDashboard() {
                   className="press w-full min-h-10 px-4 rounded-btn border border-border bg-background text-xs font-bold text-muted-foreground hover:bg-secondary flex items-center justify-center gap-1.5"
                 >
                   <SlidersHorizontal className="h-3.5 w-3.5" />
-                  <span>{t("resetFilters")}</span>
+                  <span>Reset Filters</span>
                 </button>
               </div>
 
@@ -662,7 +593,8 @@ function HomeDashboard() {
                 return (
                   <div 
                     key={item.id} 
-                    className="rounded-card border border-border/60 bg-surface p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-soft hover:border-cat/40 transition-all duration-300"
+                    onClick={() => navigate({ to: "/discover", search: { search: item.title } })}
+                    className="rounded-card border border-border/60 bg-surface p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-soft hover:border-cat/40 transition-all duration-300 cursor-pointer"
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div 
@@ -684,39 +616,48 @@ function HomeDashboard() {
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5" />
-                            <span>{t("timing")}: {item.timing}</span>
+                            <span>Timing: {item.timing}</span>
                           </span>
                           <span>&bull;</span>
-                          <span>{t("duration")}: {item.duration}</span>
+                          <span>Duration: {item.duration}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
                       <button
-                        onClick={() => handlePlayPreview(item.title, `Preview of ${item.title}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayPreview(item.title, `Preview of ${item.title}`);
+                        }}
                         className="press flex-1 md:flex-none min-h-10 px-4 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1.5"
                       >
                         <Play className="h-3.5 w-3.5 fill-current" />
-                        <span>{t("preview")}</span>
+                        <span>Preview</span>
                       </button>
                       
                       {isSubscribed ? (
                         <button
-                          onClick={() => handlePlayPreview(item.title, `Full session: ${item.title}`, true)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePlayPreview(item.title, `Full session: ${item.title}`, true);
+                          }}
                           className="press flex-1 md:flex-none min-h-10 px-5 rounded-btn text-xs font-bold text-white hover:brightness-105 flex items-center justify-center gap-1.5"
                           style={{ backgroundColor: config.theme.primary }}
                         >
                           <Waves className="h-3.5 w-3.5" />
-                          <span>{t("listenNow")}</span>
+                          <span>Listen Now</span>
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleSubscribeClick({ id: item.surawaliId, name: item.title })}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSubscribeClick({ id: item.surawaliId, name: item.title });
+                          }}
                           className="press flex-1 md:flex-none min-h-10 px-5 rounded-btn bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-hover flex items-center justify-center gap-1"
                         >
                           <Lock className="h-3.5 w-3.5" />
-                          <span>{t("subscribe")}</span>
+                          <span>Subscribe</span>
                         </button>
                       )}
                     </div>
@@ -726,8 +667,8 @@ function HomeDashboard() {
             ) : (
               <div className="rounded-card border border-border bg-surface/60 p-8 text-center shadow-soft">
                 <Waves className="mx-auto h-8 w-8 text-muted-foreground/60 mb-2 animate-pulse" />
-                <p className="text-[13px] font-semibold text-foreground">{t("noMatchedSurawalis")}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{t("tryResetting")}</p>
+                <p className="text-[13px] font-semibold text-foreground">No Surāwalis matched your criteria</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Try resetting the filters or tweaking your keywords.</p>
               </div>
             )}
           </div>

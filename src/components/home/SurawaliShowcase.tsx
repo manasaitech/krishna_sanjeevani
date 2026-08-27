@@ -19,6 +19,7 @@ import {
   Music,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export function SurawaliShowcase() {
   const { isAuthenticated } = useApp();
@@ -35,6 +36,21 @@ export function SurawaliShowcase() {
       navigate({
         to: "/login",
         search: { redirect: `/discover?tab=${tabId}` },
+      });
+    }
+  };
+
+  const handleSurawaliClick = (searchKey: string) => {
+    if (isAuthenticated) {
+      navigate({
+        to: "/discover",
+        search: { search: searchKey },
+      });
+    } else {
+      toast.info("Please login to view Surawali details");
+      navigate({
+        to: "/login",
+        search: { redirect: `/discover?search=${encodeURIComponent(searchKey)}` },
       });
     }
   };
@@ -197,10 +213,9 @@ export function SurawaliShowcase() {
           {cards.map((rawCard, idx) => {
             const card = getMappedCardData(rawCard);
             return (
-              <Link
+              <div
                 key={idx}
-                to="/discover"
-                search={{ search: card.searchKey }}
+                onClick={() => handleSurawaliClick(card.searchKey)}
                 className="snap-center shrink-0 w-[290px] md:w-auto press group relative rounded-3xl overflow-hidden border border-border/60 bg-surface shadow-soft hover:shadow-lift hover:border-cat/40 transition-all duration-300 flex flex-col justify-between cursor-pointer h-auto md:h-full"
               >
                 {/* Image & Timing Overlay */}
@@ -252,7 +267,7 @@ export function SurawaliShowcase() {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

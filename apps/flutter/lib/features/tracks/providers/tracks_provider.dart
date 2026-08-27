@@ -135,3 +135,75 @@ final favoritesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async
   }
   return [];
 });
+
+final programDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, programId) async {
+  final repo = ref.watch(programsRepositoryProvider);
+  final res = await repo.get(programId);
+  if (res.success && res.data != null) {
+    final data = res.data;
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    } else if (data is List && data.isNotEmpty) {
+      return Map<String, dynamic>.from(data.first as Map);
+    }
+  }
+  throw Exception(res.message ?? 'Failed to load program details');
+});
+
+final programTracksProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, programId) async {
+  final repo = ref.watch(programsRepositoryProvider);
+  final res = await repo.getTracks(programId);
+  if (res.success && res.data != null) {
+    final data = res.data;
+    if (data is List) {
+      return List<Map<String, dynamic>>.from(data);
+    } else if (data is Map && data['data'] is List) {
+      return List<Map<String, dynamic>>.from(data['data'] as List);
+    }
+  }
+  return [];
+});
+
+class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
+  final FavoritesRepository _repository;
+  final Ref _ref;
+
+  FavoritesNotifier(this._repository, this._ref) : super(const AsyncData(null));
+
+  Future<bool> toggleFavorite(Map<String, dynamic> track) async {
+    final trackId = track['id'] as String?;
+    if (trackId == null) return false;
+
+    final currentFavorites = _ref.read(favoritesProvider).value ?? [];
+    final isFav = currentFavorites.any((f) => f['id'] == trackId || f['trackId'] == trackId);
+
+    state = const AsyncLoading();
+    try {
+      if (isFav) {
+        final res = await _repository.remove(trackId);
+        if (res.success) {
+          _ref.invalidate(favoritesProvider);
+          state = const AsyncData(null);
+          return true;
+        }
+      } else {
+        final res = await _repository.add(trackId, 'track');
+        if (res.success) {
+          _ref.invalidate(favoritesProvider);
+          state = const AsyncData(null);
+          return true;
+        }
+      }
+      state = const AsyncData(null);
+      return false;
+    } catch (err, st) {
+      state = AsyncError(err, st);
+      return false;
+    }
+  }
+}
+
+final favoritesNotifierProvider = StateNotifierProvider<FavoritesNotifier, AsyncValue<void>>((ref) {
+  final repo = ref.watch(favoritesRepositoryProvider);
+  return FavoritesNotifier(repo, ref);
+});

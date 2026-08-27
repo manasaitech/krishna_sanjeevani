@@ -391,7 +391,8 @@ function HomeDashboard() {
               {filteredSubscriptions.map(sub => (
                 <div 
                   key={sub.id} 
-                  className="press min-w-[280px] max-w-[280px] bg-surface rounded-card border border-border/60 hover:border-cat/60 hover:shadow-soft transition-all duration-300 p-4 flex flex-col justify-between space-y-4"
+                  onClick={() => navigate({ to: "/discover", search: { search: sub.surawaliName } })}
+                  className="press min-w-[280px] max-w-[280px] bg-surface rounded-card border border-border/60 hover:border-cat/60 hover:shadow-soft transition-all duration-300 p-4 flex flex-col justify-between space-y-4 cursor-pointer"
                 >
                   <div className="space-y-2">
                     <div className="relative h-28 w-full rounded-xl overflow-hidden bg-muted">
@@ -423,7 +424,10 @@ function HomeDashboard() {
                       <span>30 min</span>
                     </div>
                     <button
-                      onClick={() => handlePlayPreview(sub.surawaliName, "Subscribed active session", true)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayPreview(sub.surawaliName, "Subscribed active session", true);
+                      }}
                       className="press h-8 w-8 rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform"
                       style={{ backgroundColor: config.theme.primary }}
                     >
@@ -589,7 +593,8 @@ function HomeDashboard() {
                 return (
                   <div 
                     key={item.id} 
-                    className="rounded-card border border-border/60 bg-surface p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-soft hover:border-cat/40 transition-all duration-300"
+                    onClick={() => navigate({ to: "/discover", search: { search: item.title } })}
+                    className="rounded-card border border-border/60 bg-surface p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-soft hover:border-cat/40 transition-all duration-300 cursor-pointer"
                   >
                     <div className="flex items-center gap-4 flex-1">
                       <div 
@@ -621,7 +626,10 @@ function HomeDashboard() {
 
                     <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
                       <button
-                        onClick={() => handlePlayPreview(item.title, `Preview of ${item.title}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayPreview(item.title, `Preview of ${item.title}`);
+                        }}
                         className="press flex-1 md:flex-none min-h-10 px-4 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1.5"
                       >
                         <Play className="h-3.5 w-3.5 fill-current" />
@@ -630,7 +638,10 @@ function HomeDashboard() {
                       
                       {isSubscribed ? (
                         <button
-                          onClick={() => handlePlayPreview(item.title, `Full session: ${item.title}`, true)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePlayPreview(item.title, `Full session: ${item.title}`, true);
+                          }}
                           className="press flex-1 md:flex-none min-h-10 px-5 rounded-btn text-xs font-bold text-white hover:brightness-105 flex items-center justify-center gap-1.5"
                           style={{ backgroundColor: config.theme.primary }}
                         >
@@ -639,7 +650,10 @@ function HomeDashboard() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleSubscribeClick({ id: item.surawaliId, name: item.title })}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSubscribeClick({ id: item.surawaliId, name: item.title });
+                          }}
                           className="press flex-1 md:flex-none min-h-10 px-5 rounded-btn bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-hover flex items-center justify-center gap-1"
                         >
                           <Lock className="h-3.5 w-3.5" />
