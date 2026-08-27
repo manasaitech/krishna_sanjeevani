@@ -207,7 +207,11 @@ function RouteGuard({ children }: { children: ReactNode }) {
 
     const selectedPathway = user.profile?.category;
     if (!selectedPathway || selectedPathway === "unset") {
-      return location.pathname !== "/category" ? "/category" : null;
+      const allowedWithoutCategory = ["/category", "/subscription", "/admin", "/profile", ...publicPaths];
+      if (!allowedWithoutCategory.includes(location.pathname)) {
+        return "/category";
+      }
+      return null;
     }
 
     if (location.pathname === "/category") {

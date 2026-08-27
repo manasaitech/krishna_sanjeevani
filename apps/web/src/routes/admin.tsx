@@ -388,8 +388,8 @@ function Admin() {
       if (res.success) {
         toast.success(res.message || "User subscription tier updated successfully!");
         setSubChangeModalOpen(false);
-        fetchUsersList();
-        fetchSubscriptionsList();
+        loadUsersList();
+        loadSubsList();
       } else {
         toast.error(res.message || "Failed to update user subscription tier.");
       }
