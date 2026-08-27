@@ -45,11 +45,13 @@ function Row({
   label,
   value,
   to,
+  onClick,
 }: {
   icon: typeof Bell;
   label: string;
   value?: string;
   to?: "/subscription" | "/category";
+  onClick?: () => void;
 }) {
   const inner = (
     <>
@@ -57,18 +59,23 @@ function Row({
         <Icon className="h-[18px] w-[18px]" />
       </span>
       <span className="min-w-0 flex-1 truncate text-sm font-medium">{label}</span>
-      {value && <span className="shrink-0 text-xs text-muted-foreground">{value}</span>}
+      {value && <span className="shrink-0 text-xs text-muted-foreground mr-1">{value}</span>}
       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
     </>
   );
   const cls =
     "press flex min-h-14 w-full items-center gap-3 px-4 text-left focus-visible:ring-2 focus-visible:ring-cat focus-visible:outline-none";
-  return to ? (
-    <Link to={to} className={cls}>
+  if (to) {
+    return (
+      <Link to={to} className={cls}>
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <button onClick={onClick} className={cls}>
       {inner}
-    </Link>
-  ) : (
-    <button className={cls}>{inner}</button>
+    </button>
   );
 }
 
@@ -100,6 +107,62 @@ function Profile() {
       toast.error("Failed to switch pathway.");
     } finally {
       setSwitching(false);
+    }
+  };
+
+  // Preferences & Modals State
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [lang, setLang] = useState<"english" | "hindi" | "sanskrit">("english");
+  const [showThemeModal, setShowThemeModal] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = (localStorage.getItem("theme") as "light" | "dark") || "light";
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user?.profile?.language) {
+      const backendLang = user.profile.language.toLowerCase();
+      if (backendLang === "hi" || backendLang === "hindi") {
+        setLang("hindi");
+      } else if (backendLang === "sa" || backendLang === "sanskrit") {
+        setLang("sanskrit");
+      } else {
+        setLang("english");
+      }
+    }
+  }, [user]);
+
+  const toggleTheme = (selectedTheme: "light" | "dark") => {
+    setTheme(selectedTheme);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("theme", selectedTheme);
+      if (selectedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      toast.success(`Appearance set to ${selectedTheme === "dark" ? "Dark" : "Light"} Mode`);
+    }
+  };
+
+  const handleSwitchLanguage = async (targetLang: "english" | "hindi" | "sanskrit") => {
+    setLang(targetLang);
+    const codeMap = { english: "en", hindi: "hi", sanskrit: "sa" };
+    const langCode = codeMap[targetLang];
+    try {
+      const res = await api.auth.updateProfile({ language: langCode });
+      if (res.success) {
+        await restoreSession();
+        toast.success(`Language set to ${targetLang.charAt(0).toUpperCase() + targetLang.slice(1)}`);
+      } else {
+        toast.error(res.message || "Failed to update language.");
+      }
+    } catch {
+      toast.error("Failed to update language.");
     }
   };
 
@@ -311,8 +374,18 @@ function Profile() {
             <span className="min-w-0 flex-1 text-sm font-medium">Session reminders</span>
             <Switch defaultChecked aria-label="Session reminders" />
           </div>
-          <Row icon={Palette} label="Theme" value="Light" />
-          <Row icon={Globe} label="Language" value="English" />
+          <Row
+            icon={Palette}
+            label="Theme"
+            value={theme === "dark" ? "Dark" : "Light"}
+            onClick={() => setShowThemeModal(true)}
+          />
+          <Row
+            icon={Globe}
+            label="Language"
+            value={lang === "hindi" ? "हिन्दी" : lang === "sanskrit" ? "संस्कृतम्" : "English"}
+            onClick={() => setShowLanguageModal(true)}
+          />
         </div>
       </Section>
 
@@ -331,6 +404,85 @@ function Profile() {
         <LogOut className="h-4 w-4" /> Log out
       </button>
       <p className="mt-6 text-center text-[12px] text-muted-foreground">Version 1.0.0</p>
+
+      {/* Theme Selection Modal */}
+      {showThemeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm rounded-card border border-border bg-surface p-6 shadow-soft animate-rise mx-4">
+            <h3 className="text-lg font-bold text-[#3A3125] dark:text-neutral-100">Select Theme</h3>
+            <p className="mt-1 text-xs text-muted-foreground">Choose your appearance preference</p>
+            <div className="mt-4 space-y-2">
+              {[
+                { id: "light", label: "Light Mode" },
+                { id: "dark", label: "Dark Mode" },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    toggleTheme(opt.id as "light" | "dark");
+                    setShowThemeModal(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-btn border p-3.5 text-left text-sm font-semibold transition-all duration-200",
+                    theme === opt.id
+                      ? "border-cat bg-cat-light text-cat"
+                      : "border-border bg-surface hover:bg-[#FAF5EC]/40 dark:hover:bg-neutral-800/40 text-[#3A3125] dark:text-neutral-200"
+                  )}
+                >
+                  <Palette className="h-4 w-4 shrink-0 text-cat" />
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowThemeModal(false)}
+              className="mt-6 flex h-11 w-full items-center justify-center rounded-btn bg-[#3A3125] text-white dark:bg-neutral-200 dark:text-neutral-900 text-sm font-bold"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Language Selection Modal */}
+      {showLanguageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm rounded-card border border-border bg-surface p-6 shadow-soft animate-rise mx-4">
+            <h3 className="text-lg font-bold text-[#3A3125] dark:text-neutral-100">Select Language</h3>
+            <p className="mt-1 text-xs text-muted-foreground">Select your preferred audio & interface language</p>
+            <div className="mt-4 space-y-2">
+              {[
+                { id: "english", label: "English (US)", sub: "English audio & text" },
+                { id: "hindi", label: "हिन्दी (Hindi)", sub: "हिन्दी ऑडियो और पाठ" },
+                { id: "sanskrit", label: "संस्कृतम् (Sanskrit)", sub: "संस्कृतम् मन्त्राः" },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    handleSwitchLanguage(opt.id as "english" | "hindi" | "sanskrit");
+                    setShowLanguageModal(false);
+                  }}
+                  className={cn(
+                    "flex w-full flex-col gap-0.5 rounded-btn border p-3.5 text-left transition-all duration-200",
+                    lang === opt.id
+                      ? "border-cat bg-cat-light text-cat"
+                      : "border-border bg-surface hover:bg-[#FAF5EC]/40 dark:hover:bg-neutral-800/40 text-[#3A3125] dark:text-neutral-200"
+                  )}
+                >
+                  <span className="text-sm font-semibold">{opt.label}</span>
+                  <span className="text-[10px] text-muted-foreground">{opt.sub}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowLanguageModal(false)}
+              className="mt-6 flex h-11 w-full items-center justify-center rounded-btn bg-[#3A3125] text-white dark:bg-neutral-200 dark:text-neutral-900 text-sm font-bold"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
