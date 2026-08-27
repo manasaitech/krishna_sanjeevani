@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import bgImg from "@/assets/flash-bg.png";
-import kulashekaraHeroImg from "@/assets/kulashekara-cutout.png";
-import logoWithoutText from "@/assets/logo-without-text.png";
+import bgImg from "@/assets/flash-bg.webp";
+import kulashekaraHeroImg from "@/assets/kulashekara-cutout.webp";
+import logoWithoutText from "@/assets/logo-without-text.webp";
 import type { VerseAudioState } from "@/lib/use-verse-audio";
 
 interface OpeningExperienceProps {

@@ -20,9 +20,9 @@ import { useApp } from "@/lib/app-state";
 import { categories, type CategoryId } from "@/lib/content";
 import { signInWithGoogle } from "@/lib/google-auth";
 
-const bgImg = require("../assets/images/krishna-onboarding-bg.jpg");
-const medallionImg = require("../assets/images/krishna-medallion.jpg");
-const prabhupadaImg = require("../assets/images/prabhupada.png");
+const bgImg = require("../assets/images/krishna-onboarding-bg.webp");
+const medallionImg = require("../assets/images/krishna-medallion.webp");
+const prabhupadaImg = require("../assets/images/prabhupada.webp");
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 

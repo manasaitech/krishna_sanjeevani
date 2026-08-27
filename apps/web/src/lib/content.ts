@@ -1,6 +1,6 @@
-import artDevotional from "@/assets/art-devotional.jpg";
-import artSecular from "@/assets/art-secular.jpg";
-import artPregnancy from "@/assets/art-pregnancy.jpg";
+import artDevotional from "@/assets/art-devotional.webp";
+import artSecular from "@/assets/art-secular.webp";
+import artPregnancy from "@/assets/art-pregnancy.webp";
 
 export type CategoryId = "devotional" | "secular" | "pregnancy" | "unset";
 

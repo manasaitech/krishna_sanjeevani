@@ -85,7 +85,7 @@ function LoginScreen() {
     <div className="ks-root">
       {/* Background fills entire viewport */}
       <div className="ks-bg" aria-hidden="true">
-        <img src="/images/krishna-onboarding-bg.jpg" alt="" className="ks-bg-img" />
+        <img src="/images/krishna-onboarding-bg.webp" alt="" className="ks-bg-img" />
       </div>
 
       {/* Single viewport frame — no scroll */}
@@ -97,7 +97,7 @@ function LoginScreen() {
           <div className="ks-ring ks-ring-1" />
           <div className="ks-medallion-inner">
             <img
-              src="/images/krishna-medallion.jpg"
+              src="/images/krishna-medallion.webp"
               alt="Krishna medallion"
               className="ks-medallion-img"
             />

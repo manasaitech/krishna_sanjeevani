@@ -5,10 +5,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as SplashScreen from "expo-splash-screen";
 import { useApp } from "@/lib/app-state";
 
-const bgImg = require("../assets/images/flash-bg.png");
-const kulashekaraHeroImg = require("../assets/images/kulashekara-cutout.png");
-const prabhupadaImg = require("../assets/images/prabhupada.png");
-const goswamiImg = require("../assets/images/goswami.jpg");
+const bgImg = require("../assets/images/flash-bg.webp");
+const kulashekaraHeroImg = require("../assets/images/kulashekara-cutout.webp");
+const prabhupadaImg = require("../assets/images/prabhupada.webp");
+const goswamiImg = require("../assets/images/goswami.webp");
 const logoWithoutText = require("../assets/logo-without-text.png");
 
 const { height, width } = Dimensions.get("window");

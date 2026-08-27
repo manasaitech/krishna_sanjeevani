@@ -18,7 +18,7 @@ Rather than adopting a traditional monolithic server model, Krishna Sanjeevani i
 
 ## 2. High-Level Architecture
 
-![High-Level Architecture Diagram](./architecture_diagram.png)
+![High-Level Architecture Diagram](./architecture_diagram.webp)
 
 ```mermaid
 graph TD
@@ -149,7 +149,7 @@ Our security model follows a **Zero Trust Media Access** philosophy. Since any p
 
 ## 8. Streaming Pipeline Flow
 
-![Secure Streaming Ingestion & Playback Pipeline](./streaming_pipeline.png)
+![Secure Streaming Ingestion & Playback Pipeline](./streaming_pipeline.webp)
 
 ```mermaid
 sequenceDiagram

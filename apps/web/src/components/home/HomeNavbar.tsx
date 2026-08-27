@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useApp } from "@/lib/app-state";
-import logoWithoutText from "@/assets/logo-without-text.png";
+import logoWithoutText from "@/assets/logo-without-text.webp";
 import { Menu, X, Sparkles, User, LogIn, ArrowRight } from "lucide-react";
 
 export function HomeNavbar() {

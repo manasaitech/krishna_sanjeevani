@@ -357,6 +357,12 @@ export const api = {
   payments: {
     list: () => http.get("/subscriptions/payments"),
   },
+  notifications: {
+    list: () => http.get<any[]>("/notifications"),
+    unreadCount: () => http.get<{ count: number }>("/notifications/unread/count"),
+    markRead: (id: string) => http.post<any>(`/notifications/${id}/read`),
+    markAllRead: () => http.post<any>("/notifications/read/all"),
+  },
   admin: {
     getOverview: () => http.get("/admin/overview"),
     users: {

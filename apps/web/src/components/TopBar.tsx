@@ -278,13 +278,16 @@ export function TopBar({
                                     key={n.id}
                                     onClick={() => {
                                       if (n.unread) markAsRead(n.id);
+                                      if (n.link) {
+                                        navigate({ to: n.link });
+                                        setIsNotificationOpen(false);
+                                      }
                                     }}
                                     className={cn(
-                                      "flex items-start gap-3 rounded-xl border border-border p-3 transition-colors text-left",
+                                      "flex items-start gap-3 rounded-xl border border-border p-3 transition-colors text-left cursor-pointer",
                                       n.unread
                                         ? "bg-cat-light/40 hover:bg-cat-light/65 border-cat-accent/20"
                                         : "bg-surface hover:bg-secondary/40",
-                                      n.unread && "cursor-pointer",
                                     )}
                                   >
                                     <span

@@ -16,8 +16,8 @@ import { ActivityIndicator, Alert } from "react-native";
 import { useApp } from "@/lib/app-state";
 import { signInWithGoogle } from "@/lib/google-auth";
 
-const bgImg = require("../assets/images/krishna-onboarding-bg.jpg");
-const medallionImg = require("../assets/images/krishna-medallion.jpg");
+const bgImg = require("../assets/images/krishna-onboarding-bg.webp");
+const medallionImg = require("../assets/images/krishna-medallion.webp");
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 

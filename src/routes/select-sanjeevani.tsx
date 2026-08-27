@@ -7,9 +7,9 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { type CategoryId } from "@/lib/content";
 
-import artDevotional from "@/assets/art-devotional.jpg";
-import artSecular from "@/assets/art-secular.jpg";
-import artPregnancy from "@/assets/art-pregnancy.jpg";
+import artDevotional from "@/assets/art-devotional.webp";
+import artSecular from "@/assets/art-secular.webp";
+import artPregnancy from "@/assets/art-pregnancy.webp";
 
 export const Route = createFileRoute("/select-sanjeevani")({
   head: () => ({

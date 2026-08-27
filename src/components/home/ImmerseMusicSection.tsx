@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkles, Music, ArrowRight, UserPlus, LogIn } from "lucide-react";
-import krishnaLaunchImg from "@/assets/krishna-sanjeevani-launch.jpg";
+import krishnaLaunchImg from "@/assets/krishna-sanjeevani-launch.webp";
 
 export function ImmerseMusicSection() {
   return (

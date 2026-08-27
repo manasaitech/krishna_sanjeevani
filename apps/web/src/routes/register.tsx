@@ -6,7 +6,7 @@ import { Loader2, Lock, Mail, User, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/lib/app-state";
 import { categories } from "@/lib/content";
-import prabhupadaImg from "@/assets/prabhupada.png";
+import prabhupadaImg from "@/assets/prabhupada.webp";
 
 export const Route = createFileRoute("/register")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -174,7 +174,7 @@ function RegisterScreen() {
     <div className="rg-root">
       {/* Background */}
       <div className="rg-bg" aria-hidden="true">
-        <img src="/images/krishna-onboarding-bg.jpg" alt="" className="rg-bg-img" />
+        <img src="/images/krishna-onboarding-bg.webp" alt="" className="rg-bg-img" />
       </div>
 
       {/* Single viewport frame */}
@@ -182,7 +182,7 @@ function RegisterScreen() {
         {/* Header */}
         <div className="rg-header">
           <div className="rg-medallion-sm">
-            <img src="/images/krishna-medallion.jpg" alt="" className="rg-medallion-img" />
+            <img src="/images/krishna-medallion.webp" alt="" className="rg-medallion-img" />
           </div>
           <div className="rg-heading-group">
             <h1 className="rg-title">Create Account</h1>

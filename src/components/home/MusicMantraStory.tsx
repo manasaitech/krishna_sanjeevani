@@ -1,5 +1,5 @@
 import { Waves, Music2, Sparkles, Flame, Heart } from "lucide-react";
-import soundVibrationImg from "@/assets/caf22ea5-bc7e-46d8-a845-876858c2a009.jpeg";
+import soundVibrationImg from "@/assets/caf22ea5-bc7e-46d8-a845-876858c2a009.webp";
 
 export function MusicMantraStory() {
   const soundLayers = [

@@ -259,7 +259,7 @@ export function AuthModal() {
         {/* Header */}
         <div className="ks-modal__header">
           <div className="ks-modal__medallion">
-            <img src="/images/krishna-medallion.jpg" alt="" className="ks-modal__medallion-img" />
+            <img src="/images/krishna-medallion.webp" alt="" className="ks-modal__medallion-img" />
             <div className="ks-modal__badge">
               <Headphones className="ks-modal__badge-icon" aria-hidden="true" />
             </div>

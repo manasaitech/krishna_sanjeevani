@@ -1,5 +1,5 @@
 import { Sun, Sparkles, Check, HeartPulse, Waves } from "lucide-react";
-import meditationImg from "@/assets/70fad00b-8e20-42f8-a986-11f0bd7335f5.jpeg";
+import meditationImg from "@/assets/70fad00b-8e20-42f8-a986-11f0bd7335f5.webp";
 
 export function CultivatingSattva() {
   const sattvaPillars = [

@@ -32,10 +32,10 @@ We implemented a complete vertical storytelling layout in [`welcome.tsx`](file:/
 ---
 
 ## 📦 Assets & Components Reused
-*   **Lineage Images:** Reused Srila Prabhupada portrait [`prabhupada.png`](file:///c:/Users/ASUS/Desktop/Krishna-Sanjeevni/krishna-sanjeevani-flow-main/apps/web/src/assets/prabhupada.png).
-*   **Logo:** Reused logo symbol [`logo-without-text.png`](file:///c:/Users/ASUS/Desktop/Krishna-Sanjeevni/krishna-sanjeevani-flow-main/apps/web/src/assets/logo-without-text.png).
-*   **Artwork:** Loaded category card covers (`art-devotional.jpg`, `art-focus.jpg`, `art-sleep.jpg`, `art-healing.jpg`, `art-pregnancy.jpg`).
-*   **New Generated Asset:** Generated a museum-grade bronze Alvar sculpture rendering at [`kulasekhara-sculpture.jpg`](file:///c:/Users/ASUS/Desktop/Krishna-Sanjeevni/krishna-sanjeevani-flow-main/apps/web/src/assets/kulasekhara-sculpture.jpg).
+*   **Lineage Images:** Reused Srila Prabhupada portrait [`prabhupada.webp`](file:///c:/Users/ASUS/Desktop/Krishna-Sanjeevni/krishna-sanjeevani-flow-main/apps/web/src/assets/prabhupada.webp).
+*   **Logo:** Reused logo symbol [`logo-without-text.webp`](file:///c:/Users/ASUS/Desktop/Krishna-Sanjeevni/krishna-sanjeevani-flow-main/apps/web/src/assets/logo-without-text.webp).
+*   **Artwork:** Loaded category card covers (`art-devotional.webp`, `art-focus.webp`, `art-sleep.webp`, `art-healing.webp`, `art-pregnancy.webp`).
+*   **New Generated Asset:** Generated a museum-grade bronze Alvar sculpture rendering at [`kulasekhara-sculpture.webp`](file:///c:/Users/ASUS/Desktop/Krishna-Sanjeevni/krishna-sanjeevani-flow-main/apps/web/src/assets/kulasekhara-sculpture.webp).
 
 ---
 

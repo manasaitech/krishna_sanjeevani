@@ -95,7 +95,7 @@ function VerifyEmailScreen() {
   return (
     <div className="ks-root">
       <div className="ks-bg" aria-hidden="true">
-        <img src="/images/krishna-onboarding-bg.jpg" alt="" className="ks-bg-img" />
+        <img src="/images/krishna-onboarding-bg.webp" alt="" className="ks-bg-img" />
       </div>
 
       <div className="ks-frame">

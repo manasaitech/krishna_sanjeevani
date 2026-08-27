@@ -1,14 +1,14 @@
-import krishnaFluteImg from "@/assets/cbabb2a5-2787-4997-986f-daf7b88017ff.jpeg";
-import kulasekharaImg from "@/assets/57d4ebea-a77c-4f30-88ad-87e99aac7c1f.jpeg";
-import kulashekaraHeroImg from "@/assets/kulashekara.png";
-import chaitanyaImg from "@/assets/18fc75d6-df05-469c-9855-d79c4931636d.jpeg";
-import prabhupadaImg from "@/assets/3f99cd1e-9061-4ee5-a720-ba4041cfae9d.jpeg";
-import ragaMusiciansImg from "@/assets/2978e827-6b28-45f0-bbce-575e6023a705.jpeg";
-import templeSunriseImg from "@/assets/8269a526-98ab-49a2-bcce-928814d51baa.jpeg";
-import manuscriptImg from "@/assets/89e81ba6-b688-4575-9b1f-964ace72a456.jpeg";
-import meditationImg from "@/assets/70fad00b-8e20-42f8-a986-11f0bd7335f5.jpeg";
-import inaugurationImg from "@/assets/af091c30-50ed-4947-85f7-7be2e6a958f4.jpeg";
-import soundVibrationImg from "@/assets/caf22ea5-bc7e-46d8-a845-876858c2a009.jpeg";
+import krishnaFluteImg from "@/assets/cbabb2a5-2787-4997-986f-daf7b88017ff.webp";
+import kulasekharaImg from "@/assets/57d4ebea-a77c-4f30-88ad-87e99aac7c1f.webp";
+import kulashekaraHeroImg from "@/assets/kulashekara.webp";
+import chaitanyaImg from "@/assets/18fc75d6-df05-469c-9855-d79c4931636d.webp";
+import prabhupadaImg from "@/assets/3f99cd1e-9061-4ee5-a720-ba4041cfae9d.webp";
+import ragaMusiciansImg from "@/assets/2978e827-6b28-45f0-bbce-575e6023a705.webp";
+import templeSunriseImg from "@/assets/8269a526-98ab-49a2-bcce-928814d51baa.webp";
+import manuscriptImg from "@/assets/89e81ba6-b688-4575-9b1f-964ace72a456.webp";
+import meditationImg from "@/assets/70fad00b-8e20-42f8-a986-11f0bd7335f5.webp";
+import inaugurationImg from "@/assets/af091c30-50ed-4947-85f7-7be2e6a958f4.webp";
+import soundVibrationImg from "@/assets/caf22ea5-bc7e-46d8-a845-876858c2a009.webp";
 
 export {
   krishnaFluteImg,

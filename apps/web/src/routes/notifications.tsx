@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Bell, BellRing, Music4, RefreshCw, TrendingUp } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { notifications } from "@/lib/content";
+import { useApp } from "@/lib/app-state";
 
 export const Route = createFileRoute("/notifications")({
   head: () => ({
@@ -27,6 +27,8 @@ const icons = {
 };
 
 function Notifications() {
+  const { notifications, markAsRead } = useApp();
+  const navigate = useNavigate();
   const groups = ["Today", "Earlier"];
 
   return (
@@ -45,7 +47,15 @@ function Notifications() {
                 return (
                   <li
                     key={n.id}
-                    className="flex items-start gap-3 rounded-card border border-border bg-surface p-4 shadow-soft"
+                    onClick={() => {
+                      if (n.unread) markAsRead(n.id);
+                      if (n.link) {
+                        navigate({ to: n.link });
+                      }
+                    }}
+                    className={`flex items-start gap-3 rounded-card border border-border bg-surface p-4 shadow-soft transition-all duration-200 ${
+                      n.link ? "cursor-pointer hover:border-cat/40 hover:shadow-lift" : ""
+                    }`}
                   >
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cat-light text-cat">
                       <Icon className="h-[18px] w-[18px]" />

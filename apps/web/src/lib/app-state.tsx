@@ -129,14 +129,75 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentProgramId, setCurrentProgramId] = useState<string | null>(null);
   const [historyList, setHistoryList] = useState<any[]>([]);
   const [continueListeningList, setContinueListeningList] = useState<any[]>([]);
-  const [notificationsList, setNotificationsList] = useState(() => [...staticNotifications]);
+  const [notificationsList, setNotificationsList] = useState<any[]>([]);
 
-  const markAsRead = useCallback((id: string) => {
-    setNotificationsList((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
+  const fetchNotifications = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    try {
+      const res = await api.notifications.list();
+      if (res.success && Array.isArray(res.data)) {
+        const formatted = res.data.map((r: any) => {
+          const isRead = r.read === true || r.read === 1;
+          const diffMs = Date.now() - r.createdAt;
+          let timeStr = "Just now";
+          let groupStr = "Today";
+
+          if (diffMs > 86400000 * 2) {
+            timeStr = new Date(r.createdAt).toLocaleDateString();
+            groupStr = "Earlier";
+          } else if (diffMs > 86400000) {
+            timeStr = "Yesterday";
+            groupStr = "Earlier";
+          } else if (diffMs > 3600000) {
+            const hours = Math.round(diffMs / 3600000);
+            timeStr = `${hours} hour${hours > 1 ? "s" : ""} ago`;
+            groupStr = "Today";
+          } else if (diffMs > 60000) {
+            const mins = Math.round(diffMs / 60000);
+            timeStr = `${mins} minute${mins > 1 ? "s" : ""} ago`;
+            groupStr = "Today";
+          }
+
+          return {
+            id: r.id,
+            kind: r.type || "system",
+            type: r.type || "system",
+            title: r.title,
+            body: r.message,
+            message: r.message,
+            unread: !isRead,
+            read: isRead,
+            time: timeStr,
+            group: groupStr,
+            link: r.link,
+            createdAt: r.createdAt
+          };
+        });
+        setNotificationsList(formatted);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch notifications", err);
+    }
   }, []);
 
-  const markAllAsRead = useCallback(() => {
-    setNotificationsList((prev) => prev.map((n) => ({ ...n, unread: false })));
+  const markAsRead = useCallback(async (id: string) => {
+    setNotificationsList((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, unread: false, read: true } : n))
+    );
+    try {
+      await api.notifications.markRead(id);
+    } catch (err) {
+      console.warn("Failed to mark notification as read on server", err);
+    }
+  }, []);
+
+  const markAllAsRead = useCallback(async () => {
+    setNotificationsList((prev) => prev.map((n) => ({ ...n, unread: false, read: true })));
+    try {
+      await api.notifications.markAllRead();
+    } catch (err) {
+      console.warn("Failed to mark all notifications as read on server", err);
+    }
   }, []);
 
   const currentRef = useRef<Track | null>(null);
@@ -476,12 +537,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchFavorites();
       fetchHistoryAndContinueListening();
+      fetchNotifications();
     } else {
       setFavorites([]);
       setHistoryList([]);
       setContinueListeningList([]);
+      setNotificationsList([]);
     }
-  }, [user, fetchFavorites, fetchHistoryAndContinueListening]);
+  }, [user, fetchFavorites, fetchHistoryAndContinueListening, fetchNotifications]);
+
+  // Poll notifications every 60 seconds
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, [user, fetchNotifications]);
 
   const toggleFavorite = useCallback(
     async (id: string) => {

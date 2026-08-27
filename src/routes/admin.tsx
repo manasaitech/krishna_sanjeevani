@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/app-state";
 import { AppShell } from "@/components/AppShell";
 import { type Track } from "@/lib/content";
-import logoWithoutText from "@/assets/logo-without-text.png";
+import logoWithoutText from "@/assets/logo-without-text.webp";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({

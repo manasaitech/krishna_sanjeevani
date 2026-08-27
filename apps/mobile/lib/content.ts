@@ -1,7 +1,7 @@
 /* ── Image assets (React Native require) ── */
-export const artDevotional = require("@/assets/images/art-devotional.jpg");
-export const artSecular = require("@/assets/images/art-secular.jpg");
-export const artPregnancy = require("@/assets/images/art-pregnancy.jpg");
+export const artDevotional = require("@/assets/images/art-devotional.webp");
+export const artSecular = require("@/assets/images/art-secular.webp");
+export const artPregnancy = require("@/assets/images/art-pregnancy.webp");
 
 export type CategoryId = "devotional" | "secular" | "pregnancy" | "unset";
 

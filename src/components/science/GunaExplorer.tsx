@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { GUNAS_DATA } from "@/lib/science-data";
-import threeGunasImg from "@/assets/three-gunas-diagram.png";
+import threeGunasImg from "@/assets/three-gunas-diagram.webp";
 import { Sparkles, Sun, Flame, Moon, CheckCircle2, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 
 export function GunaExplorer() {

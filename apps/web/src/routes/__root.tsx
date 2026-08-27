@@ -104,8 +104,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care.",
       },
-      { property: "og:image", content: "https://krishnasanjeevani.com/logo.png" },
-      { name: "twitter:image", content: "https://krishnasanjeevani.com/logo.png" },
+      { property: "og:image", content: "https://krishnasanjeevani.com/logo.webp" },
+      { name: "twitter:image", content: "https://krishnasanjeevani.com/logo.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/app-state";
 import { tracks, programs, sanjeevaniConfigs, type CategoryId } from "@/lib/content";
-import logoWithoutText from "@/assets/logo-without-text.png";
+import logoWithoutText from "@/assets/logo-without-text.webp";
 import { api } from "@/lib/api";
 
 export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefined }) {

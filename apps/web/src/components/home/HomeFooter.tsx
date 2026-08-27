@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import logoWithoutText from "@/assets/logo-without-text.png";
+import logoWithoutText from "@/assets/logo-without-text.webp";
 import { Sparkles } from "lucide-react";
 
 export function HomeFooter() {

@@ -10,7 +10,6 @@ import { ImmerseMusicSection } from "@/components/home/ImmerseMusicSection";
 import { MusicMantraStory } from "@/components/home/MusicMantraStory";
 import { ExploreCardsGrid } from "@/components/home/ExploreCardsGrid";
 import { FeaturePillars } from "@/components/home/FeaturePillars";
-import { SpiritualVerseSection } from "@/components/home/SpiritualVerseSection";
 import { BeginningPreview } from "@/components/home/BeginningPreview";
 import { HomeFooter } from "@/components/home/HomeFooter";
 import { useApp } from "@/lib/app-state";
@@ -112,8 +111,7 @@ function HomePage() {
         {/* 9. 5 Conceptual Pillars */}
         <FeaturePillars />
 
-        {/* 10. Full-width Spiritual Verse Pause */}
-        <SpiritualVerseSection />
+
 
         {/* 11. Landmark Beginning (30 May 2026) */}
         <BeginningPreview />
