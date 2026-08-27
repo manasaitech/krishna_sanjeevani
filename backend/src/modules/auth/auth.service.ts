@@ -107,15 +107,13 @@ export class AuthService {
     // Hash password
     const passwordHash = await this.hashPassword(input.password);
 
-    const isGmail = input.email.toLowerCase().trim().endsWith("@gmail.com");
-
     // Create user (identity)
     await this.repo.createUser({
       id: userId,
       email: input.email.toLowerCase().trim(),
       passwordHash,
       role: "user",
-      emailVerified: isGmail ? 1 : 0,
+      emailVerified: 0,
       createdAt: now,
       updatedAt: now,
     });
@@ -144,57 +142,55 @@ export class AuthService {
       createdAt: now,
     });
 
-    // Generate and send email verification OTP (skip if gmail)
-    if (!isGmail) {
-      const code = this.generateOtpCode();
-      const expiry = now + 15 * 60 * 1000;
-      
-      // Persist the OTP to DB synchronously so it exists immediately
-      await this.repo.createOtp({
-        id: this.generateId(),
-        email: input.email.toLowerCase().trim(),
-        code,
-        purpose: "verification",
-        expiresAt: expiry,
-        createdAt: now,
-      });
+    // Generate and send email verification OTP
+    const code = this.generateOtpCode();
+    const expiry = now + 15 * 60 * 1000;
+    
+    // Persist the OTP to DB synchronously so it exists immediately
+    await this.repo.createOtp({
+      id: this.generateId(),
+      email: input.email.toLowerCase().trim(),
+      code,
+      purpose: "verification",
+      expiresAt: expiry,
+      createdAt: now,
+    });
 
-      // Send the email message asynchronously so it does not exceed Cloudflare Workers CPU limit
-      const emailPromise = (async () => {
-        try {
-          const subject = "Verify your Krishna Sanjeevani account";
-          const title = "Verify your email address";
-          const desc = "Thank you for registering. Please use the following One-Time Password (OTP) to verify your account:";
-          const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-              <h2 style="color: #7A1E2C; text-align: center;">${title}</h2>
-              <p>${desc}</p>
-              <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #7A1E2C; margin: 20px 0;">
-                ${code}
-              </div>
-              <p>This code is valid for 15 minutes. If you did not make this request, you can safely ignore this email.</p>
-              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-              <p style="font-size: 12px; color: #888; text-align: center;">Krishna Sanjeevani curatives.</p>
+    // Send the email message asynchronously so it does not exceed Cloudflare Workers CPU limit
+    const emailPromise = (async () => {
+      try {
+        const subject = "Verify your Krishna Sanjeevani account";
+        const title = "Verify your email address";
+        const desc = "Thank you for registering. Please use the following One-Time Password (OTP) to verify your account:";
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+            <h2 style="color: #7A1E2C; text-align: center;">${title}</h2>
+            <p>${desc}</p>
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #7A1E2C; margin: 20px 0;">
+              ${code}
             </div>
-          `;
-          const text = `${title}\n\n${desc}\n\nCode: ${code}\n\nThis code is valid for 15 minutes.`;
-          await EmailService.sendEmail(this.env, {
-            to: input.email,
-            subject,
-            html,
-            text,
-          });
-          logger.info("Background registration OTP sent successfully", { email: input.email });
-        } catch (err: any) {
-          logger.error("Background registration OTP send failed", { email: input.email, error: err.message });
-        }
-      })();
-
-      if (waitUntil) {
-        waitUntil(emailPromise);
-      } else {
-        emailPromise.catch((err) => logger.error("Plain async OTP send failed", { error: err.message }));
+            <p>This code is valid for 15 minutes. If you did not make this request, you can safely ignore this email.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+            <p style="font-size: 12px; color: #888; text-align: center;">Krishna Sanjeevani curatives.</p>
+          </div>
+        `;
+        const text = `${title}\n\n${desc}\n\nCode: ${code}\n\nThis code is valid for 15 minutes.`;
+        await EmailService.sendEmail(this.env, {
+          to: input.email,
+          subject,
+          html,
+          text,
+        });
+        logger.info("Background registration OTP sent successfully", { email: input.email });
+      } catch (err: any) {
+        logger.error("Background registration OTP send failed", { email: input.email, error: err.message });
       }
+    })();
+
+    if (waitUntil) {
+      waitUntil(emailPromise);
+    } else {
+      emailPromise.catch((err) => logger.error("Plain async OTP send failed", { error: err.message }));
     }
 
     // Create Welcome notification and schedule 1-minute Surawali CTA (idempotent)
@@ -212,7 +208,7 @@ export class AuthService {
         id: userId,
         email: input.email,
         role: "user",
-        emailVerified: isGmail ? 1 : 0,
+        emailVerified: 0,
         profile: {
           fullName: input.fullName,
           category: input.category,
@@ -248,16 +244,6 @@ export class AuthService {
 
     // Resolve role dynamically
     const resolvedRole = await this.resolveUserRole(user.id, user.role);
-
-    // Auto verify Gmail logins if emailVerified is 0
-    const isGmail = user.email.toLowerCase().trim().endsWith("@gmail.com");
-    if (isGmail && user.emailVerified === 0) {
-      await this.repo.db
-        .update(users)
-        .set({ emailVerified: 1, updatedAt: Date.now() })
-        .where(eq(users.id, user.id));
-      user.emailVerified = 1;
-    }
 
     // Generate tokens
     const tokenPayload: TokenPayload = { sub: user.id, role: resolvedRole, email: user.email };
