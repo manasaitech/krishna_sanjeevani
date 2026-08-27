@@ -80,7 +80,7 @@ function Row({
 }
 
 function Profile() {
-  const { category, setCategory, restoreSession, user, logout } = useApp();
+  const { category, setCategory, restoreSession, user, logout, lang, changeLanguage, t } = useApp();
   const navigate = useNavigate();
   const cat = categories.find((c) => c.id === category)!;
 
@@ -112,7 +112,6 @@ function Profile() {
 
   // Preferences & Modals State
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [lang, setLang] = useState<"english" | "hindi" | "sanskrit">("english");
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
 
@@ -122,19 +121,6 @@ function Profile() {
       setTheme(savedTheme);
     }
   }, []);
-
-  useEffect(() => {
-    if (user?.profile?.language) {
-      const backendLang = user.profile.language.toLowerCase();
-      if (backendLang === "hi" || backendLang === "hindi") {
-        setLang("hindi");
-      } else if (backendLang === "sa" || backendLang === "sanskrit") {
-        setLang("sanskrit");
-      } else {
-        setLang("english");
-      }
-    }
-  }, [user]);
 
   const toggleTheme = (selectedTheme: "light" | "dark") => {
     setTheme(selectedTheme);
@@ -146,23 +132,6 @@ function Profile() {
         document.documentElement.classList.remove("dark");
       }
       toast.success(`Appearance set to ${selectedTheme === "dark" ? "Dark" : "Light"} Mode`);
-    }
-  };
-
-  const handleSwitchLanguage = async (targetLang: "english" | "hindi" | "sanskrit") => {
-    setLang(targetLang);
-    const codeMap = { english: "en", hindi: "hi", sanskrit: "sa" };
-    const langCode = codeMap[targetLang];
-    try {
-      const res = await api.auth.updateProfile({ language: langCode });
-      if (res.success) {
-        await restoreSession();
-        toast.success(`Language set to ${targetLang.charAt(0).toUpperCase() + targetLang.slice(1)}`);
-      } else {
-        toast.error(res.message || "Failed to update language.");
-      }
-    } catch {
-      toast.error("Failed to update language.");
     }
   };
 
@@ -288,16 +257,16 @@ function Profile() {
 
       {/* Surawali Subscriptions Section */}
       {user && (
-        <Section title="My Therapeutic Surāwalis">
+        <Section title={t("activeSub")}>
           {subsLoading ? (
-            <div className="rounded-card border border-border bg-surface p-6 flex justify-center shadow-soft">
-              <Loader2 className="h-5 w-5 animate-spin text-cat" />
+            <div className="flex h-20 items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-cat" />
             </div>
           ) : surawaliSubs.length === 0 ? (
             <div className="rounded-card border border-dashed border-border/80 p-8 text-center bg-surface shadow-soft space-y-2">
-              <p className="text-sm font-semibold text-foreground">No subscribed Surāwalis</p>
+              <p className="text-sm font-semibold text-foreground">{t("activeSub")}</p>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                Explore clinical disorders and subscribe to specific Vedic sound formulas.
+                {t("noSubs")}
               </p>
               <Link
                 to="/home"
@@ -344,7 +313,7 @@ function Profile() {
                         className="press h-8 px-4 rounded-btn bg-secondary text-xs font-bold hover:bg-secondary-hover flex items-center justify-center gap-1"
                       >
                         <Play className="h-3 w-3 fill-current" />
-                        <span>Play</span>
+                        <span>{t("play")}</span>
                       </button>
                       {isActive && (
                         <button
@@ -353,7 +322,7 @@ function Profile() {
                           title="Cancel Subscription"
                         >
                           <Trash2 className="h-3 w-3" />
-                          <span>Cancel</span>
+                          <span>{t("cancelSub")}</span>
                         </button>
                       )}
                     </div>
@@ -365,35 +334,35 @@ function Profile() {
         </Section>
       )}
 
-      <Section title="Preferences">
+      <Section title={t("preferences")}>
         <div className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft">
           <div className="flex min-h-14 items-center gap-3 px-4">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cat-light text-cat">
               <Bell className="h-[18px] w-[18px]" />
             </span>
-            <span className="min-w-0 flex-1 text-sm font-medium">Session reminders</span>
+            <span className="min-w-0 flex-1 text-sm font-medium">{t("sessionReminders")}</span>
             <Switch defaultChecked aria-label="Session reminders" />
           </div>
           <Row
             icon={Palette}
-            label="Theme"
+            label={t("theme")}
             value={theme === "dark" ? "Dark" : "Light"}
             onClick={() => setShowThemeModal(true)}
           />
           <Row
             icon={Globe}
-            label="Language"
+            label={t("language")}
             value={lang === "hindi" ? "हिन्दी" : lang === "sanskrit" ? "संस्कृतम्" : "English"}
             onClick={() => setShowLanguageModal(true)}
           />
         </div>
       </Section>
 
-      <Section title="Support">
+      <Section title={t("support")}>
         <div className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft">
-          <Row icon={ShieldCheck} label="Privacy policy" />
-          <Row icon={FileText} label="Terms of use" />
-          <Row icon={CircleHelp} label="Help & contact" />
+          <Row icon={ShieldCheck} label={t("privacyPolicy")} />
+          <Row icon={FileText} label={t("termsOfUse")} />
+          <Row icon={CircleHelp} label={t("helpContact")} />
         </div>
       </Section>
 
@@ -401,7 +370,7 @@ function Profile() {
         onClick={handleLogout}
         className="press mt-8 flex min-h-13 w-full items-center justify-center gap-2 rounded-btn border border-border bg-surface text-sm font-semibold text-destructive"
       >
-        <LogOut className="h-4 w-4" /> Log out
+        <LogOut className="h-4 w-4" /> {t("logout")}
       </button>
       <p className="mt-6 text-center text-[12px] text-muted-foreground">Version 1.0.0</p>
 
@@ -459,7 +428,7 @@ function Profile() {
                 <button
                   key={opt.id}
                   onClick={() => {
-                    handleSwitchLanguage(opt.id as "english" | "hindi" | "sanskrit");
+                    changeLanguage(opt.id as "english" | "hindi" | "sanskrit");
                     setShowLanguageModal(false);
                   }}
                   className={cn(

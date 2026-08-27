@@ -16,6 +16,7 @@ import {
 } from "@/lib/content";
 import { api, storeTokens, clearTokens, getAccessToken, BASE_URL } from "@/lib/api";
 import Hls from "hls.js";
+import { getTranslation, type TranslationKey } from "./translations";
 
 // ── Auth Types ─────────────────────────────────────────
 export type AuthUser = {
@@ -101,6 +102,9 @@ type AppState = {
   }>;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
+  lang: "english" | "hindi" | "sanskrit";
+  changeLanguage: (newLang: "english" | "hindi" | "sanskrit") => Promise<void>;
+  t: (key: TranslationKey) => string;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -292,12 +296,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return audioRef.current;
   }, []);
 
+  const [lang, setLang] = useState<"english" | "hindi" | "sanskrit">("english");
+
   // ── Fetch Functions ───────────────────────────────────
-  const fetchTracksAndPrograms = useCallback(async (cat: CategoryId) => {
+  const fetchTracksAndPrograms = useCallback(async (cat: CategoryId, currentLang?: string) => {
     setLoading(true);
     try {
+      const activeLang = currentLang || lang;
+      const codeMap: Record<string, string> = { english: "en", hindi: "hi", sanskrit: "sa" };
+      const langCode = codeMap[activeLang] || "en";
+
       const [tRes, pRes] = await Promise.all([
-        api.tracks.list({ category: cat }),
+        api.tracks.list({ category: cat, language: langCode }),
         api.programs.list({ category: cat }),
       ]);
       if (tRes.success && tRes.data) {
@@ -333,14 +343,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   // Sync category-specific files
   useEffect(() => {
-    fetchTracksAndPrograms(category);
-  }, [category, fetchTracksAndPrograms]);
+    fetchTracksAndPrograms(category, lang);
+  }, [category, lang, fetchTracksAndPrograms]);
 
   // ── Auth Actions ──────────────────────────────────────
+  // Sync language from user preferences or localStorage
+  useEffect(() => {
+    if (user?.profile?.language) {
+      const backendLang = user.profile.language.toLowerCase();
+      if (backendLang === "hi" || backendLang === "hindi") {
+        setLang("hindi");
+      } else if (backendLang === "sa" || backendLang === "sanskrit") {
+        setLang("sanskrit");
+      } else {
+        setLang("english");
+      }
+    } else if (typeof window !== "undefined") {
+      const savedLang = (localStorage.getItem("lang") as any) || "english";
+      setLang(savedLang);
+    }
+  }, [user]);
+
+  const changeLanguage = useCallback(async (newLang: "english" | "hindi" | "sanskrit") => {
+    setLang(newLang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("lang", newLang);
+    }
+    if (user) {
+      const codeMap = { english: "en", hindi: "hi", sanskrit: "sa" };
+      const langCode = codeMap[newLang];
+      try {
+        await api.auth.updateProfile({ language: langCode });
+      } catch (err) {
+        console.warn("Failed to update language on server", err);
+      }
+    }
+    // Instantly trigger reload of category files under new language
+    fetchTracksAndPrograms(category, newLang);
+  }, [user, category, fetchTracksAndPrograms]);
+
+  const t = useCallback((key: TranslationKey) => {
+    return getTranslation(lang, key);
+  }, [lang]);
+
+  // Restore session on mount
   const restoreSession = useCallback(async () => {
     const token = getAccessToken();
     if (!token) {
@@ -922,6 +972,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       notifications: notificationsList,
       markAsRead,
       markAllAsRead,
+      lang,
+      changeLanguage,
+      t,
     }),
     [
       user,
@@ -959,6 +1012,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       notificationsList,
       markAsRead,
       markAllAsRead,
+      lang,
+      changeLanguage,
+      t,
     ],
   );
 
