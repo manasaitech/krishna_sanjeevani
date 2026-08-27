@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { KULASEKHARA_VERSE, CHAITANYA_SIKSASTAKAM, prabhupadaImg } from "./home-data";
 import { BASE_URL } from "./api";
+import { useApp } from "./app-state";
 
 export interface VerseTrack {
   id: string;
@@ -135,6 +136,17 @@ function initGlobalAudio() {
 
 export function useVerseAudio(): VerseAudioState {
   const [, forceUpdate] = useState({});
+  const app = useApp();
+
+  useEffect(() => {
+    if (app.playing && globalIsPlaying) {
+      if (globalAudio && !globalIsSimulated) {
+        globalAudio.pause();
+      }
+      globalIsPlaying = false;
+      emitUpdate();
+    }
+  }, [app.playing]);
 
   useEffect(() => {
     initGlobalAudio();
@@ -166,6 +178,10 @@ export function useVerseAudio(): VerseAudioState {
     initGlobalAudio();
     if (!globalAudio) return;
 
+    if (app.playing) {
+      app.stop();
+    }
+
     if (!globalIsSimulated) {
       const playPromise = globalAudio.play();
       if (playPromise !== undefined) {
@@ -192,7 +208,7 @@ export function useVerseAudio(): VerseAudioState {
       globalAutoplayBlocked = false;
       emitUpdate();
     }
-  }, []);
+  }, [app]);
 
   const pause = useCallback(() => {
     if (globalAudio && !globalIsSimulated) {
@@ -243,6 +259,11 @@ export function useVerseAudio(): VerseAudioState {
     globalCurrentTrackId = trackId;
     const activeTrack = VERSE_TRACKS.find((t) => t.id === trackId) || VERSE_TRACKS[0];
     if (!activeTrack) return;
+
+    if (app.playing) {
+      app.stop();
+    }
+
     if (globalAudio) {
       globalAudio.pause();
       globalAudio.src = activeTrack.audioPath;
@@ -264,7 +285,7 @@ export function useVerseAudio(): VerseAudioState {
           });
       }
     }
-  }, []);
+  }, [app]);
 
   const nextTrack = useCallback(() => {
     const idx = VERSE_TRACKS.findIndex((t) => t.id === globalCurrentTrackId);

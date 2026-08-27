@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { KULASEKHARA_VERSE } from "./home-data";
+import { useApp } from "./app-state";
 
 export interface VerseAudioState {
   isPlaying: boolean;
@@ -34,6 +35,17 @@ export function useVerseAudio(): VerseAudioState {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isSimulatedRef = useRef(false);
   const timerRef = useRef<number | null>(null);
+
+  const app = useApp();
+
+  useEffect(() => {
+    if (app.playing && isPlaying) {
+      if (audioRef.current && !isSimulatedRef.current) {
+        audioRef.current.pause();
+      }
+      setIsPlaying(false);
+    }
+  }, [app.playing, isPlaying]);
 
   // Initialize Audio
   useEffect(() => {
@@ -153,6 +165,10 @@ export function useVerseAudio(): VerseAudioState {
     const audio = audioRef.current;
     if (!audio) return;
 
+    if (app.playing) {
+      app.stop();
+    }
+
     if (!isSimulatedRef.current) {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -175,7 +191,7 @@ export function useVerseAudio(): VerseAudioState {
       setIsPlaying(true);
       setAutoplayBlocked(false);
     }
-  }, []);
+  }, [app]);
 
   const pause = useCallback(() => {
     if (audioRef.current && !isSimulatedRef.current) {
