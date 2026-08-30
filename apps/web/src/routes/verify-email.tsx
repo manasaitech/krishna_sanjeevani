@@ -28,6 +28,13 @@ function VerifyEmailScreen() {
   useEffect(() => {
     if (!user) {
       navigate({ to: "/login" });
+    } else if (user.authProvider === "google" || user.emailVerified === 1) {
+      const selectedPathway = user.profile?.category;
+      if (!selectedPathway || selectedPathway === "unset") {
+        navigate({ to: "/category" });
+      } else {
+        navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
+      }
     }
   }, [user, navigate]);
 

@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as CategoryRouteImport } from './routes/category'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -63,6 +64,11 @@ const BrowseRoute = BrowseRouteImport.update({
 const CategoryRoute = CategoryRouteImport.update({
   id: '/category',
   path: '/category',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -262,6 +270,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/category': typeof CategoryRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/discover': typeof DiscoverRoute
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/browse'
     | '/category'
+    | '/delete-account'
     | '/discover'
     | '/favorites'
     | '/forgot-password'
@@ -328,6 +338,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/browse'
     | '/category'
+    | '/delete-account'
     | '/discover'
     | '/favorites'
     | '/forgot-password'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/browse'
     | '/category'
+    | '/delete-account'
     | '/discover'
     | '/favorites'
     | '/forgot-password'
@@ -393,6 +405,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   BrowseRoute: typeof BrowseRoute
   CategoryRoute: typeof CategoryRoute
+  DeleteAccountRoute: typeof DeleteAccountRoute
   DiscoverRoute: typeof DiscoverRoute
   FavoritesRoute: typeof FavoritesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -455,6 +468,13 @@ declare module '@tanstack/react-router' {
       path: '/category'
       fullPath: '/category'
       preLoaderRoute: typeof CategoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -641,6 +661,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   BrowseRoute: BrowseRoute,
   CategoryRoute: CategoryRoute,
+  DeleteAccountRoute: DeleteAccountRoute,
   DiscoverRoute: DiscoverRoute,
   FavoritesRoute: FavoritesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,

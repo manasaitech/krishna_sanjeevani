@@ -433,13 +433,47 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
                         const SizedBox(height: 14),
 
                         // Legal Footer
-                        const Text(
-                          'By continuing you agree to our Terms and Privacy Policy.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0x993A2C18),
-                          ),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            const Text(
+                              'By continuing you agree to our ',
+                              style: TextStyle(fontSize: 11, color: Color(0x993A2C18)),
+                            ),
+                            GestureDetector(
+                              onTap: () => context.push('/terms'),
+                              child: const Text(
+                                'Terms',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF7A1E2C),
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                            const Text(
+                              ' and ',
+                              style: TextStyle(fontSize: 11, color: Color(0x993A2C18)),
+                            ),
+                            GestureDetector(
+                              onTap: () => context.push('/privacy'),
+                              child: const Text(
+                                'Privacy Policy',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF7A1E2C),
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                            const Text(
+                              '.',
+                              style: TextStyle(fontSize: 11, color: Color(0x993A2C18)),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 10),
                       ],

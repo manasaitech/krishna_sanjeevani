@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/config/env_config.dart';
-import '../../../core/theme/category_theme.dart';
+import '../../../shared/providers/category_provider.dart';
 import '../../../shared/widgets/sanjeevani_card.dart';
 import '../../player/providers/player_provider.dart';
 import '../../tracks/providers/tracks_provider.dart';

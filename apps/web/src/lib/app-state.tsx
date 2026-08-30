@@ -25,6 +25,7 @@ export type AuthUser = {
   role: string;
   status: string;
   emailVerified: number;
+  authProvider?: string;
   profile: {
     fullName: string;
     profileImage: string | null;

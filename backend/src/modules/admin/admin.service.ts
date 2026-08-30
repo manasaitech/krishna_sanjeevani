@@ -128,8 +128,9 @@ export class AdminService {
   }
 
   async changeUserSubscriptionTier(userId: string, planId: string, durationDays: number = 30) {
-    const userDetails = await this.repo.findUserDetails(userId);
+    const userDetails = await this.repo.getUserDetails(userId);
     if (!userDetails) {
+
       throw new Error("User not found");
     }
 

@@ -19,6 +19,8 @@ import '../../features/subscription/screens/subscription_screen.dart';
 import '../../features/therapy/screens/therapy_screen.dart';
 import '../../features/sanjeevani/selection/choose_sanjeevani_screen.dart';
 import '../../features/sanjeevani/selection/change_sanjeevani_screen.dart';
+import '../../features/legal/screens/terms_screen.dart';
+import '../../features/legal/screens/privacy_policy_screen.dart';
 import '../../shared/layout/app_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -57,16 +59,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/forgot-password' ||
-          state.matchedLocation == '/reset-password';
+          state.matchedLocation == '/reset-password' ||
+          state.matchedLocation == '/terms' ||
+          state.matchedLocation == '/privacy';
 
       if (!isAuthenticated && !isAuthRoute) {
         return '/login';
       }
 
       if (isAuthenticated) {
-        // Enforce OTP verification gating
+        // Enforce OTP verification gating (ONLY for non-Google users)
+        final authProviderStr = authState.user?['authProvider'] as String?;
+        final isGoogleUser = authProviderStr == 'google';
         final emailVerified = authState.user?['emailVerified'] ?? 1;
-        final isUnverified = emailVerified == 0;
+        final isUnverified = !isGoogleUser && (emailVerified == 0);
 
         if (isUnverified) {
           if (state.matchedLocation != '/verify-email') {
@@ -135,6 +141,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           final email = state.uri.queryParameters['email'] ?? '';
           return ResetPasswordScreen(email: email);
         },
+      ),
+      GoRoute(
+        path: '/terms',
+        builder: (context, state) => const TermsScreen(),
+      ),
+      GoRoute(
+        path: '/privacy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
       ),
       GoRoute(
         path: '/choose-sanjeevani',

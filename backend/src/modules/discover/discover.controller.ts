@@ -11,6 +11,7 @@ export class DiscoverController {
 
   static async getSurawaliDetails(c: Context) {
     const id = c.req.param("id");
+    if (!id) throw new ValidationError("Missing required parameter: id");
     const service = new DiscoverService(c.env);
     const details = await service.getSurawaliDetails(id);
     return c.json({ success: true, data: details });
@@ -40,8 +41,10 @@ export class DiscoverController {
   static async cancelSubscription(c: Context) {
     const userId = c.get("userId");
     const id = c.req.param("id");
+    if (!id) throw new ValidationError("Missing required parameter: id");
     const service = new DiscoverService(c.env);
     const result = await service.cancelSubscription(userId, id);
     return c.json({ success: true, data: result });
   }
+
 }

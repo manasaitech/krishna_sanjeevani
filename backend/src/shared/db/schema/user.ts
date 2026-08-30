@@ -8,6 +8,7 @@ export const users = sqliteTable("users", {
   role: text("role").notNull().default("user"), // 'guest' | 'user' | 'premium' | 'admin' | 'super_admin'
   status: text("status").notNull().default("active"), // 'active' | 'suspended' | 'deleted'
   emailVerified: integer("email_verified").notNull().default(0), // 0: false, 1: true
+  authProvider: text("auth_provider").notNull().default("email"), // 'email' | 'google' | 'phone'
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

@@ -147,7 +147,7 @@ final programDetailsProvider = FutureProvider.family<Map<String, dynamic>, Strin
       return Map<String, dynamic>.from(data.first as Map);
     }
   }
-  throw Exception(res.message ?? 'Failed to load program details');
+  throw Exception(res.message);
 });
 
 final programTracksProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, programId) async {

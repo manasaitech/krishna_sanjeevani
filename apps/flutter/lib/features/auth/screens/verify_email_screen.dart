@@ -26,6 +26,24 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   void initState() {
     super.initState();
     _startTimer();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(authProvider).user;
+      final authProviderStr = user?['authProvider'] as String?;
+      final isGoogleUser = authProviderStr == 'google';
+      final emailVerified = user?['emailVerified'] ?? 1;
+
+      if (isGoogleUser || emailVerified == 1) {
+        if (mounted) {
+          final profile = user?['profile'];
+          final categoryStr = (profile is Map<String, dynamic>) ? profile['category'] as String? : null;
+          if (categoryStr == null || categoryStr == 'unset') {
+            context.go('/choose-sanjeevani');
+          } else {
+            context.go(categoryStr == 'pregnancy' ? '/journey' : '/home');
+          }
+        }
+      }
+    });
   }
 
   @override

@@ -128,4 +128,9 @@ class AuthRepository {
       },
     );
   }
+
+  Future<ApiResponse<dynamic>> deleteAccount() {
+    return apiClient.delete('/auth/account');
+  }
 }
+

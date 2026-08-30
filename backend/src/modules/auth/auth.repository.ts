@@ -80,11 +80,32 @@ export class AuthRepository {
     passwordHash: string;
     role: string;
     emailVerified?: number;
+    authProvider?: string;
     createdAt: number;
     updatedAt: number;
   }) {
-    await this.db.insert(users).values(data);
+    try {
+      await this.db.insert(users).values(data);
+    } catch (err) {
+      const { authProvider, ...rest } = data;
+      await this.db.insert(users).values(rest as any);
+    }
   }
+
+  async updateUserAuthProvider(userId: string, authProvider: string, emailVerified: number = 1) {
+    try {
+      await this.db
+        .update(users)
+        .set({ authProvider, emailVerified, updatedAt: Date.now() })
+        .where(eq(users.id, userId));
+    } catch (err) {
+      await this.db
+        .update(users)
+        .set({ emailVerified, updatedAt: Date.now() })
+        .where(eq(users.id, userId));
+    }
+  }
+
 
   async updateUserPassword(userId: string, passwordHash: string) {
     await this.db
@@ -148,4 +169,34 @@ export class AuthRepository {
       .set({ refreshTokenHash, expiresAt })
       .where(eq(sessions.userId, userId));
   }
+
+  // ── Account Deletion ──────────────────────────────────
+
+  async deleteUserAccount(userId: string) {
+    const user = await this.findUserById(userId);
+    if (!user) return;
+
+    if (user.email) {
+      await this.db.delete(otps).where(eq(otps.email, user.email));
+    }
+
+    await this.db.delete(userProfiles).where(eq(userProfiles.userId, userId));
+    await this.db.delete(sessions).where(eq(sessions.userId, userId));
+    await this.db.delete(schema.favorites).where(eq(schema.favorites.userId, userId));
+    await this.db.delete(schema.playHistory).where(eq(schema.playHistory.userId, userId));
+    await this.db.delete(schema.notifications).where(eq(schema.notifications.userId, userId));
+    await this.db.delete(schema.notificationJobs).where(eq(schema.notificationJobs.userId, userId));
+    await this.db.delete(schema.programProgress).where(eq(schema.programProgress.userId, userId));
+    await this.db.delete(schema.subscriptions).where(eq(schema.subscriptions.userId, userId));
+    await this.db.delete(schema.surawaliSubscriptions).where(eq(schema.surawaliSubscriptions.userId, userId));
+    await this.db.delete(schema.streamSessions).where(eq(schema.streamSessions.userId, userId));
+
+    await this.db
+      .update(schema.analyticsEvents)
+      .set({ userId: null })
+      .where(eq(schema.analyticsEvents.userId, userId));
+
+    await this.db.delete(users).where(eq(users.id, userId));
+  }
 }
+

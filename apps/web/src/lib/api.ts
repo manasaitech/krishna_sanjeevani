@@ -164,7 +164,9 @@ export const api = {
       http.post("/auth/forgot-password", { email }),
     resetPassword: (email: string, code: string, newPasswordStr: string) =>
       http.post("/auth/reset-password", { email, code, newPassword: newPasswordStr }),
+    deleteAccount: () => http.delete("/auth/account"),
   },
+
 
   // ── Tracks ──
   tracks: {

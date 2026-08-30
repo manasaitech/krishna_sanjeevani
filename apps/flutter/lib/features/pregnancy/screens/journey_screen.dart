@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/config/env_config.dart';
 import '../../../core/providers/network_providers.dart';
+import '../../../core/theme/category_theme.dart';
 import '../../../shared/providers/category_provider.dart';
 import '../../../shared/widgets/sanjeevani_card.dart';
 import '../../../shared/widgets/therapeutic_button.dart';
@@ -78,6 +78,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
   int _selectedWeek = 12;
   bool _saving = false;
   String? _errorMsg;
+  bool _editMode = false;
 
   // Client Note state
   final TextEditingController _noteController = TextEditingController();
@@ -150,10 +151,13 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       );
 
       if (res.success) {
+        setState(() {
+          _editMode = false;
+        });
         ref.invalidate(pregnancyTodayProvider);
       } else {
         setState(() {
-          _errorMsg = res.message ?? 'Failed to save gestational details';
+          _errorMsg = res.message;
         });
       }
     } catch (err) {
@@ -201,7 +205,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                 const Text(
                   'This prenatal tracking dashboard is calibrated specifically for the Garbha Sanjeevani (Pregnancy) pathway.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: const Color(0xFF7A6B58), height: 1.4),
+                  style: TextStyle(fontSize: 13, color: Color(0xFF7A6B58), height: 1.4),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
@@ -244,7 +248,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       ),
       body: todayAsync.when(
         data: (pregnancyData) {
-          final isSet = pregnancyData != null && pregnancyData['setNeeded'] != true;
+          final isSet = pregnancyData != null && pregnancyData['setNeeded'] != true && !_editMode;
 
           if (!isSet) {
             return _buildOnboardingForm(catColors);
@@ -312,10 +316,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                           setState(() {
                             _selectedDate = null;
                             _errorMsg = null;
-                          });
-                          // Inject setNeeded manually to show onboarding form
-                          ref.read(pregnancyTodayProvider.notifier).state = AsyncData({
-                            'setNeeded': true,
+                            _editMode = true;
                           });
                         },
                         child: const Text('Edit'),
@@ -694,7 +695,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                       ),
                       const SizedBox(height: 10),
                       Align(
-                        alignment: Alignment.right,
+                        alignment: Alignment.centerRight,
                         child: ElevatedButton(
                           onPressed: () {
                             _noteController.clear();

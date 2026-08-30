@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishna_sanjeevani/core/network/api_client.dart';
@@ -79,7 +80,18 @@ class MockRazorpayCheckoutService extends RazorpayCheckoutService {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('razorpay_flutter'),
+      (MethodCall methodCall) async => null,
+    );
+  });
+
   group('Subscription State & Checkout Tests', () {
+
+
     test('loadSubscriptionInfo populates plans and sets active subscription state', () async {
       final repo = MockSubscriptionsRepository();
       final rzp = MockRazorpayCheckoutService();

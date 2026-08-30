@@ -141,14 +141,18 @@ function PrivacyPage() {
             {/* Section 6 */}
             <section className="space-y-3">
               <h2 className="text-lg font-semibold font-serif text-foreground flex items-center gap-2">
-                <span className="text-cat">6.</span> Your Rights & Control
+                <span className="text-cat">6.</span> Your Rights & Account Deletion
               </h2>
               <p>
-                You retain full control over your data. You may access, correct, or permanently
-                delete your account and personal history at any time by visiting your Profile page
-                or contacting our support team.
+                You retain full control over your personal data. You may access, correct, or permanently
+                delete your account and personal history at any time by visiting your Profile settings in the web or mobile app, visiting our dedicated{" "}
+                <a href="/delete-account" className="text-cat font-semibold underline hover:opacity-80">
+                  Account & Data Deletion Page
+                </a>
+                , or contacting our support team.
               </p>
             </section>
+
 
             {/* Section 7 */}
             <section className="space-y-3">

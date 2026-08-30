@@ -14,6 +14,7 @@ export interface TokenPayload {
   sub: string;        // userId
   role: string;       // user role
   email: string;      // user email
+  authProvider?: string; // identity provider e.g. 'google', 'email'
 }
 
 export interface AuthTokens {
@@ -27,5 +28,6 @@ export interface AuthUser {
   role: string;
   status: string;
   emailVerified: number;
+  authProvider: string;
   createdAt: number;
 }

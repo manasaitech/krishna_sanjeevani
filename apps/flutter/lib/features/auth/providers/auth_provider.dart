@@ -311,7 +311,33 @@ class AuthNotifier extends StateNotifier<AuthState> {
       newPassword: newPassword,
     );
   }
+
+  Future<bool> deleteAccount() async {
+    state = state.copyWith(authLoading: true, error: null);
+    try {
+      final res = await _authRepository.deleteAccount();
+      if (res.success) {
+        await _googleAuthService.signOut();
+        await _secureStorage.clearTokens();
+        state = AuthState(authLoading: false, isAuthenticated: false, user: null);
+        return true;
+      } else {
+        state = state.copyWith(
+          authLoading: false,
+          error: res.message ?? 'Failed to delete account',
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        authLoading: false,
+        error: 'An unexpected error occurred during account deletion.',
+      );
+      return false;
+    }
+  }
 }
+
 
 final googleAuthServiceProvider = Provider<GoogleAuthService>((ref) {
   return GoogleAuthService();

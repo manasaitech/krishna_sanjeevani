@@ -30,11 +30,55 @@ enum AppCategory {
   String get description {
     switch (this) {
       case AppCategory.devotional:
-        return 'Traditional Krishna Sanjeevani healing.';
+        return 'Therapeutic sound frequencies calibrated to support physical and neurological conditions naturally through Raga Chikitsa.';
       case AppCategory.secular:
-        return 'Stress reduction, productivity, emotional wellness.';
+        return 'Circadian-aligned sound therapy designed to reduce stress, boost focus, and enhance well-being in the workplace.';
       case AppCategory.pregnancy:
-        return 'Month-wise pregnancy wellness journey.';
+        return 'Sacred sound guidance for a harmonious pregnancy journey and positive fetal development based on Garbha Sanskar.';
+    }
+  }
+
+  String get greetingText {
+    switch (this) {
+      case AppCategory.devotional:
+        return 'ॐ सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः।';
+      case AppCategory.secular:
+        return 'स्वस्थस्य स्वास्थ्य रक्षणं, आतुरस्य विकार प्रशमनं च।';
+      case AppCategory.pregnancy:
+        return 'पुत्रं कुरु प्रवरं कुलवर्धनम्, गर्भं रक्ष सुशोभनम्।';
+    }
+  }
+
+  String get bannerText {
+    switch (this) {
+      case AppCategory.devotional:
+        return 'Your personalized healing journey is in progress. Keep listening daily to experience the full benefits of Raga Chikitsa.';
+      case AppCategory.secular:
+        return 'Workplace wellness and productivity programs active. Listen daily for optimal circadian rhythm alignment.';
+      case AppCategory.pregnancy:
+        return 'Nurturing Garbha Sanskar sound frequencies active. Connect with your baby and support healthy fetal development.';
+    }
+  }
+
+  String get placeholderSearch {
+    switch (this) {
+      case AppCategory.devotional:
+        return 'Search surawalis, ragas, ailments...';
+      case AppCategory.secular:
+        return 'Search surawalis, wellness programs...';
+      case AppCategory.pregnancy:
+        return 'Search surawalis, pregnancy themes...';
+    }
+  }
+
+  List<String> get filters {
+    switch (this) {
+      case AppCategory.devotional:
+        return const ['All', 'Disorder Relief', 'Stress Relief', 'Focus', 'Sleep', 'Energy', 'Anxiety', 'Meditation', 'Healing'];
+      case AppCategory.secular:
+        return const ['All', 'Workplace Stress', 'Focus Boost', 'Mental Clarity', 'Burnout Relief', 'Rest & Reset', 'Meditation', 'Energy'];
+      case AppCategory.pregnancy:
+        return const ['All', 'Month 1-3', 'Month 4-6', 'Month 7-9', 'Maternal Calm', 'Baby Bond', 'Sleep', 'Meditation'];
     }
   }
 }
@@ -74,7 +118,38 @@ class CategoryColors extends ThemeExtension<CategoryColors> {
     catForeground: Color(0xFFFCFCFC),
   );
 
-  static CategoryColors ofCategory(AppCategory category) {
+  static const CategoryColors devotionalDark = CategoryColors(
+    cat: Color(0xFFE27B8A),
+    catLight: Color(0xFF38181E),
+    catAccent: Color(0xFFE0C475),
+    catForeground: Color(0xFF141218),
+  );
+
+  static const CategoryColors secularDark = CategoryColors(
+    cat: Color(0xFF2DD4BF),
+    catLight: Color(0xFF113835),
+    catAccent: Color(0xFF2DD4BF),
+    catForeground: Color(0xFF141218),
+  );
+
+  static const CategoryColors pregnancyDark = CategoryColors(
+    cat: Color(0xFFF4A3B4),
+    catLight: Color(0xFF3D2127),
+    catAccent: Color(0xFFF4A3B4),
+    catForeground: Color(0xFF141218),
+  );
+
+  static CategoryColors ofCategory(AppCategory category, {bool isDark = false}) {
+    if (isDark) {
+      switch (category) {
+        case AppCategory.devotional:
+          return devotionalDark;
+        case AppCategory.secular:
+          return secularDark;
+        case AppCategory.pregnancy:
+          return pregnancyDark;
+      }
+    }
     switch (category) {
       case AppCategory.devotional:
         return devotional;

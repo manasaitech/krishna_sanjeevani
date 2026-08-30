@@ -268,4 +268,17 @@ export class AuthController {
 
     return ApiResponse.success(c, null, "Password reset successfully");
   }
+
+  static async deleteAccount(c: Context<{ Bindings: Env }>) {
+    const userId = c.get("userId" as never) as string;
+    if (!userId) {
+      throw new ValidationError("Authenticated user ID missing");
+    }
+
+    const service = getAuthService(c.env);
+    await service.deleteAccount(userId);
+
+    return ApiResponse.success(c, null, "Account and associated data deleted successfully");
+  }
 }
+

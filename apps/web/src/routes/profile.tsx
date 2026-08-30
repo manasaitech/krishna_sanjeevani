@@ -9,8 +9,10 @@ import {
   Globe,
   LogOut,
   Palette,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
+
   Trash2,
   Play,
   Loader2,
@@ -340,6 +342,7 @@ function Profile() {
 
       <Section title={t("support")}>
         <div className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface shadow-soft">
+          <Row icon={ShieldAlert} label="Delete Account & Data" to="/delete-account" />
           <Row icon={ShieldCheck} label={t("privacyPolicy")} to="/privacy" />
           <Row icon={FileText} label={t("termsOfUse")} to="/terms" />
           <Row icon={CircleHelp} label={t("helpContact")} onClick={() => setShowContact(!showContact)} />
@@ -359,13 +362,23 @@ function Profile() {
         </div>
       </Section>
 
-      <button
-        onClick={handleLogout}
-        className="press mt-8 flex min-h-13 w-full items-center justify-center gap-2 rounded-btn border border-border bg-surface text-sm font-semibold text-destructive"
-      >
-        <LogOut className="h-4 w-4" /> {t("logout")}
-      </button>
+      <div className="mt-8 space-y-3">
+        <button
+          onClick={handleLogout}
+          className="press flex min-h-13 w-full items-center justify-center gap-2 rounded-btn border border-border bg-surface text-sm font-semibold text-foreground hover:bg-muted/50 transition-all"
+        >
+          <LogOut className="h-4 w-4" /> {t("logout")}
+        </button>
+
+        <Link
+          to="/delete-account"
+          className="press flex min-h-12 w-full items-center justify-center gap-2 rounded-btn border border-red-500/30 bg-red-500/5 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-all"
+        >
+          <Trash2 className="h-3.5 w-3.5" /> Delete Account & Data
+        </Link>
+      </div>
       <p className="mt-6 text-center text-[12px] text-muted-foreground">Version 1.0.0</p>
+
 
       {/* Theme Selection Modal */}
       {showThemeModal && (

@@ -21,5 +21,8 @@ auth.post("/logout", requireAuth(), AuthController.logout);
 auth.get("/me", requireAuth(), AuthController.getMe);
 auth.patch("/change-password", requireAuth(), AuthController.changePassword);
 auth.patch("/profile", requireAuth(), AuthController.updateProfile);
+auth.delete("/account", requireAuth(), AuthController.deleteAccount);
+auth.delete("/delete-account", requireAuth(), AuthController.deleteAccount);
 
 export default auth;
+

@@ -166,7 +166,9 @@ const publicPaths = [
   "/team",
   "/terms",
   "/privacy",
+  "/delete-account",
 ];
+
 
 function RouteGuard({ children }: { children: ReactNode }) {
   const { user, authLoading } = useApp();
@@ -194,7 +196,8 @@ function RouteGuard({ children }: { children: ReactNode }) {
       return cleanPublic.includes(currentPath) ? null : "/login";
     }
 
-    const isUnverified = user.emailVerified === 0;
+    const isGoogleAuth = user.authProvider === "google";
+    const isUnverified = !isGoogleAuth && user.emailVerified === 0;
     if (isUnverified) {
       return currentPath !== "/verify-email" ? "/verify-email" : null;
     }
