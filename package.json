@@ -4,10 +4,10 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "vite dev --mode emotion-remediation",
     "dev:surawali": "vite dev --mode surawali",
     "dev:emotion": "vite dev --mode emotion-remediation",
-    "build": "vite build",
+    "build": "vite build --mode emotion-remediation",
     "build:surawali": "vite build --mode surawali",
     "build:emotion": "vite build --mode emotion-remediation",
     "build:dev": "vite build --mode development",

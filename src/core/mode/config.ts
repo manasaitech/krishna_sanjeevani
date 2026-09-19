@@ -24,19 +24,20 @@ export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
  * Falls back to "surawali" if not set or invalid.
  */
 export function getActiveMode(): AppMode {
-  const raw =
-    typeof import.meta !== "undefined" && import.meta.env?.VITE_APP_MODE
-      ? import.meta.env.VITE_APP_MODE
-      : "surawali";
+  let raw: string | undefined;
+
+  if (typeof import.meta !== "undefined" && import.meta.env?.VITE_APP_MODE) {
+    raw = import.meta.env.VITE_APP_MODE;
+  } else if (typeof process !== "undefined" && (process.env?.VITE_APP_MODE || process.env?.APP_MODE)) {
+    raw = process.env.VITE_APP_MODE || process.env.APP_MODE;
+  }
 
   if (raw === "surawali" || raw === "emotion_remediation") {
     return raw;
   }
 
-  console.warn(
-    `[mode] Unknown APP_MODE "${raw}", falling back to "surawali".`
-  );
-  return "surawali";
+  // Default mode for this release is emotion_remediation
+  return "emotion_remediation";
 }
 
 /**
