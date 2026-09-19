@@ -19,8 +19,13 @@ import { tracks, programs, sanjeevaniConfigs, type CategoryId } from "@/lib/cont
 import logoWithoutText from "@/assets/logo-without-text.webp";
 import { api } from "@/lib/api";
 
+import { useMode, getActiveMode } from "@/core/mode";
+import { emotionThemeConfig } from "@/modes/emotion-remediation/theme";
+
 export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   const { favorites, play, category } = useApp();
+  const { isEmotionMode: ctxEmotion } = useMode();
+  const isEmotionMode = ctxEmotion ?? (getActiveMode() === "emotion_remediation");
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Map favorites IDs to full tracks
@@ -29,7 +34,7 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
     .filter(Boolean);
 
   const activeCategory = (!category || category === "unset") ? "devotional" : category;
-  const activeConfig = sanjeevaniConfigs[activeCategory as Exclude<CategoryId, "unset">];
+  const activeConfig = isEmotionMode ? emotionThemeConfig : sanjeevaniConfigs[activeCategory as Exclude<CategoryId, "unset">];
 
   const getLinkClass = (to: string, hash?: string) => {
     const active = pathname === to && (!hash || window.location.hash === `#${hash}`);
