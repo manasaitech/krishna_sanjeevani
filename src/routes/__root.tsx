@@ -16,6 +16,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider, useApp } from "../lib/app-state";
 import { Toaster } from "../components/ui/sonner";
 import { queryClient } from "../router";
+import { ModeProvider, useMode } from "@/core/mode/context";
+import { getModeConfig, isRouteAllowedForMode } from "@/core/mode/config";
 
 function NotFoundComponent() {
   return (
@@ -73,26 +75,31 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+// Mode-aware head meta — reads branding from the active mode config at build time
+const modeBranding = getModeConfig().branding;
+const titleStr = `${modeBranding.appName} — ${modeBranding.tagline}`;
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
+      { title: titleStr },
       {
         name: "description",
-        content:
-          "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care.",
+        content: modeBranding.description,
       },
-      { name: "theme-color", content: "#F8F6F2" },
+      { name: "theme-color", content: modeBranding.themeColor },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:title", content: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
-      { name: "twitter:title", content: "Krishna Sanjeevani — Therapeutic Raga Streaming" },
-      { property: "og:description", content: "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care." },
-      { name: "twitter:description", content: "A calm, premium therapeutic audio platform streaming Krishna Sanjeevani ragas for emotional wellness, sleep, focus and pregnancy care." },
-      { property: "og:image", content: "https://krishnasanjeevani.com/logo.webp" },
-      { name: "twitter:image", content: "https://krishnasanjeevani.com/logo.webp" },
+      { property: "og:title", content: titleStr },
+      { name: "twitter:title", content: titleStr },
+      { property: "og:description", content: modeBranding.description },
+      { name: "twitter:description", content: modeBranding.description },
+      ...(modeBranding.ogImageUrl ? [
+        { property: "og:image", content: modeBranding.ogImageUrl },
+        { name: "twitter:image", content: modeBranding.ogImageUrl },
+      ] : []),
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -102,7 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "icon", href: modeBranding.faviconUrl || "/favicon.png", type: "image/png" },
     ],
   }),
   shellComponent: RootShell,
@@ -127,26 +134,21 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RouteGuard({ children }: { children: ReactNode }) {
   const { user, authLoading } = useApp();
+  const { features, routes: modeRoutes } = useMode();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     if (authLoading) return;
 
-    const publicPaths = [
-      "/",
-      "/login",
-      "/register",
-      "/vedic-science",
-      "/inspiration",
-      "/the-beginning",
-      "/about",
-      "/team",
-      "/terms",
-      "/privacy",
-      "/discover",
-    ];
-    const isPublic = publicPaths.includes(location.pathname);
+    // ── Route isolation: block access to routes not in current mode ──
+    if (!isRouteAllowedForMode(location.pathname)) {
+      navigate({ to: modeRoutes.defaultHomePath });
+      return;
+    }
+
+    // ── Public / auth path checks (mode-aware) ──
+    const isPublic = modeRoutes.publicPaths.includes(location.pathname);
 
     if (!user && !isPublic) {
       navigate({ to: "/login" });
@@ -154,18 +156,21 @@ function RouteGuard({ children }: { children: ReactNode }) {
     }
 
     if (user) {
-      const selectedPathway = user.profile?.category;
-      if (!selectedPathway || selectedPathway === "unset") {
-        if (location.pathname !== "/select-sanjeevani") {
-          navigate({ to: "/select-sanjeevani" });
-        }
-      } else {
-        if (location.pathname === "/select-sanjeevani") {
-          navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
+      // Sanjeevani selection only applies in Surawali mode
+      if (features.hasSanjeevaniSelection) {
+        const selectedPathway = user.profile?.category;
+        if (!selectedPathway || selectedPathway === "unset") {
+          if (location.pathname !== "/select-sanjeevani") {
+            navigate({ to: "/select-sanjeevani" });
+          }
+        } else {
+          if (location.pathname === "/select-sanjeevani") {
+            navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
+          }
         }
       }
     }
-  }, [user, authLoading, location.pathname, navigate]);
+  }, [user, authLoading, location.pathname, navigate, features, modeRoutes]);
 
   if (authLoading) {
     return (
@@ -178,19 +183,26 @@ function RouteGuard({ children }: { children: ReactNode }) {
     );
   }
 
+  // If the requested path is not allowed in the current mode, render 404 (route does not exist)
+  if (!isRouteAllowedForMode(location.pathname)) {
+    return <NotFoundComponent />;
+  }
+
   return <>{children}</>;
 }
 
 function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppProvider>
-        <RouteGuard>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </RouteGuard>
-        <Toaster />
-      </AppProvider>
+      <ModeProvider>
+        <AppProvider>
+          <RouteGuard>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </RouteGuard>
+          <Toaster />
+        </AppProvider>
+      </ModeProvider>
     </QueryClientProvider>
   );
 }

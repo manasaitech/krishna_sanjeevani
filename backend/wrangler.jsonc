@@ -29,6 +29,10 @@
 		{
 			"binding": "SONG_BUCKET",
 			"bucket_name": "bhajan"
+		},
+		{
+			"binding": "EMOTION_SONGS_BUCKET",
+			"bucket_name": "krishna-sanjeevani-emotion-remediation"
 		}
 	],
 	"queues": {
@@ -65,6 +69,7 @@
 	 */
 	"vars": {
 		"PAYMENT_MODE": "mock",
+		"APP_MODE": "surawali",
 		"GOOGLE_CLIENT_ID": "29791277131-umh14qed3e0k4n3kotqum64r7br67dh9.apps.googleusercontent.com"
 	}
 	/**

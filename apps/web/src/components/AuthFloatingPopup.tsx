@@ -5,7 +5,7 @@ import { useAuthModal } from "@/hooks/useAuthModal";
 import { Music, X, User } from "lucide-react";
 
 const MESSAGES = [
-  "Login / Sign Up Now",
+  "Begin Your Journey",
   "Immerse into the Divine Music",
   "Explore Vedic Science",
   "Discover Your Surāwali",
@@ -202,9 +202,9 @@ export function AuthFloatingPopup() {
         <button
           className="ks-auth-popup__cta"
           onClick={handleCTAClick}
-          aria-label="Open Login or Sign Up"
+          aria-label="Begin Your Journey"
         >
-          Login / Sign Up
+          Begin Your Journey
         </button>
 
         {/* Animated cycling message */}

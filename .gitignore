@@ -66,4 +66,7 @@ mobile/android/
 *.njsproj
 *.sln
 *.sw?
-*.pem
+# Media & Archive Binaries
+*.zip
+*.mp3
+*.xlsx

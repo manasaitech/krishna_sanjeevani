@@ -5,11 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "dev:surawali": "vite dev --mode surawali",
+    "dev:emotion": "vite dev --mode emotion-remediation",
     "build": "vite build",
+    "build:surawali": "vite build --mode surawali",
+    "build:emotion": "vite build --mode emotion-remediation",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "emotion:import": "node scripts/import-emotion-songs.cjs --production",
+    "emotion:import:dry-run": "node scripts/import-emotion-songs.cjs --dry-run"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

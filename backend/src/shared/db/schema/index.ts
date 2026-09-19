@@ -12,4 +12,6 @@ export * from "./analytics";
 export * from "./stream";
 export * from "./progress";
 export * from "./surawali_catalog";
+export * from "./emotion_song";
+
 
