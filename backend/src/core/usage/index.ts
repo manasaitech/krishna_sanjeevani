@@ -6,7 +6,7 @@
 
 import { Hono } from "hono";
 import { Env } from "../../shared/config/env";
-import { authMiddleware, optionalAuthMiddleware } from "../../modules/auth/auth.middleware";
+import { requireAuth, optionalAuth } from "../../modules/auth/auth.middleware";
 import { ApiResponse } from "../../shared/responses";
 import { getDB } from "../../shared/db/client";
 import { getAppMode } from "../../shared/config/mode";
@@ -14,7 +14,7 @@ import { getAppMode } from "../../shared/config/mode";
 const usageRoute = new Hono<{ Bindings: Env }>();
 
 // Record a usage event (e.g. search query, track play, remediation session)
-usageRoute.post("/track", optionalAuthMiddleware, async (c) => {
+usageRoute.post("/track", optionalAuth(), async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const user = c.get("user" as any);
   const mode = getAppMode(c.env);

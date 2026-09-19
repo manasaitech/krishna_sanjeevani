@@ -11,7 +11,7 @@ import { ApiResponse } from "../../../shared/responses";
 import { getDB } from "../../../shared/db/client";
 import { emotionSongs } from "../../../shared/db/schema/emotion_song";
 import { eq, and } from "drizzle-orm";
-import { optionalAuthMiddleware } from "../../../modules/auth/auth.middleware";
+import { optionalAuth } from "../../../modules/auth/auth.middleware";
 
 export const emotionContentRoute = new Hono<{ Bindings: Env }>();
 
@@ -99,7 +99,7 @@ emotionContentRoute.get("/trajectories", (c) => {
  * List Emotion Remediation songs, optionally filtered by dosha, trajectory, or reviewStatus.
  * Regular users only see published songs (or approved in development).
  */
-emotionContentRoute.get("/songs", optionalAuthMiddleware, async (c) => {
+emotionContentRoute.get("/songs", optionalAuth(), async (c) => {
   const db = getDB(c.env);
   const dosha = c.req.query("dosha");
   const trajectory = c.req.query("trajectory");
@@ -160,7 +160,7 @@ emotionContentRoute.get("/songs/:id", async (c) => {
  * Securely stream audio from the dedicated EMOTION_SONGS_BUCKET.
  * Prevents unapproved songs from being streamed by non-admins.
  */
-emotionContentRoute.get("/songs/:id/stream", optionalAuthMiddleware, async (c) => {
+emotionContentRoute.get("/songs/:id/stream", optionalAuth(), async (c) => {
   const songId = c.req.param("id");
   const bucket = c.env.EMOTION_SONGS_BUCKET;
 
