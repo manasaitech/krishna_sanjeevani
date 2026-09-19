@@ -1,21 +1,27 @@
 // ─────────────────────────────────────────────────────────────
 // Backend Mode Configuration Helper
-// Reads APP_MODE from the Cloudflare Worker env and provides
-// mode-specific settings.
+//
+// Controlled directly via code:
+//   ACTIVE_BACKEND_MODE = "emotion_remediation"
+//   ACTIVE_BACKEND_MODE = "surawali"
 // ─────────────────────────────────────────────────────────────
 
 import type { Env, AppMode } from "./env";
 
 /**
- * Read the active application mode from the Worker env.
- * Defaults to "surawali" if not set.
+ * ─────────────────────────────────────────────────────────────
+ * 🎯 MASTER BACKEND APPLICATION MODE SWITCH
+ * Change this single line to switch modes across the entire backend!
+ * ─────────────────────────────────────────────────────────────
  */
-export function getAppMode(env: Env): AppMode {
-  const raw = env.APP_MODE;
-  if (raw === "surawali" || raw === "emotion_remediation") {
-    return raw;
-  }
-  return "surawali";
+export const ACTIVE_BACKEND_MODE: AppMode = "emotion_remediation";
+
+/**
+ * Read the active application mode.
+ * Evaluates the master code-level switch without depending on .env files.
+ */
+export function getAppMode(env?: Env): AppMode {
+  return ACTIVE_BACKEND_MODE;
 }
 
 /**

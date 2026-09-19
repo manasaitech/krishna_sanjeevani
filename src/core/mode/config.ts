@@ -1,17 +1,22 @@
 // ─────────────────────────────────────────────────────────────
-// Core Mode Config — reads the active mode from environment
-// and exposes the corresponding ModeConfig.
+// Core Mode Config — Master Application Mode Switch
 //
-// The mode is determined ONLY from code/configuration:
-//   VITE_APP_MODE=surawali           (default)
-//   VITE_APP_MODE=emotion_remediation
-//
-// A normal user must NEVER know that another mode exists.
+// Controlled directly via code:
+//   ACTIVE_APP_MODE = "emotion_remediation"  (Active Emotion Mode)
+//   ACTIVE_APP_MODE = "surawali"             (Active Surawali Mode)
 // ─────────────────────────────────────────────────────────────
 
 import type { AppMode, ModeConfig } from "./types";
 import { surawaliConfig } from "@/modes/surawali/config";
 import { emotionRemediationConfig } from "@/modes/emotion-remediation/config";
+
+/**
+ * ─────────────────────────────────────────────────────────────
+ * 🎯 MASTER APPLICATION MODE SWITCH
+ * Change this single line to switch modes across the entire app!
+ * ─────────────────────────────────────────────────────────────
+ */
+export const ACTIVE_APP_MODE: AppMode = "emotion_remediation";
 
 /** Registry of all available mode configurations */
 export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
@@ -20,24 +25,11 @@ export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
 };
 
 /**
- * Read the active application mode from the environment.
- * Falls back to "surawali" if not set or invalid.
+ * Read the active application mode.
+ * Evaluates the master code-level switch without depending on .env files.
  */
 export function getActiveMode(): AppMode {
-  let raw: string | undefined;
-
-  if (typeof import.meta !== "undefined" && import.meta.env?.VITE_APP_MODE) {
-    raw = import.meta.env.VITE_APP_MODE;
-  } else if (typeof process !== "undefined" && (process.env?.VITE_APP_MODE || process.env?.APP_MODE)) {
-    raw = process.env.VITE_APP_MODE || process.env.APP_MODE;
-  }
-
-  if (raw === "surawali" || raw === "emotion_remediation") {
-    return raw;
-  }
-
-  // Default mode for this release is emotion_remediation
-  return "emotion_remediation";
+  return ACTIVE_APP_MODE;
 }
 
 /**
@@ -57,8 +49,6 @@ export function isRouteAllowedForMode(pathname: string): boolean {
     ...config.routes.modePaths,
   ];
 
-  // Allow paths that start with any of the allowed prefixes
-  // (handles dynamic routes like /program/$programId)
   return allAllowed.some(
     (allowed) => pathname === allowed || pathname.startsWith(allowed + "/")
   );
