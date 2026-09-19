@@ -65,6 +65,61 @@ interface ActiveSub {
   endDate: number;
 }
 
+const DEFAULT_SURAWALI_CATALOG = {
+  ailments: [
+    { id: "ail_anxiety", name: "Anxiety & Restlessness" },
+    { id: "ail_hypertension", name: "Hypertension & Blood Pressure" },
+    { id: "ail_insomnia", name: "Insomnia & Sleep Disorders" },
+    { id: "ail_stress", name: "Chronic Stress & Tension" },
+    { id: "ail_migraine", name: "Migraine & Neurological Fatigue" },
+    { id: "ail_focus", name: "Focus & Cognitive Concentration" },
+    { id: "ail_depression", name: "Low Energy & Emotional Heaviness" },
+  ],
+  surawalis: [
+    { id: "sur_kalyani", name: "Kalyani Surāwali" },
+    { id: "sur_bhairavi", name: "Bhairavi Surāwali" },
+    { id: "sur_yaman", name: "Yaman Surāwali" },
+    { id: "sur_todi", name: "Todi Surāwali" },
+    { id: "sur_bilawal", name: "Bilawal Surāwali" },
+    { id: "sur_shankara", name: "Shankara Surāwali" },
+  ],
+  timings: [
+    { id: "tim_morning", name: "Morning (07:00 - 12:00)" },
+    { id: "tim_evening", name: "Evening (16:00 - 20:00)" },
+    { id: "tim_night", name: "Night (20:00 - 23:00)" },
+    { id: "tim_early", name: "Early Morning (04:00 - 07:00)" },
+  ],
+  ailmentSurawalis: [
+    { id: "m_1", ailmentId: "ail_anxiety", surawaliId: "sur_kalyani", timingId: "tim_morning" },
+    { id: "m_2", ailmentId: "ail_hypertension", surawaliId: "sur_kalyani", timingId: "tim_morning" },
+    { id: "m_3", ailmentId: "ail_insomnia", surawaliId: "sur_bhairavi", timingId: "tim_night" },
+    { id: "m_4", ailmentId: "ail_stress", surawaliId: "sur_yaman", timingId: "tim_evening" },
+    { id: "m_5", ailmentId: "ail_focus", surawaliId: "sur_todi", timingId: "tim_early" },
+    { id: "m_6", ailmentId: "ail_depression", surawaliId: "sur_bilawal", timingId: "tim_morning" },
+    { id: "m_7", ailmentId: "ail_migraine", surawaliId: "sur_shankara", timingId: "tim_evening" },
+  ],
+  pregnancyMappings: [
+    { id: "pm_1", pregnancyMonth: 1, surawaliId: "sur_kalyani", timingId: "tim_morning", musicTrack: "Kalyani Shanti" },
+    { id: "pm_2", pregnancyMonth: 2, surawaliId: "sur_yaman", timingId: "tim_evening", musicTrack: "Yaman Garbha" },
+    { id: "pm_3", pregnancyMonth: 3, surawaliId: "sur_bhairavi", timingId: "tim_night", musicTrack: "Bhairavi Sukham" },
+    { id: "pm_4", pregnancyMonth: 4, surawaliId: "sur_bilawal", timingId: "tim_morning", musicTrack: "Bilawal Utsaha" },
+    { id: "pm_5", pregnancyMonth: 5, surawaliId: "sur_todi", timingId: "tim_early", musicTrack: "Todi Chetana" },
+    { id: "pm_6", pregnancyMonth: 6, surawaliId: "sur_kalyani", timingId: "tim_morning", musicTrack: "Kalyani Raksha" },
+    { id: "pm_7", pregnancyMonth: 7, surawaliId: "sur_shankara", timingId: "tim_evening", musicTrack: "Shankara Ananda" },
+    { id: "pm_8", pregnancyMonth: 8, surawaliId: "sur_yaman", timingId: "tim_evening", musicTrack: "Yaman Prasanti" },
+    { id: "pm_9", pregnancyMonth: 9, surawaliId: "sur_bhairavi", timingId: "tim_night", musicTrack: "Bhairavi Janani" },
+  ],
+  corporateRagas: [
+    { id: "cr_1", ragaName: "Monday Clarity (Raga Bilawal)", weekDay: "Monday", timingId: "tim_morning" },
+    { id: "cr_2", ragaName: "Tuesday Focus (Raga Todi)", weekDay: "Tuesday", timingId: "tim_early" },
+    { id: "cr_3", ragaName: "Wednesday Stress Buster (Raga Yaman)", weekDay: "Wednesday", timingId: "tim_evening" },
+    { id: "cr_4", ragaName: "Thursday Flow (Raga Kalyani)", weekDay: "Thursday", timingId: "tim_morning" },
+    { id: "cr_5", ragaName: "Friday Unwind (Raga Bhairavi)", weekDay: "Friday", timingId: "tim_night" },
+    { id: "cr_6", ragaName: "Saturday Recharge (Raga Shankara)", weekDay: "Saturday", timingId: "tim_morning" },
+    { id: "cr_7", ragaName: "Sunday Peace (Raga Bhairavi)", weekDay: "Sunday", timingId: "tim_night" },
+  ]
+};
+
 export function SurawaliHome() {
   const {
     category,
@@ -85,10 +140,10 @@ export function SurawaliHome() {
     ailmentSurawalis: AilmentSurawali[];
     pregnancyMappings: PregnancyMapping[];
     corporateRagas: CorporateRaga[];
-  } | null>(null);
+  }>(DEFAULT_SURAWALI_CATALOG);
 
   const [subscriptions, setSubscriptions] = useState<ActiveSub[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Filters State
   const [activeChip, setActiveChip] = useState("All");
@@ -107,22 +162,23 @@ export function SurawaliHome() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [catRes, subRes] = await Promise.all([
-          api.discover.getCatalog(),
-          api.discover.listSubscriptions(),
-        ]);
-        if (catRes.success) setCatalog(catRes.data);
-        if (subRes.success) {
-          const active = subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now());
-          setSubscriptions(active);
+        const catRes = await api.discover.getCatalog();
+        if (catRes && catRes.success && catRes.data && catRes.data.surawalis?.length > 0) {
+          setCatalog(catRes.data);
+        }
+
+        if (user) {
+          const subRes = await api.discover.listSubscriptions();
+          if (subRes && subRes.success && Array.isArray(subRes.data)) {
+            const active = subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now());
+            setSubscriptions(active);
+          }
         }
       } catch (err) {
-        console.error("Failed to load catalog or subscriptions", err);
-      } finally {
-        setLoading(false);
+        console.warn("Using default Surawali catalog fallback", err);
       }
     }
-    if (user) loadData();
+    loadData();
   }, [user]);
 
   const getSurawaliName = (id: string) => catalog?.surawalis.find(s => s.id === id)?.name || "Unknown Surawali";
