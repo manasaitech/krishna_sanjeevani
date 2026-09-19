@@ -16,7 +16,10 @@ import { emotionRemediationConfig } from "@/modes/emotion-remediation/config";
  * Change this single line to switch modes across the entire app!
  * ─────────────────────────────────────────────────────────────
  */
-export const ACTIVE_APP_MODE: AppMode = "surawali";
+export const ACTIVE_APP_MODE: AppMode =
+  (import.meta.env?.VITE_APP_MODE as AppMode) === "emotion_remediation"
+    ? "emotion_remediation"
+    : "surawali";
 
 /** Registry of all available mode configurations */
 export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {

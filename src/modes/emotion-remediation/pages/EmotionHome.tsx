@@ -98,8 +98,11 @@ export function EmotionHome() {
         fetch(`${origin}/emotion/content/trajectories`).then(r => r.json()).catch(() => null),
       ]);
 
-      if (songsRes?.success && Array.isArray(songsRes.data) && songsRes.data.length > 0) {
-        setSongs(songsRes.data.map((s: any) => ({
+      // Handle both response shapes: { data: { total, songs: [...] } } and { data: [...] }
+      const rawSongs = songsRes?.data?.songs || (Array.isArray(songsRes?.data) ? songsRes.data : null);
+
+      if (songsRes?.success && Array.isArray(rawSongs) && rawSongs.length > 0) {
+        setSongs(rawSongs.map((s: any) => ({
           id: s.id,
           title: s.title,
           dosha: s.dosha,
