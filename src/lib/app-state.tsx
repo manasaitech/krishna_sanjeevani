@@ -523,6 +523,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.warn("Failed to get track progress", err);
     }
 
+    // Direct streaming for Emotion Remediation songs from R2
+    if (t.id.startsWith("em_song_")) {
+      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL : `${BASE_URL}/api/v1`;
+      const streamUrl = `${origin}/emotion/content/songs/${t.id}/stream`;
+      audio.src = streamUrl;
+      audio.playbackRate = speed;
+      audio.volume = muted ? 0 : volume / 100;
+      audio.currentTime = initialPos;
+      audio.play()
+        .then(() => setPlaying(true))
+        .catch((err) => console.error("Emotion playback failed to start", err));
+      return;
+    }
+
     try {
       // 1. Get playback ticket
       const res = await api.stream.getTicket(t.id);

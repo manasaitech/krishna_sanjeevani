@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarBody } from "@/components/AppSidebar";
 import { useApp } from "@/lib/app-state";
+import { useMode } from "@/core/mode";
 import { categories, sanjeevaniConfigs, type CategoryId } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ export function TopBar({
   subtitle?: string | undefined;
 }) {
   const { category, setCategory, user, notifications, markAsRead, markAllAsRead } = useApp();
+  const { isEmotionMode, config: modeConfig } = useMode();
   const userName = user?.profile?.fullName || user?.email?.split("@")[0] || "Guest";
   const [menuOpen, setMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -120,7 +122,11 @@ export function TopBar({
               <h1 className="truncate font-display text-[19px] leading-tight font-semibold md:text-[22px]">
                 {userName}
               </h1>
-              {category && category !== "unset" && sanjeevaniConfigs[category as Exclude<CategoryId, "unset">] && (
+              {isEmotionMode ? (
+                <p className="truncate text-[11px] text-muted-foreground/80 font-medium italic mt-0.5 max-w-full overflow-hidden block">
+                  ॐ सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः।
+                </p>
+              ) : category && category !== "unset" && sanjeevaniConfigs[category as Exclude<CategoryId, "unset">] && (
                 <p className="truncate text-[11px] text-muted-foreground/80 font-medium italic mt-0.5 max-w-full overflow-hidden block">
                   {sanjeevaniConfigs[category as Exclude<CategoryId, "unset">].greetingText}
                 </p>
@@ -135,7 +141,9 @@ export function TopBar({
         >
           <SearchIcon className="h-4 w-4 shrink-0" />
           <span>
-            {category && category !== "unset" && sanjeevaniConfigs[category as Exclude<CategoryId, "unset">]
+            {isEmotionMode
+              ? "Search emotional states, trajectories, doshas, songs..."
+              : category && category !== "unset" && sanjeevaniConfigs[category as Exclude<CategoryId, "unset">]
               ? sanjeevaniConfigs[category as Exclude<CategoryId, "unset">].placeholderSearch
               : "Search ragas, purposes, programs"}
           </span>
