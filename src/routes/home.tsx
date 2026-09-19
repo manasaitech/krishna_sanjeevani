@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useApp } from "@/lib/app-state";
-import { useMode } from "@/core/mode";
+import { useMode, getActiveMode } from "@/core/mode";
 import { sanjeevaniConfigs, type CategoryId, type Track } from "@/lib/content";
 import { AUTHORITATIVE_TRAJECTORIES, AUTHORITATIVE_EMOTION_SONGS, type EmotionTrajectory } from "@/modes/emotion-remediation/content-provider";
 import { emotionThemeConfig } from "@/modes/emotion-remediation/theme";
@@ -131,7 +131,8 @@ function HomeDashboard() {
     tracks,
   } = useApp();
 
-  const { isEmotionMode, config: modeConfig } = useMode();
+  const { isEmotionMode: ctxIsEmotion, config: modeConfig } = useMode();
+  const isEmotionMode = ctxIsEmotion ?? (getActiveMode() === "emotion_remediation");
   const navigate = useNavigate();
 
   // Redirect guest or unset users to register/login or onboarding

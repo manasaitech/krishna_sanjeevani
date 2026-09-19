@@ -5,7 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { CardGrid, Chip, Panel, Section } from "@/components/layout-bits";
 import { ProgramCard, TrackTile } from "@/components/cards";
 import { EmptyState } from "@/components/States";
-import { useMode } from "@/core/mode";
+import { useMode, getActiveMode } from "@/core/mode";
 import { useApp } from "@/lib/app-state";
 import { AUTHORITATIVE_EMOTION_SONGS, AUTHORITATIVE_TRAJECTORIES } from "@/modes/emotion-remediation/content-provider";
 import {
@@ -85,7 +85,8 @@ function formatDuration(seconds?: number): string {
 }
 
 function Search() {
-  const { isEmotionMode } = useMode();
+  const { isEmotionMode: ctxIsEmotion } = useMode();
+  const isEmotionMode = ctxIsEmotion ?? (getActiveMode() === "emotion_remediation");
   const { play, current, playing } = useApp();
   const [q, setQ] = useState("");
   const [purpose, setPurpose] = useState<string | null>(null);

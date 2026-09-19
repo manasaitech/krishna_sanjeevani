@@ -7,8 +7,10 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type { AppMode, ModeConfig, ModeFeatures, ModeBranding, ContentMappingProvider, ContentSearchProvider, ModeSubscriptionConfig, ModeRouteConfig, NavItem } from "./types";
 import { getActiveMode, getModeConfig } from "./config";
 
-interface ModeContextValue {
+export interface ModeContextValue {
   mode: AppMode;
+  isEmotionMode: boolean;
+  isSurawaliMode: boolean;
   config: ModeConfig;
   branding: ModeBranding;
   features: ModeFeatures;
@@ -30,6 +32,8 @@ export function ModeProvider({ children }: { children: ReactNode }) {
 
     return {
       mode,
+      isEmotionMode: mode === "emotion_remediation",
+      isSurawaliMode: mode === "surawali",
       config,
       branding: config.branding,
       features: config.features,
@@ -53,13 +57,27 @@ export function ModeProvider({ children }: { children: ReactNode }) {
  * Access the active mode configuration from any component.
  *
  * Usage:
- *   const { mode, branding, features, hasFeature } = useMode();
- *   if (hasFeature("hasSanjeevaniSelection")) { ... }
+ *   const { mode, isEmotionMode, isSurawaliMode, branding, features, hasFeature } = useMode();
  */
 export function useMode(): ModeContextValue {
   const ctx = useContext(ModeContext);
   if (!ctx) {
-    throw new Error("useMode() must be used within <ModeProvider>.");
+    const fallbackMode = getActiveMode();
+    const fallbackConfig = getModeConfig();
+    return {
+      mode: fallbackMode,
+      isEmotionMode: fallbackMode === "emotion_remediation",
+      isSurawaliMode: fallbackMode === "surawali",
+      config: fallbackConfig,
+      branding: fallbackConfig.branding,
+      features: fallbackConfig.features,
+      routes: fallbackConfig.routes,
+      subscriptions: fallbackConfig.subscriptions,
+      navigation: fallbackConfig.navigation,
+      contentProvider: fallbackConfig.contentProvider,
+      searchProvider: fallbackConfig.searchProvider,
+      hasFeature: (key: keyof ModeFeatures) => !!fallbackConfig.features[key],
+    };
   }
   return ctx;
 }

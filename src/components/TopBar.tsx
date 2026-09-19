@@ -38,7 +38,8 @@ export function TopBar({
   subtitle?: string | undefined;
 }) {
   const { category, setCategory, user, notifications, markAsRead, markAllAsRead } = useApp();
-  const { isEmotionMode, config: modeConfig } = useMode();
+  const { isEmotionMode: ctxEmotion, config: modeConfig } = useMode();
+  const isEmotionMode = ctxEmotion ?? (getActiveMode() === "emotion_remediation");
   const userName = user?.profile?.fullName || user?.email?.split("@")[0] || "Guest";
   const [menuOpen, setMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
