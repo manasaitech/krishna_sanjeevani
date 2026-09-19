@@ -14,7 +14,7 @@ import type { Env, AppMode } from "./env";
  * Change this single line to switch modes across the entire backend!
  * ─────────────────────────────────────────────────────────────
  */
-export const ACTIVE_BACKEND_MODE: AppMode = "emotion_remediation";
+export const ACTIVE_BACKEND_MODE: AppMode = "surawali";
 
 /**
  * Read the active application mode.
