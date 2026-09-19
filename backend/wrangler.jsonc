@@ -69,7 +69,7 @@
 	 */
 	"vars": {
 		"PAYMENT_MODE": "mock",
-		"APP_MODE": "surawali",
+		"APP_MODE": "emotion_remediation",
 		"GOOGLE_CLIENT_ID": "29791277131-umh14qed3e0k4n3kotqum64r7br67dh9.apps.googleusercontent.com"
 	}
 	/**
