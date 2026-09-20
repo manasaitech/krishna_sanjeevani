@@ -210,7 +210,7 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
           className="press mt-4 flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#4D0F1B] via-[#631422] to-[#7C1C24] text-white px-6 py-2.5 text-xs sm:text-sm font-semibold shadow-lg shadow-[#4D0F1B]/25 hover:scale-105 active:scale-95 transition-all duration-300 border border-[#C9A84C]/50 cursor-pointer"
         >
           <Volume2 className="h-4 w-4 text-[#C9A84C] animate-pulse" />
-          <span>Click anywhere to start listening</span>
+          <span>Click anywhere to continue</span>
           <ArrowRight className="h-4 w-4 text-[#C9A84C]" />
         </button>
       </div>
