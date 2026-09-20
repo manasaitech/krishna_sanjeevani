@@ -98,10 +98,10 @@ class CategoryColors extends ThemeExtension<CategoryColors> {
   });
 
   static const CategoryColors devotional = CategoryColors(
-    cat: Color(0xFF7A1E2C),
-    catLight: Color(0xFFF2E0E3),
+    cat: Color(0xFF7C1C24),
+    catLight: Color(0xFFF7E6E7),
     catAccent: Color(0xFFC9A84C),
-    catForeground: Color(0xFFFCFCFC),
+    catForeground: Color(0xFFFFFFFF),
   );
 
   static const CategoryColors secular = CategoryColors(

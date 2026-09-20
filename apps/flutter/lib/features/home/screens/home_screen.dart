@@ -927,9 +927,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFCFCFC),
+      backgroundColor: const Color(0xFFFAF8F5),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFAF8F5),
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -937,11 +937,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               '${_getGreeting()},',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Color(0xFF7A6B58)),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Color(0xFF8A7963)),
             ),
             Text(
               userName,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: catColors.cat),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF4D0F1B)),
             ),
           ],
         ),
@@ -950,7 +950,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Color(0xFF4A5568)),
+                icon: const Icon(Icons.notifications_outlined, color: Color(0xFF4D0F1B)),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const NotificationsScreen()),
@@ -963,8 +963,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   top: 8,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: catColors.cat,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF7C1C24),
                       shape: BoxShape.circle,
                     ),
                     constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
@@ -1003,10 +1003,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: ChoiceChip(
                         label: Text(cat.displayName),
                         selected: selected,
-                        selectedColor: catColors.cat.withValues(alpha: 0.15),
+                        selectedColor: const Color(0xFFF7E6E7),
+                        backgroundColor: Colors.white,
+                        side: BorderSide(
+                          color: selected ? const Color(0xFF7C1C24) : const Color(0xFFE5DFD5),
+                          width: selected ? 1.5 : 1,
+                        ),
                         labelStyle: TextStyle(
-                          color: selected ? catColors.cat : Colors.grey[700],
+                          color: selected ? const Color(0xFF7C1C24) : const Color(0xFF78716C),
                           fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 12.5,
                         ),
                         onSelected: (_) {
                           ref.read(categoryProvider.notifier).setCategory(cat);
@@ -1024,16 +1030,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20.0),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      catColors.cat.withValues(alpha: 0.05),
-                      catColors.cat.withValues(alpha: 0.1),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  border: Border.all(color: catColors.cat.withValues(alpha: 0.15)),
-                  borderRadius: BorderRadius.circular(20),
+                  color: const Color(0xFFF3E8D0),
+                  border: Border.all(color: const Color(0x33C9A84C), width: 1.2),
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF4D0F1B).withValues(alpha: 0.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1043,41 +1049,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                        color: Color(0xFF7C1C24),
                         letterSpacing: 1.5,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       activeCat.displayName,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: catColors.cat,
+                        color: Color(0xFF4D0F1B),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       activeCat.description,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.4),
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF6B5E51), height: 1.4),
                     ),
                     const SizedBox(height: 16),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: catColors.cat.withValues(alpha: 0.15)),
+                        color: const Color(0xFFFAF6EE),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0x40C9A84C)),
                       ),
                       child: Text(
                         activeCat.greetingText,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: const TextStyle(
+                          fontSize: 12.5,
                           fontStyle: FontStyle.italic,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey[800],
+                          color: Color(0xFF7C1C24),
                         ),
                       ),
                     ),
@@ -1100,14 +1106,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
+                              color: Color(0xFF4D0F1B),
                             ),
                           ),
                           Text(
                             '${filteredSubscriptions.length} active',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[500],
+                              color: Color(0xFF8A7963),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -1129,7 +1135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     width: 260,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      border: Border.all(color: Colors.grey[200]!),
+                                      border: Border.all(color: const Color(0xFFEFE9DF)),
                                       borderRadius: BorderRadius.circular(16),
                                       boxShadow: [
                                         BoxShadow(
@@ -1151,7 +1157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                               height: 44,
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
-                                                  colors: [catColors.cat, const Color(0xFF2D3748)],
+                                                  colors: [catColors.cat, const Color(0xFF4D0F1B)],
                                                   begin: Alignment.topLeft,
                                                   end: Alignment.bottomRight,
                                                 ),
@@ -1179,15 +1185,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                                     style: const TextStyle(
                                                       fontSize: 14,
                                                       fontWeight: FontWeight.bold,
-                                                      color: Color(0xFF1E293B),
+                                                      color: Color(0xFF4D0F1B),
                                                     ),
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
                                                     activeCat == AppCategory.devotional ? 'RAGA CHIKITSA' : 'GARBHA SANSKAR',
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                       fontSize: 9,
-                                                      color: Colors.grey[500],
+                                                      color: Color(0xFF8A7963),
                                                       fontWeight: FontWeight.w600,
                                                       letterSpacing: 0.5,
                                                     ),
@@ -1202,11 +1208,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           children: [
                                             Row(
                                               children: [
-                                                Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
+                                                const Icon(Icons.access_time, size: 14, color: Color(0xFF8A7963)),
                                                 const SizedBox(width: 4),
-                                                Text(
+                                                const Text(
                                                   '30 min',
-                                                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                                  style: TextStyle(fontSize: 11, color: Color(0xFF8A7963)),
                                                 ),
                                               ],
                                             ),
@@ -1236,17 +1242,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                border: Border.all(color: Colors.grey[200]!, style: BorderStyle.solid),
+                                border: Border.all(color: const Color(0xFFEFE9DF), style: BorderStyle.solid),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               padding: const EdgeInsets.all(20),
                               alignment: Alignment.center,
                               child: Column(
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Your Surawali journey starts here. Explore and subscribe to curated Surawalis for your pathway.',
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.4),
+                                    style: TextStyle(fontSize: 12, color: Color(0xFF6B5E51), height: 1.4),
                                   ),
                                   const SizedBox(height: 12),
                                   ElevatedButton(
@@ -1255,7 +1261,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
                                     onPressed: _scrollToExplore,
@@ -1276,8 +1282,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: catColors.cat.withValues(alpha: 0.05),
-                  border: Border.all(color: catColors.cat.withValues(alpha: 0.1)),
+                  color: const Color(0xFFF3E8D0).withValues(alpha: 0.5),
+                  border: Border.all(color: const Color(0x30C9A84C)),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -1294,10 +1300,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: Text(
                         activeCat.bannerText,
-                        style: TextStyle(
-                          fontSize: 11,
+                        style: const TextStyle(
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w500,
-                          color: catColors.cat,
+                          color: Color(0xFF6B5E51),
                           height: 1.4,
                         ),
                       ),
@@ -1322,7 +1328,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
+                          color: Color(0xFF4D0F1B),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -1355,13 +1361,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF1E293B),
+                                          color: Color(0xFF4D0F1B),
                                         ),
                                       ),
                                       const SizedBox(height: 2),
                                       const Text(
                                         'Curative Audio Session • 432 Hz',
-                                        style: TextStyle(fontSize: 12, color: Color(0xFF7A6B58)),
+                                        style: TextStyle(fontSize: 12, color: Color(0xFF8A7963)),
                                       ),
                                     ],
                                   ),
@@ -1396,7 +1402,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
+                        color: Color(0xFF4D0F1B),
                       ),
                     ),
                     const SizedBox(height: 4),
