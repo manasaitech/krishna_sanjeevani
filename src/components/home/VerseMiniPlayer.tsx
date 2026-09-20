@@ -40,11 +40,11 @@ export function VerseMiniPlayer({ audio }: VerseMiniPlayerProps) {
           }}
           title="Click to view full verse & translation"
         >
-          <div className="relative h-11 w-11 shrink-0 rounded-full overflow-hidden border border-cat/40 shadow-sm bg-background group-hover:scale-105 transition-transform">
+          <div className="relative h-11 w-11 shrink-0 rounded-full overflow-hidden border border-[#C9A84C]/60 shadow-sm bg-white group-hover:scale-105 transition-transform flex items-center justify-center">
             <img
               src={KULASEKHARA_VERSE.image}
               alt="Kulasekhara Alvar"
-              className="h-full w-full object-cover object-top"
+              className="h-full w-full object-contain p-0.5"
             />
             {audio.isPlaying && (
               <span className="absolute inset-0 rounded-full border border-cat animate-ping opacity-30 pointer-events-none" />
