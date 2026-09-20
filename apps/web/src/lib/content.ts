@@ -22,14 +22,14 @@ export const categories: Category[] = [
   },
   {
     id: "secular",
-    name: "Arogya Sanjeevani",
+    name: "Secular & Corporate",
     tagline: "Elegant teal · clear mind",
     description: "Stress reduction, productivity, emotional wellness.",
     art: artSecular,
   },
   {
     id: "pregnancy",
-    name: "Garbh Sanjeevani",
+    name: "Pregnancy",
     tagline: "Soft rose · gentle care",
     description: "Month-wise pregnancy wellness journey.",
     art: artPregnancy,
@@ -50,7 +50,7 @@ export type Track = {
   tier?: string;
   processingStatus?: string;
   publishStatus?: string;
-
+  
   // Backward compatibility properties
   art?: string;
   raga?: string;
@@ -58,7 +58,6 @@ export type Track = {
   frequency?: string;
   instructions?: string;
   purposeTags?: any[];
-  audioUrl?: string;
 };
 
 export type Program = {
@@ -130,9 +129,42 @@ export const pregnancyTips = [
   "Baby is developing sleep-wake cycles. Play soothing Neelambari tracks around bedtime to establish positive circadian associations.",
 ];
 
+export const notifications = [
+  {
+    id: "n1",
+    kind: "reminder",
+    title: "Evening Wind-Down",
+    time: "8:00 PM",
+    body: "Your evening meditation is scheduled in 15 minutes. Prepare a quiet space.",
+    unread: true,
+    group: "Today",
+  },
+  {
+    id: "n2",
+    kind: "new",
+    title: "New Program Available",
+    time: "Yesterday",
+    body: "Stress Relief Arc for Corporate Professionals is now available in Secular.",
+    unread: false,
+    group: "Earlier",
+  },
+  {
+    id: "n3",
+    kind: "progress",
+    title: "Trimester Transition!",
+    time: "3 days ago",
+    body: "You've entered Week 28. Your pregnancy journey programs have updated to Third Trimester.",
+    unread: false,
+    group: "Earlier",
+  },
+];
 
-
-export const recentSearches = ["Raga Neelambari", "Sleep Sequence", "Stress Relief", "Focus"];
+export const recentSearches = [
+  "Raga Neelambari",
+  "Sleep Sequence",
+  "Stress Relief",
+  "Focus",
+];
 
 export const trendingSearches = [
   "Sanjeevani Kalyani",
@@ -265,6 +297,6 @@ export const sanjeevaniConfigs: Record<Exclude<CategoryId, "unset">, SanjeevaniC
     placeholderSearch: "Search surawalis, pregnancy themes...",
     greetingText: "पुत्रं कुरु प्रवरं कुलवर्धनम्, गर्भं रक्ष सुशोभनम्।",
     bannerText: "Nurturing Garbha Sanskar sound frequencies active. Connect with your baby and support healthy fetal development.",
-    filters: ["All", "Month 1-3", "Month 4-6", "Month 7-9", "Maternal Calm", "Baby Bond", "Sleep", "Meditation"],
+    filters: ["All", "Month 1-3", "Month 4-6", "Month 7-9"],
   },
 };

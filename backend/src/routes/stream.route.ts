@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { eq, and, gt } from "drizzle-orm";
 import { getDB } from "../shared/db/client";
 import { tracks } from "../shared/db/schema/track";
+import { surawalis } from "../shared/db/schema/surawali_catalog";
 import { streamSessions } from "../shared/db/schema/stream";
 import { subscriptions } from "../shared/db/schema/subscription";
 import { users } from "../shared/db/schema/user";
@@ -11,6 +12,7 @@ import { UnauthorizedError, ForbiddenError, NotFoundError, ValidationError } fro
 import { ApiResponse } from "../shared/responses";
 import { Env } from "../shared/config/env";
 import { logger } from "../shared/logger";
+import { resolveSurawaliAudio, getFallbackForSurawali } from "../shared/fallback/surawali-audio-resolver";
 
 const stream = new Hono<{ Bindings: Env }>();
 
@@ -79,35 +81,39 @@ async function verifyAndExtendSession(
   // Find track to verify if it is premium
   const trackResult = await db.select().from(tracks).where(eq(tracks.id, trackId)).limit(1);
   const track = trackResult[0];
-  if (!track) {
-    throw new NotFoundError("Track not found");
-  }
-
-  // Premium validation on session validation
-  if (track.tier === "premium") {
-    // Get user details to check role
-    const userResult = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
-    const user = userResult[0];
-    if (!user) {
-      throw new UnauthorizedError("User associated with session not found");
-    }
-
-    if (!["admin", "super_admin"].includes(user.role)) {
-      const activeSub = await db
-        .select()
-        .from(subscriptions)
-        .where(
-          and(
-            eq(subscriptions.userId, session.userId),
-            eq(subscriptions.status, "active"),
-            gt(subscriptions.currentPeriodEnd, now)
-          )
-        )
-        .limit(1);
-
-      if (activeSub.length === 0) {
-        throw new ForbiddenError("Premium subscription required to access this track");
+  if (track) {
+    // Premium validation on session validation
+    if (track.tier === "premium") {
+      // Get user details to check role
+      const userResult = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
+      const user = userResult[0];
+      if (!user) {
+        throw new UnauthorizedError("User associated with session not found");
       }
+
+      if (!["admin", "super_admin"].includes(user.role)) {
+        const activeSub = await db
+          .select()
+          .from(subscriptions)
+          .where(
+            and(
+              eq(subscriptions.userId, session.userId),
+              eq(subscriptions.status, "active"),
+              gt(subscriptions.currentPeriodEnd, now)
+            )
+          )
+          .limit(1);
+
+        if (activeSub.length === 0) {
+          throw new ForbiddenError("Premium subscription required to access this track");
+        }
+      }
+    }
+  } else {
+    // If not in tracks table, verify it's a valid Surawali / fallback
+    const fallback = getFallbackForSurawali(trackId);
+    if (!fallback) {
+      throw new NotFoundError("Track not found");
     }
   }
 
@@ -122,7 +128,7 @@ async function verifyAndExtendSession(
 }
 
 /**
- * Helper to verify user permissions for a given track.
+ * Helper to verify user permissions for a given track or Surawali session.
  */
 async function verifyTrackAccess(c: any, trackId: string, userRole: string) {
   const db = getDB(c.env);
@@ -130,6 +136,11 @@ async function verifyTrackAccess(c: any, trackId: string, userRole: string) {
   const track = result[0];
 
   if (!track) {
+    // Check if it's a Surawali ID / identifier with a valid fallback
+    const fallback = getFallbackForSurawali(trackId);
+    if (fallback) {
+      return { id: trackId, title: trackId, tier: "free", publishStatus: "published" };
+    }
     throw new NotFoundError("Track not found");
   }
 
@@ -202,12 +213,65 @@ stream.post("/:trackId/ticket", optionalAuth(), async (c) => {
     createdAt: now,
   });
 
-  const streamUrl = `/api/v1/stream/${trackId}/master.m3u8?ticket=${encodeURIComponent(ticket)}`;
+  // 5. Resolve whether this track uses Actual audio or Temporary Emotion Fallback
+  const resolution = await resolveSurawaliAudio(c.env, trackId);
+  const isFallback = resolution.status === "fallback" || !resolution.isHls;
+  const streamUrl = isFallback
+    ? `/api/v1/stream/${trackId}/audio.mp3?ticket=${encodeURIComponent(ticket)}`
+    : `/api/v1/stream/${trackId}/master.m3u8?ticket=${encodeURIComponent(ticket)}`;
 
   return ApiResponse.success(c, {
     ticket,
     streamUrl,
+    audioSource: resolution.status === "actual" ? "ACTUAL" : "FALLBACK",
+    fallbackSongId: resolution.fallbackSongId,
+    fallbackSongTitle: resolution.fallbackSongTitle,
   }, "Streaming session created successfully");
+});
+
+// ── GET Direct / Fallback Audio Stream (audio.mp3) ───────────────────
+stream.get("/:trackId/audio.mp3", async (c) => {
+  const trackId = c.req.param("trackId");
+  if (!trackId) {
+    throw new ValidationError("Track ID is required");
+  }
+  const ticket = c.req.query("ticket");
+
+  logger.info("Stream request: direct audio stream", { trackId });
+
+  // 1. Verify & Extend session
+  await verifyAndExtendSession(c, ticket, trackId);
+
+  // 2. Resolve audio source (Actual Surawali Audio vs Emotion Fallback)
+  const resolution = await resolveSurawaliAudio(c.env, trackId);
+  if (resolution.status === "unavailable" || !resolution.r2Key) {
+    throw new NotFoundError("Audio asset not found");
+  }
+
+  const bucket = resolution.sourceBucket === "EMOTION_SONGS_BUCKET"
+    ? c.env.EMOTION_SONGS_BUCKET
+    : c.env.SONG_BUCKET;
+
+  if (!bucket) {
+    throw new NotFoundError("Storage bucket not available");
+  }
+
+  const file = await bucket.get(resolution.r2Key);
+  if (!file) {
+    throw new NotFoundError("Audio file not found in storage");
+  }
+
+  const headers = new Headers();
+  headers.set("Content-Type", resolution.mimeType || "audio/mpeg");
+  headers.set("Content-Length", String(file.size));
+  headers.set("Cache-Control", "private, max-age=3600");
+  if (resolution.status === "fallback") {
+    headers.set("X-Audio-Source", "TEMPORARY_FALLBACK");
+  } else {
+    headers.set("X-Audio-Source", "ACTUAL");
+  }
+
+  return new Response(file.body, { headers });
 });
 
 // ── GET Playlists (master.m3u8) ─────────────────────────
@@ -229,6 +293,11 @@ stream.get("/:trackId/master.m3u8", async (c) => {
   const file = await storage.getFile(fileKey);
 
   if (!file) {
+    // If HLS is missing, check if fallback audio exists and redirect to audio.mp3
+    const resolution = await resolveSurawaliAudio(c.env, trackId);
+    if (resolution.status === "fallback" || resolution.r2Key) {
+      return c.redirect(`/api/v1/stream/${trackId}/audio.mp3?ticket=${encodeURIComponent(ticket || "")}`, 307);
+    }
     throw new NotFoundError("Streaming playlist not found");
   }
 

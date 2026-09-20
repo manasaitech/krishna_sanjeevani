@@ -657,15 +657,16 @@ export class AdminRepository {
         )
       );
 
+    const userDateCol = sql`strftime('%Y-%m-%d', datetime(${users.createdAt}/1000, 'unixepoch'))`;
     const registrationTrend = await this.db
       .select({
-        date: sql<string>`strftime('%Y-%m-%d', datetime(${users.createdAt}/1000, 'unixepoch'))`,
-        count: sql<number>`count(*)`
+        date: userDateCol.as("date"),
+        count: sql<number>`count(*)`.as("count")
       })
       .from(users)
       .where(and(sql`${users.createdAt} >= ${startTime}`, sql`${users.createdAt} <= ${endTime}`))
-      .groupBy(sql`date`)
-      .orderBy(sql`date`);
+      .groupBy(userDateCol)
+      .orderBy(userDateCol);
 
     return {
       newRegistrations: newUsersRes[0]?.count ?? 0,
@@ -676,16 +677,17 @@ export class AdminRepository {
   }
 
   async getListeningAnalytics(startTime: number, endTime: number) {
+    const historyDateCol = sql`strftime('%Y-%m-%d', datetime(${playHistory.createdAt}/1000, 'unixepoch'))`;
     const listeningTrend = await this.db
       .select({
-        date: sql<string>`strftime('%Y-%m-%d', datetime(${playHistory.createdAt}/1000, 'unixepoch'))`,
-        hours: sql<number>`round(sum(${playHistory.durationListened}) / 3600, 1)`,
-        plays: sql<number>`count(*)`
+        date: historyDateCol.as("date"),
+        hours: sql<number>`round(coalesce(sum(${playHistory.durationListened}), 0) * 1.0 / 3600, 1)`.as("hours"),
+        plays: sql<number>`count(*)`.as("plays")
       })
       .from(playHistory)
       .where(and(sql`${playHistory.createdAt} >= ${startTime}`, sql`${playHistory.createdAt} <= ${endTime}`))
-      .groupBy(sql`date`)
-      .orderBy(sql`date`);
+      .groupBy(historyDateCol)
+      .orderBy(historyDateCol);
 
     return {
       listeningTrend,
@@ -704,7 +706,7 @@ export class AdminRepository {
       .from(playHistory)
       .leftJoin(tracks, eq(tracks.id, playHistory.trackId))
       .where(and(sql`${playHistory.createdAt} >= ${startTime}`, sql`${playHistory.createdAt} <= ${endTime}`))
-      .groupBy(playHistory.trackId)
+      .groupBy(playHistory.trackId, tracks.title, tracks.artist)
       .orderBy(desc(sql`plays`))
       .limit(10);
 
@@ -725,7 +727,7 @@ export class AdminRepository {
       .from(playHistory)
       .innerJoin(programs, eq(programs.id, playHistory.programId))
       .where(and(sql`${playHistory.createdAt} >= ${startTime}`, sql`${playHistory.createdAt} <= ${endTime}`))
-      .groupBy(playHistory.programId)
+      .groupBy(playHistory.programId, programs.title)
       .orderBy(desc(sql`starts`))
       .limit(10);
 
@@ -736,16 +738,17 @@ export class AdminRepository {
   }
 
   async getCategoryDistribution(startTime: number, endTime: number) {
+    const catCol = sql`coalesce(${tracks.category}, 'general')`;
     const data = await this.db
       .select({
-        category: tracks.category,
+        category: catCol.as("category"),
         plays: sql<number>`count(*)`.as("plays"),
-        durationHours: sql<number>`round(sum(${playHistory.durationListened}) / 3600, 1)`.as("durationHours"),
+        durationHours: sql<number>`round(coalesce(sum(${playHistory.durationListened}), 0) * 1.0 / 3600, 1)`.as("durationHours"),
       })
       .from(playHistory)
       .leftJoin(tracks, eq(tracks.id, playHistory.trackId))
       .where(and(sql`${playHistory.createdAt} >= ${startTime}`, sql`${playHistory.createdAt} <= ${endTime}`))
-      .groupBy(tracks.category)
+      .groupBy(catCol)
       .orderBy(desc(sql`plays`));
 
     return data;
@@ -840,12 +843,13 @@ export class AdminRepository {
       .from(favorites)
       .where(and(sql`${favorites.createdAt} >= ${startTime}`, sql`${favorites.createdAt} <= ${endTime}`));
 
+    const favCountCol = sql<number>`count(*)`;
     const popularFavRes = await this.db
       .select({
         trackId: favorites.itemId,
         title: tracks.title,
         artist: tracks.artist,
-        favoritesCount: sql<number>`count(*)`,
+        favoritesCount: favCountCol.as("favoritesCount"),
       })
       .from(favorites)
       .innerJoin(tracks, eq(tracks.id, favorites.itemId))
@@ -856,8 +860,8 @@ export class AdminRepository {
           eq(favorites.itemType, "track")
         )
       )
-      .groupBy(favorites.itemId)
-      .orderBy(desc(sql`favoritesCount`))
+      .groupBy(favorites.itemId, tracks.title, tracks.artist)
+      .orderBy(desc(favCountCol))
       .limit(10);
 
     return {

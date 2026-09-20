@@ -32,7 +32,10 @@ function Browse() {
   const [purpose, setPurpose] = useState<string | null>(null);
 
   const list = useMemo(
-    () => tracks.filter((t) => t.category === category && (purpose ? t.purpose === purpose : true)),
+    () =>
+      tracks.filter(
+        (t) => t.category === category && (purpose ? t.purpose === purpose : true),
+      ),
     [category, purpose],
   );
 
@@ -58,7 +61,9 @@ function Browse() {
               <span className="block font-display text-[17px] font-semibold text-background">
                 {c.name}
               </span>
-              <span className="mt-1 block text-[12px] text-background/80">{c.description}</span>
+              <span className="mt-1 block text-[12px] text-background/80">
+                {c.description}
+              </span>
             </span>
           </button>
         ))}

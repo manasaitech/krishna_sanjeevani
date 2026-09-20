@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useVerseAudio } from "@/lib/use-verse-audio";
+import { OpeningExperience } from "@/components/home/OpeningExperience";
 import { VerseMiniPlayer } from "@/components/home/VerseMiniPlayer";
 import { VersePlayerModal } from "@/components/home/VersePlayerModal";
 import { HomeNavbar } from "@/components/home/HomeNavbar";
@@ -10,10 +12,13 @@ import { ImmerseMusicSection } from "@/components/home/ImmerseMusicSection";
 import { MusicMantraStory } from "@/components/home/MusicMantraStory";
 import { ExploreCardsGrid } from "@/components/home/ExploreCardsGrid";
 import { FeaturePillars } from "@/components/home/FeaturePillars";
+import { SpiritualVerseSection } from "@/components/home/SpiritualVerseSection";
 import { BeginningPreview } from "@/components/home/BeginningPreview";
 import { HomeFooter } from "@/components/home/HomeFooter";
 import { useApp } from "@/lib/app-state";
 import { Sparkles, Compass } from "lucide-react";
+import { useMode, getActiveMode } from "@/core/mode";
+import { EmotionHome } from "@/modes/emotion-remediation/pages/EmotionHome";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,11 +41,26 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const { isEmotionMode: ctxEmotion } = useMode();
+  const isEmotionMode = ctxEmotion ?? (getActiveMode() === "emotion_remediation");
+
+  if (isEmotionMode) {
+    return <EmotionHome />;
+  }
+
   const audio = useVerseAudio();
+  const [openingFinished, setOpeningFinished] = useState(false);
   const { user } = useApp();
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-cat-light selection:text-cat flex flex-col">
+      {/* 1. 3-Second Cinematic Opening Experience */}
+      {!openingFinished && (
+        <OpeningExperience
+          audio={audio}
+          onComplete={() => setOpeningFinished(true)}
+        />
+      )}
 
       {/* 2. Persistent Floating Mini Verse Player (Bottom-Right) */}
       <VerseMiniPlayer audio={audio} />
@@ -66,12 +86,10 @@ function HomePage() {
                     <span>Personalized Sound Healing</span>
                   </div>
                   <h3 className="font-display font-bold text-2xl sm:text-3xl text-foreground">
-                    Welcome back, {user.name}! Ready to discover your Surāwali?
+                    {user.profile?.fullName ? `Welcome back, ${user.profile.fullName}!` : "Welcome back!"} Ready to discover your Surāwali?
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Search from our catalogue of disorders, pregnancy months, and corporate wellness
-                    weekdays to subscribe to your personalized therapeutic classical raga frequency
-                    plan.
+                    Search from our catalogue of disorders, pregnancy months, and corporate wellness weekdays to subscribe to your personalized therapeutic classical raga frequency plan.
                   </p>
                 </div>
                 <div className="shrink-0 w-full md:w-auto flex flex-col sm:flex-row gap-3">
@@ -94,7 +112,8 @@ function HomePage() {
           </section>
         )}
 
-
+        {/* 6. Introduction to Krishna Sanjeevani */}
+        <HomeIntro />
 
         {/* 6a. Interactive Surāwalis Showcase */}
         <SurawaliShowcase />
@@ -111,7 +130,8 @@ function HomePage() {
         {/* 9. 5 Conceptual Pillars */}
         <FeaturePillars />
 
-
+        {/* 10. Full-width Spiritual Verse Pause */}
+        <SpiritualVerseSection />
 
         {/* 11. Landmark Beginning (30 May 2026) */}
         <BeginningPreview />
@@ -124,22 +144,17 @@ function HomePage() {
             </h2>
             <div className="max-w-2xl mx-auto space-y-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
               <p>
-                <strong>Application Name:</strong>{" "}
-                <span className="text-foreground font-semibold">Krishna Sanjeevani</span>
+                <strong>Application Name:</strong> <span className="text-foreground font-semibold">Krishna Sanjeevani</span>
               </p>
               <p>
-                <strong>Our Purpose:</strong> Krishna Sanjeevani is a dedicated therapeutic audio
-                streaming application. We combine the therapeutic science of Indian classical ragas
-                (Sur Sanjeevan) with sacred Sanskrit mantra recitations to provide acoustic support
-                for stress reduction, mental focus, emotional balance, sleep aid, and pregnancy
-                care.
+                <strong>Our Purpose:</strong> Krishna Sanjeevani is a dedicated therapeutic audio streaming application. 
+                We combine the therapeutic science of Indian classical ragas (Sur Sanjeevan) with sacred Sanskrit mantra recitations 
+                to provide acoustic support for stress reduction, mental focus, emotional balance, sleep aid, and pregnancy care.
               </p>
               <p>
-                <strong>Secure Authentication (Google OAuth):</strong> Our application supports
-                secure registration and sign-in via Google accounts. We access only your basic
-                profile information (email and name) to create your personal listening account,
-                track your session history, maintain your favorite playlists, and ensure a seamless,
-                high-quality audio experience.
+                <strong>Secure Authentication (Google OAuth):</strong> Our application supports secure registration and sign-in 
+                via Google accounts. We access only your basic profile information (email and name) to create your personal listening 
+                account, track your session history, maintain your favorite playlists, and ensure a seamless, high-quality audio experience.
               </p>
             </div>
           </div>

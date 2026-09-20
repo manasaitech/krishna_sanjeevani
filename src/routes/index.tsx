@@ -17,6 +17,8 @@ import { BeginningPreview } from "@/components/home/BeginningPreview";
 import { HomeFooter } from "@/components/home/HomeFooter";
 import { useApp } from "@/lib/app-state";
 import { Sparkles, Compass } from "lucide-react";
+import { useMode, getActiveMode } from "@/core/mode";
+import { EmotionHome } from "@/modes/emotion-remediation/pages/EmotionHome";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,6 +41,13 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const { isEmotionMode: ctxEmotion } = useMode();
+  const isEmotionMode = ctxEmotion ?? (getActiveMode() === "emotion_remediation");
+
+  if (isEmotionMode) {
+    return <EmotionHome />;
+  }
+
   const audio = useVerseAudio();
   const [openingFinished, setOpeningFinished] = useState(false);
   const { user } = useApp();

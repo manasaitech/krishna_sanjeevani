@@ -16,6 +16,9 @@ export const tracks = sqliteTable("tracks", {
   // R2 storage keys (no URLs, only object references)
   playlistKey: text("playlist_key"), // R2 key to HLS playlist directory (e.g. songs/processed/:id)
   thumbnailKey: text("thumbnail_key"), // R2 key to thumbnail image
+  actualAudioKey: text("actual_audio_key"), // Direct actual audio file key in R2 if applicable
+  fallbackAudioSource: text("fallback_audio_source"), // 'emotion' for temporary demo fallback
+  fallbackAudioId: text("fallback_audio_id"), // e.g. 'em_song_001'
 
   // Lifecycle states
   processingStatus: text("processing_status").notNull().default("uploaded"), // 'uploaded' | 'processing' | 'ready' | 'failed'

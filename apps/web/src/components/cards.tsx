@@ -1,7 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { Clock, Heart, Lock, Pause, Play, Sparkles } from "lucide-react";
 import { useApp } from "@/lib/app-state";
-import { categories, formatDuration, formatTime, type Program, type Track } from "@/lib/content";
+import {
+  categories,
+  formatDuration,
+  formatTime,
+  type Program,
+  type Track,
+} from "@/lib/content";
+import { Artwork } from "@/components/Artwork";
 import { cn } from "@/lib/utils";
 
 export function CategoryBadge({ id }: { id: Track["category"] }) {
@@ -32,15 +39,7 @@ export function FavoriteButton({ id, className }: { id: string; className?: stri
   );
 }
 
-export function PlayButton({
-  track,
-  small = false,
-  programId,
-}: {
-  track: Track;
-  small?: boolean;
-  programId?: string | undefined;
-}) {
+export function PlayButton({ track, small = false, programId }: { track: Track; small?: boolean; programId?: string | undefined }) {
   const { current, playing, play, toggle } = useApp();
   const isCurrent = current?.id === track.id;
   const isPlaying = isCurrent && playing;
@@ -72,9 +71,9 @@ export function TrackTile({ track }: { track: Track }) {
       className="group block animate-soft-in rounded-card border border-border/70 bg-surface p-3 shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift text-left"
     >
       <div className="relative overflow-hidden rounded-2xl">
-        <img
+        <Artwork
           src={track.art}
-          alt={`Artwork for ${track.title}`}
+          songTitle={track.title}
           width={1024}
           height={1024}
           loading="lazy"
@@ -129,9 +128,9 @@ export function ContinueCard({
       onClick={() => play(track, programId)}
       className="group flex w-[280px] shrink-0 snap-start items-center gap-3.5 rounded-card border border-border/70 bg-surface p-3 shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift sm:w-[320px] text-left"
     >
-      <img
+      <Artwork
         src={track.art}
-        alt=""
+        songTitle={track.title}
         width={128}
         height={128}
         loading="lazy"
@@ -151,15 +150,7 @@ export function ContinueCard({
   );
 }
 
-export function TrackRow({
-  track,
-  index,
-  programId,
-}: {
-  track: Track;
-  index?: number;
-  programId?: string | undefined;
-}) {
+export function TrackRow({ track, index, programId }: { track: Track; index?: number; programId?: string | undefined }) {
   const { current } = useApp();
   const active = current?.id === track.id;
   return (
@@ -175,9 +166,9 @@ export function TrackRow({
             {index + 1}
           </span>
         )}
-        <img
+        <Artwork
           src={track.art}
-          alt=""
+          songTitle={track.title}
           width={112}
           height={112}
           loading="lazy"
@@ -204,7 +195,13 @@ export function TrackRow({
   );
 }
 
-export function ProgramCard({ program, wide = false }: { program: Program; wide?: boolean }) {
+export function ProgramCard({
+  program,
+  wide = false,
+}: {
+  program: Program;
+  wide?: boolean;
+}) {
   return (
     <Link
       to="/program/$programId"
@@ -215,9 +212,9 @@ export function ProgramCard({ program, wide = false }: { program: Program; wide?
       )}
     >
       <div className="relative overflow-hidden">
-        <img
+        <Artwork
           src={program.art}
-          alt={`Artwork for ${program.title}`}
+          songTitle={program.title}
           width={1024}
           height={768}
           loading="lazy"
@@ -231,7 +228,9 @@ export function ProgramCard({ program, wide = false }: { program: Program; wide?
       </div>
       <div className="p-4">
         <h3 className="truncate text-[15px] font-semibold">{program.title}</h3>
-        <p className="mt-1 truncate text-[12px] text-muted-foreground">{program.subtitle}</p>
+        <p className="mt-1 truncate text-[12px] text-muted-foreground">
+          {program.subtitle}
+        </p>
         <p className="mt-3 text-[12px] font-medium text-muted-foreground">
           {program.sessions} sessions · {program.days} days
         </p>

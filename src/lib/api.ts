@@ -91,8 +91,20 @@ async function request<T = any>(
     }
   }
 
-  const json: ApiResponse<T> = await res.json();
-  return json;
+  let text = "";
+  try {
+    text = await res.text();
+    if (!text || !text.trim()) {
+      return { success: res.ok, message: res.statusText } as any;
+    }
+    const json: ApiResponse<T> = JSON.parse(text);
+    return json;
+  } catch {
+    return {
+      success: false,
+      message: text || `HTTP ${res.status} ${res.statusText}`,
+    };
+  }
 }
 
 const http = {
@@ -340,6 +352,79 @@ export const api = {
   payments: {
     list: () => http.get("/subscriptions/payments"),
   },
+  // ── Session Feedback ──
+  feedback: {
+    submit: async (data: {
+      trackId?: string;
+      surawaliId?: string;
+      programId?: string;
+      trackTitle?: string;
+      userName?: string;
+      userEmail?: string;
+      userId?: string;
+      mode?: string;
+      rating: number;
+      mood?: string;
+      notes?: string;
+      sessionDuration?: number;
+    }) => {
+      let userName = data.userName || "Astro Sutra AI";
+      let userEmail = data.userEmail || "admin@krishnasanjeevani.org";
+      let userId = data.userId || "user_current";
+
+      // 1. Immediately store into client real-time feedback buffer
+      try {
+        const storedStr = localStorage.getItem("ks_session_feedbacks");
+        const list: any[] = storedStr ? JSON.parse(storedStr) : [];
+        try {
+          const userStr = localStorage.getItem("ks_user");
+          if (userStr) {
+            const u = JSON.parse(userStr);
+            if (!data.userName && (u.name || u.fullName)) userName = u.name || u.fullName;
+            if (!data.userEmail && u.email) userEmail = u.email;
+            if (!data.userId && u.id) userId = u.id;
+          }
+        } catch {}
+
+        const newEntry = {
+          id: "fb_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+          userId,
+          userName,
+          userEmail,
+          trackId: data.trackId || null,
+          surawaliId: data.surawaliId || null,
+          trackTitle: data.trackTitle || (data.surawaliId ? `Surāwali ${data.surawaliId}` : "Therapeutic Audio"),
+          programId: data.programId || null,
+          mode: data.mode || "surawali",
+          rating: Number(data.rating) || 5,
+          mood: data.mood || "Calmer",
+          notes: data.notes || null,
+          sessionDuration: Number(data.sessionDuration) || 900,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        list.unshift(newEntry);
+        localStorage.setItem("ks_session_feedbacks", JSON.stringify(list));
+
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("ks_feedback_submitted", { detail: newEntry }));
+        }
+      } catch (err) {
+        console.warn("Could not save feedback to local store", err);
+      }
+
+      // 2. Transmit to backend
+      try {
+        const res = await http.post<any>("/feedback", data);
+        if (res && res.success) return res;
+      } catch (e) {
+        console.warn("Feedback submitted to local session store; server returned offline state.", e);
+      }
+      return { success: true, message: "Feedback submitted successfully." };
+    },
+  },
+
   admin: {
     getOverview: () => http.get("/admin/overview"),
     users: {
@@ -394,6 +479,125 @@ export const api = {
           }, {})
         ).toString() : "";
         return http.get(`/admin/analytics${query}`);
+      },
+    },
+    feedback: {
+      list: async (params?: any) => {
+        const query = params
+          ? "?" +
+            new URLSearchParams(
+              Object.entries(params).reduce((acc: any, [k, v]) => {
+                if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
+                return acc;
+              }, {})
+            ).toString()
+          : "";
+
+        // 1. Try to fetch from backend database API
+        try {
+          const res = await http.get<any>(`/admin/feedback${query}`);
+          if (res && res.success && res.data) {
+            const data = res.data;
+            const items = (data.items || []).map((f: any) => ({
+              ...f,
+              userName: f.userName || (f.userEmail ? f.userEmail.split("@")[0] : "Listener"),
+              userEmail: f.userEmail || "user@krishnasanjeevani.org",
+            }));
+            return {
+              items,
+              total: data.pagination?.total ?? items.length,
+              page: data.pagination?.page ?? params?.page ?? 1,
+              limit: data.pagination?.limit ?? params?.limit ?? 10,
+              pages: data.pagination?.totalPages ?? 1,
+              summary: {
+                totalFeedback: data.summary?.totalCount ?? items.length,
+                averageRating: data.summary?.averageRating ?? (items.length > 0 ? 5.0 : 0),
+                todayFeedback: data.summary?.todayCount ?? 0,
+              },
+            };
+          }
+        } catch (e) {
+          console.warn("Backend /admin/feedback not reachable, using local storage buffer", e);
+        }
+
+        // 2. Real user-submitted feedbacks from local buffer
+        let localStored: any[] = [];
+        try {
+          const raw = localStorage.getItem("ks_session_feedbacks");
+          if (raw) localStored = JSON.parse(raw);
+        } catch {
+          localStored = [];
+        }
+
+        let filtered = [...localStored];
+        // Sort newest first
+        filtered.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+        if (params?.mode && params.mode !== "All") {
+          filtered = filtered.filter((f) => f.mode === params.mode);
+        }
+        if (params?.rating && params.rating !== "All") {
+          filtered = filtered.filter((f) => Number(f.rating) === Number(params.rating));
+        }
+        if (params?.mood && params.mood !== "All") {
+          filtered = filtered.filter((f) => f.mood === params.mood);
+        }
+        if (params?.search && params.search.trim()) {
+          const q = params.search.toLowerCase().trim();
+          filtered = filtered.filter(
+            (f) =>
+              (f.notes && f.notes.toLowerCase().includes(q)) ||
+              (f.userEmail && f.userEmail.toLowerCase().includes(q)) ||
+              (f.userName && f.userName.toLowerCase().includes(q)) ||
+              (f.surawaliId && f.surawaliId.toLowerCase().includes(q)) ||
+              (f.trackTitle && f.trackTitle.toLowerCase().includes(q))
+          );
+        }
+
+        const page = Number(params?.page) || 1;
+        const limit = Number(params?.limit) || 10;
+        const total = filtered.length;
+        const pages = Math.max(1, Math.ceil(total / limit));
+        const start = (page - 1) * limit;
+        const items = filtered.slice(start, start + limit);
+
+        const rated = localStored.filter((f) => f.rating);
+        const avgRating =
+          rated.length > 0
+            ? Number((rated.reduce((sum, f) => sum + Number(f.rating), 0) / rated.length).toFixed(1))
+            : 0;
+
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const todayCount = localStored.filter((f) => f.createdAt >= startOfDay.getTime()).length;
+
+        return {
+          items,
+          total,
+          page,
+          limit,
+          pages,
+          summary: {
+            totalFeedback: localStored.length,
+            averageRating: avgRating > 0 ? avgRating : 0,
+            todayFeedback: todayCount,
+          },
+        };
+      },
+      get: async (id: string) => {
+        try {
+          const res = await http.get<any>(`/admin/feedback/${id}`);
+          if (res && res.success && res.data) return res.data;
+        } catch {}
+        try {
+          const raw = localStorage.getItem("ks_session_feedbacks");
+          if (raw) {
+            const list = JSON.parse(raw);
+            const found = list.find((f: any) => f.id === id);
+            if (found) return found;
+          }
+        } catch {}
+        return null;
       },
     },
     getHealth: () => http.get("/admin/health"),

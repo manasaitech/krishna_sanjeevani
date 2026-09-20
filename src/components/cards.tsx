@@ -8,6 +8,7 @@ import {
   type Program,
   type Track,
 } from "@/lib/content";
+import { Artwork } from "@/components/Artwork";
 import { cn } from "@/lib/utils";
 
 export function CategoryBadge({ id }: { id: Track["category"] }) {
@@ -70,9 +71,9 @@ export function TrackTile({ track }: { track: Track }) {
       className="group block animate-soft-in rounded-card border border-border/70 bg-surface p-3 shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift text-left"
     >
       <div className="relative overflow-hidden rounded-2xl">
-        <img
+        <Artwork
           src={track.art}
-          alt={`Artwork for ${track.title}`}
+          songTitle={track.title}
           width={1024}
           height={1024}
           loading="lazy"
@@ -127,9 +128,9 @@ export function ContinueCard({
       onClick={() => play(track, programId)}
       className="group flex w-[280px] shrink-0 snap-start items-center gap-3.5 rounded-card border border-border/70 bg-surface p-3 shadow-soft transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-lift sm:w-[320px] text-left"
     >
-      <img
+      <Artwork
         src={track.art}
-        alt=""
+        songTitle={track.title}
         width={128}
         height={128}
         loading="lazy"
@@ -165,9 +166,9 @@ export function TrackRow({ track, index, programId }: { track: Track; index?: nu
             {index + 1}
           </span>
         )}
-        <img
+        <Artwork
           src={track.art}
-          alt=""
+          songTitle={track.title}
           width={112}
           height={112}
           loading="lazy"
@@ -211,9 +212,9 @@ export function ProgramCard({
       )}
     >
       <div className="relative overflow-hidden">
-        <img
+        <Artwork
           src={program.art}
-          alt={`Artwork for ${program.title}`}
+          songTitle={program.title}
           width={1024}
           height={768}
           loading="lazy"

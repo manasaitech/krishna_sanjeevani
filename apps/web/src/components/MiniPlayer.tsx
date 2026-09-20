@@ -1,27 +1,38 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Pause, Play, SkipForward } from "lucide-react";
+import { Artwork } from "@/components/Artwork";
 import { useApp } from "@/lib/app-state";
 import { formatTime } from "@/lib/content";
 
 export function MiniPlayer({ lifted = true }: { lifted?: boolean }) {
+  const navigate = useNavigate();
   const { current, playing, toggle, position, skip } = useApp();
   if (!current) return null;
 
   const progress = Math.min(100, (position / current.duration) * 100);
 
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('button, a, input, [role="button"], .press')) return;
+    navigate({ to: "/player" });
+  };
+
   return (
     <div
       className={`fixed inset-x-0 z-40 px-4 ${lifted ? "bottom-[calc(4.75rem+env(safe-area-inset-bottom))]" : "bottom-4"}`}
     >
-      <div className="animate-rise relative mx-auto flex max-w-2xl items-center gap-3 overflow-hidden rounded-card border border-border bg-surface p-2.5 shadow-lift">
+      <div
+        onClick={handleCardClick}
+        className="animate-rise relative mx-auto flex max-w-2xl items-center gap-3 overflow-hidden rounded-card border border-border bg-surface p-2.5 shadow-lift cursor-pointer hover:bg-surface/95 transition-colors select-none"
+      >
         <Link
           to="/player"
           className="press flex min-w-0 flex-1 items-center gap-3 rounded-btn focus-visible:ring-2 focus-visible:ring-cat focus-visible:outline-none"
           aria-label={`Open player for ${current.title}`}
         >
-          <img
+          <Artwork
             src={current.art}
-            alt=""
+            songTitle={current.title}
             width={64}
             height={64}
             loading="lazy"

@@ -13,6 +13,9 @@ export const ailments = sqliteTable("ailments", {
 export const surawalis = sqliteTable("surawalis", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
+  actualAudioKey: text("actual_audio_key"), // R2 key to client-provided audio file/directory
+  fallbackAudioSource: text("fallback_audio_source"), // 'emotion'
+  fallbackAudioId: text("fallback_audio_id"), // e.g. 'em_song_001'
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

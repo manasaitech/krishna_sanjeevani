@@ -103,36 +103,16 @@ class _TherapyScreenState extends ConsumerState<TherapyScreen> with SingleTicker
     if (existingTrack.isNotEmpty) {
       ref.read(playerProvider.notifier).playTrack(existingTrack);
     } else {
-      // 2. Play fallback track pointing to database to avoid stream ticket failures
-      Map<String, dynamic> fallback = {};
-      if (categoryKey == 'pregnancy') {
-        fallback = allTracks.firstWhere((t) => t['category'] == 'pregnancy', orElse: () => <String, dynamic>{});
-      } else if (categoryKey == 'corporate') {
-        fallback = allTracks.firstWhere((t) => t['category'] == 'secular' || t['category'] == 'corporate', orElse: () => <String, dynamic>{});
-      }
-      if (fallback.isEmpty) {
-        fallback = allTracks.firstWhere((t) => t['category'] == 'secular', orElse: () => <String, dynamic>{});
-      }
-      if (fallback.isEmpty && allTracks.isNotEmpty) {
-        fallback = allTracks.first;
-      }
-
-      if (fallback.isNotEmpty) {
-        final playedTrack = Map<String, dynamic>.from(fallback);
-        playedTrack['title'] = '$surawaliName (${fallback['title']})';
-        ref.read(playerProvider.notifier).playTrack(playedTrack);
-      } else {
-        // Hard fallback if allTracks is empty (e.g. offline fallback)
-        final fallbackOffline = {
-          'id': 'fallback_preview',
-          'title': '$surawaliName (Acoustic Preview)',
-          'frequency': '432 Hz',
-          'duration': 1800,
-          'category': 'Sonic Therapy',
-          'description': 'Targeted therapeutic frequency session for holistic wellness.',
-        };
-        ref.read(playerProvider.notifier).playTrack(fallbackOffline);
-      }
+      // 2. Play Surawali session resolved via backend audio resolver
+      final surawaliTrack = {
+        'id': 'sur_${surawaliName.toLowerCase().replaceAll(RegExp(r'\s+'), '_')}',
+        'title': '$surawaliName (Preview)',
+        'subtitle': subtext,
+        'artist': 'Krishna Sanjeevani',
+        'duration': 90,
+        'category': categoryKey,
+      };
+      ref.read(playerProvider.notifier).playTrack(surawaliTrack);
     }
 
     context.push('/player');

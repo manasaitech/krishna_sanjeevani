@@ -9,13 +9,7 @@ interface MockPaymentModalProps {
   onSuccess: (txnId: string) => void;
 }
 
-export function MockPaymentModal({
-  open,
-  onClose,
-  surawaliName,
-  price,
-  onSuccess,
-}: MockPaymentModalProps) {
+export function MockPaymentModal({ open, onClose, surawaliName, price, onSuccess }: MockPaymentModalProps) {
   const [method, setMethod] = useState<"card" | "upi" | "netbanking">("card");
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -110,9 +104,7 @@ export function MockPaymentModal({
                   {loadingStep === 2 && "Verifying mock payment gateway..."}
                   {loadingStep === 3 && "Finalizing subscription records..."}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Please do not close this window or refresh.
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Please do not close this window or refresh.</p>
               </div>
             </div>
           ) : completed ? (
@@ -120,9 +112,7 @@ export function MockPaymentModal({
               <CheckCircle2 className="h-14 w-14 text-green-500 animate-pulse" />
               <div className="text-center space-y-1">
                 <p className="font-semibold text-lg">Payment Successful</p>
-                <p className="text-xs text-muted-foreground">
-                  Mock transaction completed successfully.
-                </p>
+                <p className="text-xs text-muted-foreground">Mock transaction completed successfully.</p>
                 <p className="text-[11px] bg-secondary px-3 py-1 rounded-full inline-block font-mono text-muted-foreground mt-2 border border-border">
                   ID: {txnId}
                 </p>
@@ -139,9 +129,7 @@ export function MockPaymentModal({
               {/* Summary */}
               <div className="rounded-xl bg-secondary border border-border/80 p-4 flex justify-between items-center">
                 <div>
-                  <span className="text-xs text-muted-foreground font-semibold">
-                    Therapeutic Plan
-                  </span>
+                  <span className="text-xs text-muted-foreground font-semibold">Therapeutic Plan</span>
                   <p className="font-bold text-foreground text-sm mt-0.5">Monthly Subscription</p>
                 </div>
                 <div className="text-right">
@@ -195,24 +183,18 @@ export function MockPaymentModal({
                 {method === "card" && (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                        Card Number
-                      </label>
+                      <label className="block text-xs font-semibold text-muted-foreground mb-1">Card Number</label>
                       <input
                         type="text"
                         value={cardNumber}
-                        onChange={(e) =>
-                          setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))
-                        }
+                        onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))}
                         placeholder="1111 2222 3333 4444"
                         className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:border-cat"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                          Expiry Date
-                        </label>
+                        <label className="block text-xs font-semibold text-muted-foreground mb-1">Expiry Date</label>
                         <input
                           type="text"
                           value={cardExpiry}
@@ -222,24 +204,18 @@ export function MockPaymentModal({
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                          CVV
-                        </label>
+                        <label className="block text-xs font-semibold text-muted-foreground mb-1">CVV</label>
                         <input
                           type="password"
                           value={cardCvv}
-                          onChange={(e) =>
-                            setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 3))
-                          }
+                          onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
                           placeholder="***"
                           className="w-full min-h-10 px-3 rounded-btn border border-border bg-background text-sm outline-none focus-visible:border-cat"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                        Cardholder Name
-                      </label>
+                      <label className="block text-xs font-semibold text-muted-foreground mb-1">Cardholder Name</label>
                       <input
                         type="text"
                         value={cardName}
@@ -254,9 +230,7 @@ export function MockPaymentModal({
                 {method === "upi" && (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                        UPI ID
-                      </label>
+                      <label className="block text-xs font-semibold text-muted-foreground mb-1">UPI ID</label>
                       <input
                         type="text"
                         value={upiId}
@@ -266,8 +240,7 @@ export function MockPaymentModal({
                       />
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-normal">
-                      A mock payment request will be sent to this virtual payment address. Confirm
-                      using any UPI app.
+                      A mock payment request will be sent to this virtual payment address. Confirm using any UPI app.
                     </p>
                   </div>
                 )}
@@ -275,9 +248,7 @@ export function MockPaymentModal({
                 {method === "netbanking" && (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                        Select Bank
-                      </label>
+                      <label className="block text-xs font-semibold text-muted-foreground mb-1">Select Bank</label>
                       <select
                         value={selectedBank}
                         onChange={(e) => setSelectedBank(e.target.value)}

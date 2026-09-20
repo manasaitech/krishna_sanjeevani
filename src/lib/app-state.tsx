@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { type CategoryId, type Track, tracks as staticTracks, programs as staticPrograms, notifications as staticNotifications } from "@/lib/content";
+import { SURAWALI_PRESETS } from "@/lib/surawali-presets";
 import { api, storeTokens, clearTokens, getAccessToken, BASE_URL } from "@/lib/api";
 import Hls from "hls.js";
 
@@ -87,6 +88,12 @@ type AppState = {
   }>;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
+
+  // Session Completion Modal
+  sessionCompleteModalOpen: boolean;
+  completedSessionData: { track?: Track | null; durationSeconds?: number } | null;
+  openSessionCompleteModal: (track?: Track, duration?: number) => void;
+  closeSessionCompleteModal: () => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -116,6 +123,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [historyList, setHistoryList] = useState<any[]>([]);
   const [continueListeningList, setContinueListeningList] = useState<any[]>([]);
   const [notificationsList, setNotificationsList] = useState(() => [...staticNotifications]);
+
+  // Session Complete Modal State
+  const [sessionCompleteModalOpen, setSessionCompleteModalOpen] = useState(false);
+  const [completedSessionData, setCompletedSessionData] = useState<{ track?: Track | null; durationSeconds?: number } | null>(null);
+
+  const openSessionCompleteModal = useCallback((track?: Track, duration?: number) => {
+    const targetTrack = track || currentRef.current;
+    const dur = duration || (targetTrack?.duration ? targetTrack.duration : 18 * 60);
+    setCompletedSessionData({ track: targetTrack, durationSeconds: dur });
+    setSessionCompleteModalOpen(true);
+  }, []);
+
+  const closeSessionCompleteModal = useCallback(() => {
+    setSessionCompleteModalOpen(false);
+  }, []);
 
   const markAsRead = useCallback((id: string) => {
     setNotificationsList((prev) =>
@@ -212,9 +234,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ).catch(err => console.warn(err));
         }
       });
+
+      // Handle session completion on audio ended
+      audio.addEventListener("ended", () => {
+        setPlaying(false);
+        const currentTrack = currentRef.current;
+        if (currentTrack) {
+          const totalDur = Math.round(audio.duration || currentTrack.duration || 0);
+          api.progress.update(
+            currentTrack.id,
+            totalDur,
+            totalDur,
+            true,
+            currentProgramIdRef.current || undefined
+          ).catch(err => console.warn(err));
+
+          openSessionCompleteModal(currentTrack, totalDur);
+        }
+      });
     }
     return audioRef.current;
-  }, []);
+  }, [openSessionCompleteModal]);
 
   // ── Fetch Functions ───────────────────────────────────
   const fetchTracksAndPrograms = useCallback(async (cat: CategoryId) => {
@@ -546,9 +586,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const { streamUrl } = res.data;
       const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
-      const absoluteStreamUrl = `${origin}${streamUrl}`;
+      const absoluteStreamUrl = streamUrl.startsWith("http") ? streamUrl : `${origin}${streamUrl}`;
 
-      // 2. Play stream using Hls.js or native playback
+      // 2. Play direct MP3 stream (for fallback or single-file audio)
+      if (streamUrl.includes(".mp3") || !streamUrl.includes(".m3u8")) {
+        audio.src = absoluteStreamUrl;
+        audio.playbackRate = speed;
+        audio.volume = muted ? 0 : volume / 100;
+        audio.currentTime = initialPos;
+        audio.play()
+          .then(() => setPlaying(true))
+          .catch((err) => console.error("Audio playback failed to start", err));
+        return;
+      }
+
+      // 3. Play stream using Hls.js or native playback
       if (Hls.isSupported()) {
         const hls = new Hls();
         hlsRef.current = hls;
@@ -642,7 +694,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
         console.error("HLS streaming is not supported in this browser");
       }
     } catch (err) {
-      console.error("Failed to load and play HLS track", err);
+      console.warn("Stream ticket request failed, engaging local audio fallback...", err);
+      // Direct local fallback: match Surawali or Emotion song directly
+      const cleanName = (t.title || t.id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const matchedPreset = SURAWALI_PRESETS.find(
+        (p) =>
+          p.id === t.id ||
+          p.canonicalKey.replace(/[^a-z0-9]/g, "") === cleanName ||
+          cleanName.includes(p.canonicalKey.replace(/[^a-z0-9]/g, ""))
+      );
+
+      const fallbackSongId = matchedPreset ? matchedPreset.fallbackSongId : (t.id.startsWith("em_song_") ? t.id : "em_song_001");
+      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL : `${BASE_URL}/api/v1`;
+      const directStreamUrl = `${origin}/emotion/content/songs/${fallbackSongId}/stream`;
+
+      audio.src = directStreamUrl;
+      audio.playbackRate = speed;
+      audio.volume = muted ? 0 : volume / 100;
+      audio.currentTime = initialPos;
+      audio.play()
+        .then(() => setPlaying(true))
+        .catch((playbackErr) => console.error("Fallback playback failed to start", playbackErr));
     }
   }, [getAudioElement, speed, volume, muted]);
 
@@ -806,6 +878,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       notifications: notificationsList,
       markAsRead,
       markAllAsRead,
+      sessionCompleteModalOpen,
+      completedSessionData,
+      openSessionCompleteModal,
+      closeSessionCompleteModal,
     }),
     [
       user,
@@ -843,6 +919,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       notificationsList,
       markAsRead,
       markAllAsRead,
+      sessionCompleteModalOpen,
+      completedSessionData,
+      openSessionCompleteModal,
+      closeSessionCompleteModal,
     ],
   );
 

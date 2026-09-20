@@ -324,7 +324,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } else {
         state = state.copyWith(
           authLoading: false,
-          error: res.message ?? 'Failed to delete account',
+          error: res.message,
         );
         return false;
       }

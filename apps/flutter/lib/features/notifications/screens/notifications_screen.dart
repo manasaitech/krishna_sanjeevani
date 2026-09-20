@@ -17,7 +17,7 @@ final notificationsListProvider = FutureProvider<List<Map<String, dynamic>>>((re
   if (res.success && res.data != null && res.data is List) {
     return List<Map<String, dynamic>>.from(res.data as List);
   }
-  throw Exception(res.message ?? 'Failed to load notifications');
+  throw Exception(res.message);
 });
 
 class NotificationsScreen extends ConsumerWidget {

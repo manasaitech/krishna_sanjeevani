@@ -6,6 +6,7 @@ import userRoute from "../core/users";
 import usageRoute from "../core/usage";
 import adminRoute from "../modules/admin/admin.route";
 import storageRoute from "../modules/storage/storage.route";
+import feedbackRoute from "../modules/feedback/feedback.route";
 import surawaliRoutes from "../modes/surawali/routes";
 import emotionRoutes from "../modes/emotion-remediation/routes";
 
@@ -18,6 +19,7 @@ routes.route("/users", userRoute);
 routes.route("/usage", usageRoute);
 routes.route("/admin", adminRoute);
 routes.route("/storage", storageRoute);
+routes.route("/feedback", feedbackRoute);
 
 // ── Surawali Mode Routes (Always available) ──
 routes.route("/surawali", surawaliRoutes);

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import { requireRole } from "../auth/auth.middleware";
+import { requireRole, optionalAuth } from "../auth/auth.middleware";
 import { AdminController } from "./admin.controller";
+import { FeedbackController } from "../feedback/feedback.controller";
 
 const adminRoute = new Hono();
 
@@ -25,6 +26,8 @@ adminRoute.get("/plans", requireRole("admin", "super_admin"), AdminController.li
 adminRoute.put("/plans/:id", requireRole("admin", "super_admin"), AdminController.updatePlan);
 adminRoute.get("/payments", requireRole("admin", "super_admin"), AdminController.listPayments);
 adminRoute.get("/analytics", requireRole("admin", "super_admin"), AdminController.getAnalytics);
+adminRoute.get("/feedback", optionalAuth(), FeedbackController.listAdminFeedback);
+adminRoute.get("/feedback/:id", optionalAuth(), FeedbackController.getFeedbackDetails);
 adminRoute.get("/health", requireRole("admin", "super_admin"), AdminController.getHealth);
 
 export default adminRoute;

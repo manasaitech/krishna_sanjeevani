@@ -8,15 +8,10 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import {
-  type CategoryId,
-  type Track,
-  tracks as staticTracks,
-  programs as staticPrograms,
-} from "@/lib/content";
+import { type CategoryId, type Track, tracks as staticTracks, programs as staticPrograms, notifications as staticNotifications } from "@/lib/content";
+import { SURAWALI_PRESETS } from "@/lib/surawali-presets";
 import { api, storeTokens, clearTokens, getAccessToken, BASE_URL } from "@/lib/api";
 import Hls from "hls.js";
-import { getTranslation, type TranslationKey } from "./translations";
 
 // ── Auth Types ─────────────────────────────────────────
 export type AuthUser = {
@@ -25,7 +20,6 @@ export type AuthUser = {
   role: string;
   status: string;
   emailVerified: number;
-  authProvider?: string;
   profile: {
     fullName: string;
     profileImage: string | null;
@@ -40,16 +34,8 @@ type AppState = {
   isAuthenticated: boolean;
   authLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
-  loginWithGoogle: (
-    idToken: string,
-    category?: string,
-  ) => Promise<{ success: boolean; message: string }>;
-  register: (data: {
-    email: string;
-    password: string;
-    fullName: string;
-    category: string;
-  }) => Promise<{ success: boolean; message: string }>;
+  loginWithGoogle: (idToken: string, category?: string) => Promise<{ success: boolean; message: string }>;
+  register: (data: { email: string; password: string; fullName: string; category: string }) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
 
@@ -99,15 +85,15 @@ type AppState = {
     body: string;
     unread: boolean;
     group: string;
-    link?: string | null;
   }>;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
-  lang: "english" | "hindi" | "sanskrit";
-  changeLanguage: (newLang: "english" | "hindi" | "sanskrit") => Promise<void>;
-  t: (key: TranslationKey) => string;
-  theme: "light" | "dark";
-  toggleTheme: (selectedTheme: "light" | "dark") => void;
+
+  // Session Completion Modal
+  sessionCompleteModalOpen: boolean;
+  completedSessionData: { track?: Track | null; durationSeconds?: number } | null;
+  openSessionCompleteModal: (track?: Track, duration?: number) => void;
+  closeSessionCompleteModal: () => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -136,75 +122,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentProgramId, setCurrentProgramId] = useState<string | null>(null);
   const [historyList, setHistoryList] = useState<any[]>([]);
   const [continueListeningList, setContinueListeningList] = useState<any[]>([]);
-  const [notificationsList, setNotificationsList] = useState<any[]>([]);
+  const [notificationsList, setNotificationsList] = useState(() => [...staticNotifications]);
 
-  const fetchNotifications = useCallback(async () => {
-    if (typeof window === "undefined") return;
-    try {
-      const res = await api.notifications.list();
-      if (res.success && Array.isArray(res.data)) {
-        const formatted = res.data.map((r: any) => {
-          const isRead = r.read === true || r.read === 1;
-          const diffMs = Date.now() - r.createdAt;
-          let timeStr = "Just now";
-          let groupStr = "Today";
+  // Session Complete Modal State
+  const [sessionCompleteModalOpen, setSessionCompleteModalOpen] = useState(false);
+  const [completedSessionData, setCompletedSessionData] = useState<{ track?: Track | null; durationSeconds?: number } | null>(null);
 
-          if (diffMs > 86400000 * 2) {
-            timeStr = new Date(r.createdAt).toLocaleDateString();
-            groupStr = "Earlier";
-          } else if (diffMs > 86400000) {
-            timeStr = "Yesterday";
-            groupStr = "Earlier";
-          } else if (diffMs > 3600000) {
-            const hours = Math.round(diffMs / 3600000);
-            timeStr = `${hours} hour${hours > 1 ? "s" : ""} ago`;
-            groupStr = "Today";
-          } else if (diffMs > 60000) {
-            const mins = Math.round(diffMs / 60000);
-            timeStr = `${mins} minute${mins > 1 ? "s" : ""} ago`;
-            groupStr = "Today";
-          }
-
-          return {
-            id: r.id,
-            kind: r.type || "system",
-            type: r.type || "system",
-            title: r.title,
-            body: r.message,
-            message: r.message,
-            unread: !isRead,
-            read: isRead,
-            time: timeStr,
-            group: groupStr,
-            link: r.link,
-            createdAt: r.createdAt
-          };
-        });
-        setNotificationsList(formatted);
-      }
-    } catch (err) {
-      console.warn("Failed to fetch notifications", err);
-    }
+  const openSessionCompleteModal = useCallback((track?: Track, duration?: number) => {
+    const targetTrack = track || currentRef.current;
+    const dur = duration || (targetTrack?.duration ? targetTrack.duration : 18 * 60);
+    setCompletedSessionData({ track: targetTrack, durationSeconds: dur });
+    setSessionCompleteModalOpen(true);
   }, []);
 
-  const markAsRead = useCallback(async (id: string) => {
+  const closeSessionCompleteModal = useCallback(() => {
+    setSessionCompleteModalOpen(false);
+  }, []);
+
+  const markAsRead = useCallback((id: string) => {
     setNotificationsList((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, unread: false, read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
     );
-    try {
-      await api.notifications.markRead(id);
-    } catch (err) {
-      console.warn("Failed to mark notification as read on server", err);
-    }
   }, []);
 
-  const markAllAsRead = useCallback(async () => {
-    setNotificationsList((prev) => prev.map((n) => ({ ...n, unread: false, read: true })));
-    try {
-      await api.notifications.markAllRead();
-    } catch (err) {
-      console.warn("Failed to mark all notifications as read on server", err);
-    }
+  const markAllAsRead = useCallback(() => {
+    setNotificationsList((prev) =>
+      prev.map((n) => ({ ...n, unread: false }))
+    );
   }, []);
 
   const currentRef = useRef<Track | null>(null);
@@ -258,21 +202,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
           // Sync position to D1 on 10s intervals
           const currentTrack = currentRef.current;
-          if (currentTrack && !currentTrack.audioUrl) {
+          if (currentTrack) {
             const posSeconds = Math.round(audio.currentTime);
-            const shouldSync =
-              Math.abs(posSeconds - lastSyncedPosRef.current) >= 10 || progressPercent >= 99;
+            const shouldSync = Math.abs(posSeconds - lastSyncedPosRef.current) >= 10 || progressPercent >= 99;
             if (shouldSync) {
               lastSyncedPosRef.current = posSeconds;
-              api.progress
-                .update(
-                  currentTrack.id,
-                  posSeconds,
-                  Math.round(audio.duration),
-                  progressPercent >= 99,
-                  currentProgramIdRef.current || undefined,
-                )
-                .catch((err) => console.warn(err));
+              api.progress.update(
+                currentTrack.id,
+                posSeconds,
+                Math.round(audio.duration),
+                progressPercent >= 99,
+                currentProgramIdRef.current || undefined
+              ).catch(err => console.warn(err));
             }
           }
         }
@@ -283,64 +224,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
       audio.addEventListener("pause", () => {
         setPlaying(false);
         const currentTrack = currentRef.current;
-        if (currentTrack && !currentTrack.audioUrl) {
-          api.progress
-            .update(
-              currentTrack.id,
-              Math.round(audio.currentTime),
-              Math.round(audio.duration || currentTrack.duration),
-              false,
-              currentProgramIdRef.current || undefined,
-            )
-            .catch((err) => console.warn(err));
+        if (currentTrack) {
+          api.progress.update(
+            currentTrack.id,
+            Math.round(audio.currentTime),
+            Math.round(audio.duration || currentTrack.duration),
+            false,
+            currentProgramIdRef.current || undefined
+          ).catch(err => console.warn(err));
+        }
+      });
+
+      // Handle session completion on audio ended
+      audio.addEventListener("ended", () => {
+        setPlaying(false);
+        const currentTrack = currentRef.current;
+        if (currentTrack) {
+          const totalDur = Math.round(audio.duration || currentTrack.duration || 0);
+          api.progress.update(
+            currentTrack.id,
+            totalDur,
+            totalDur,
+            true,
+            currentProgramIdRef.current || undefined
+          ).catch(err => console.warn(err));
+
+          openSessionCompleteModal(currentTrack, totalDur);
         }
       });
     }
     return audioRef.current;
-  }, []);
-
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedTheme = (localStorage.getItem("theme") as "light" | "dark") || "light";
-      setTheme(savedTheme);
-    }
-  }, []);
-
-  const toggleTheme = useCallback((selectedTheme: "light" | "dark") => {
-    setTheme(selectedTheme);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("theme", selectedTheme);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    }
-  }, [theme]);
-
-  const [lang, setLang] = useState<"english" | "hindi" | "sanskrit">("english");
+  }, [openSessionCompleteModal]);
 
   // ── Fetch Functions ───────────────────────────────────
-  const fetchTracksAndPrograms = useCallback(async (cat: CategoryId, currentLang?: string) => {
+  const fetchTracksAndPrograms = useCallback(async (cat: CategoryId) => {
     setLoading(true);
     try {
-      const activeLang = currentLang || lang;
-      const codeMap: Record<string, string> = { english: "en", hindi: "hi", sanskrit: "sa" };
-      const langCode = codeMap[activeLang] || "en";
-
       const [tRes, pRes] = await Promise.all([
-        api.tracks.list({ category: cat, language: langCode }),
+        api.tracks.list({ category: cat }),
         api.programs.list({ category: cat }),
       ]);
       if (tRes.success && tRes.data) {
-        const tList = Array.isArray(tRes.data) ? tRes.data : tRes.data.data || [];
+        const tList = Array.isArray(tRes.data) ? tRes.data : (tRes.data.data || []);
         const mappedTracks = tList.map((t: any) => ({
           ...t,
           art: t.thumbnailKey ? `${BASE_URL}/storage/file/${t.thumbnailKey}` : undefined,
@@ -354,7 +279,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         staticTracks.push(...mappedTracks);
       }
       if (pRes.success && pRes.data) {
-        const pList = Array.isArray(pRes.data) ? pRes.data : pRes.data.data || [];
+        const pList = Array.isArray(pRes.data) ? pRes.data : (pRes.data.data || []);
         const mappedPrograms = pList.map((p: any) => ({
           ...p,
           art: p.thumbnailKey ? `${BASE_URL}/storage/file/${p.thumbnailKey}` : undefined,
@@ -372,54 +297,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [lang]);
+  }, []);
 
   // Sync category-specific files
   useEffect(() => {
-    fetchTracksAndPrograms(category, lang);
-  }, [category, lang, fetchTracksAndPrograms]);
+    fetchTracksAndPrograms(category);
+  }, [category, fetchTracksAndPrograms]);
 
   // ── Auth Actions ──────────────────────────────────────
-  // Sync language from user preferences or localStorage
-  useEffect(() => {
-    if (user?.profile?.language) {
-      const backendLang = user.profile.language.toLowerCase();
-      if (backendLang === "hi" || backendLang === "hindi") {
-        setLang("hindi");
-      } else if (backendLang === "sa" || backendLang === "sanskrit") {
-        setLang("sanskrit");
-      } else {
-        setLang("english");
-      }
-    } else if (typeof window !== "undefined") {
-      const savedLang = (localStorage.getItem("lang") as any) || "english";
-      setLang(savedLang);
-    }
-  }, [user]);
-
-  const changeLanguage = useCallback(async (newLang: "english" | "hindi" | "sanskrit") => {
-    setLang(newLang);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("lang", newLang);
-    }
-    if (user) {
-      const codeMap = { english: "en", hindi: "hi", sanskrit: "sa" };
-      const langCode = codeMap[newLang];
-      try {
-        await api.auth.updateProfile({ language: langCode });
-      } catch (err) {
-        console.warn("Failed to update language on server", err);
-      }
-    }
-    // Instantly trigger reload of category files under new language
-    fetchTracksAndPrograms(category, newLang);
-  }, [user, category, fetchTracksAndPrograms]);
-
-  const t = useCallback((key: TranslationKey) => {
-    return getTranslation(lang, key);
-  }, [lang]);
-
-  // Restore session on mount
   const restoreSession = useCallback(async () => {
     const token = getAccessToken();
     if (!token) {
@@ -489,32 +374,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const register = useCallback(
-    async (data: { email: string; password: string; fullName: string; category: string }) => {
-      try {
-        const res = await api.post<{
-          user: { id: string; email: string; role: string };
-          tokens: { accessToken: string; refreshToken: string };
-        }>("/auth/register", data);
+  const register = useCallback(async (data: { email: string; password: string; fullName: string; category: string }) => {
+    try {
+      const res = await api.post<{
+        user: { id: string; email: string; role: string };
+        tokens: { accessToken: string; refreshToken: string };
+      }>("/auth/register", data);
 
-        if (res.success && res.data) {
-          storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
-          const me = await api.get<AuthUser>("/auth/me");
-          if (me.success && me.data) {
-            setUser(me.data);
-            if (me.data.profile?.category) {
-              setCategory(me.data.profile.category as CategoryId);
-            }
+      if (res.success && res.data) {
+        storeTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
+        const me = await api.get<AuthUser>("/auth/me");
+        if (me.success && me.data) {
+          setUser(me.data);
+          if (me.data.profile?.category) {
+            setCategory(me.data.profile.category as CategoryId);
           }
-          return { success: true, message: "Account created successfully" };
         }
-        return { success: false, message: res.message || "Registration failed" };
-      } catch {
-        return { success: false, message: "Network error. Please try again." };
+        return { success: true, message: "Account created successfully" };
       }
-    },
-    [],
-  );
+      return { success: false, message: res.message || "Registration failed" };
+    } catch {
+      return { success: false, message: "Network error. Please try again." };
+    }
+  }, []);
 
   const logout = useCallback(async () => {
     try {
@@ -599,7 +481,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const [histRes, contRes] = await Promise.all([
         api.progress.history(),
-        api.progress.continueListening(),
+        api.progress.continueListening()
       ]);
       if (histRes.success && Array.isArray(histRes.data)) {
         setHistoryList(histRes.data);
@@ -616,224 +498,225 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchFavorites();
       fetchHistoryAndContinueListening();
-      fetchNotifications();
     } else {
       setFavorites([]);
       setHistoryList([]);
       setContinueListeningList([]);
-      setNotificationsList([]);
     }
-  }, [user, fetchFavorites, fetchHistoryAndContinueListening, fetchNotifications]);
+  }, [user, fetchFavorites, fetchHistoryAndContinueListening]);
 
-  // Poll notifications every 60 seconds
-  useEffect(() => {
-    if (!user) return;
-    const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
-  }, [user, fetchNotifications]);
+  const toggleFavorite = useCallback(async (id: string) => {
+    const isFav = favorites.includes(id);
 
-  const toggleFavorite = useCallback(
-    async (id: string) => {
-      const isFav = favorites.includes(id);
+    // Optimistic UI update
+    setFavorites((prev) =>
+      isFav ? prev.filter((x) => x !== id) : [...prev, id]
+    );
 
-      // Optimistic UI update
-      setFavorites((prev) => (isFav ? prev.filter((x) => x !== id) : [...prev, id]));
-
-      try {
-        if (isFav) {
-          const res = await api.favorites.remove(id);
-          if (!res.success) throw new Error("API call failed");
-        } else {
-          const res = await api.favorites.add(id, "track");
-          if (!res.success) throw new Error("API call failed");
-        }
-        fetchHistoryAndContinueListening();
-      } catch (err) {
-        console.error("Failed to toggle favorite", err);
-        // Revert optimistic update on error
-        setFavorites((prev) => (isFav ? [...prev, id] : prev.filter((x) => x !== id)));
+    try {
+      if (isFav) {
+        const res = await api.favorites.remove(id);
+        if (!res.success) throw new Error("API call failed");
+      } else {
+        const res = await api.favorites.add(id, "track");
+        if (!res.success) throw new Error("API call failed");
       }
-    },
-    [favorites, fetchHistoryAndContinueListening],
-  );
+      fetchHistoryAndContinueListening();
+    } catch (err) {
+      console.error("Failed to toggle favorite", err);
+      // Revert optimistic update on error
+      setFavorites((prev) =>
+        isFav ? [...prev, id] : prev.filter((x) => x !== id)
+      );
+    }
+  }, [favorites, fetchHistoryAndContinueListening]);
 
-  const play = useCallback(
-    async (t: Track, programId?: string) => {
-      if (typeof window === "undefined") return;
+  const play = useCallback(async (t: Track, programId?: string) => {
+    if (typeof window === "undefined") return;
 
-      const audio = getAudioElement();
-      if (!audio) return;
+    const audio = getAudioElement();
+    if (!audio) return;
 
-      // Reset previous HLS/source
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
+    // Reset previous HLS/source
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+    audio.src = "";
+
+    setCurrent(t);
+    setCurrentProgramId(programId ?? null);
+    currentProgramIdRef.current = programId ?? null;
+    setPosition(0);
+    setPlaying(false);
+    audio.setAttribute("data-track-id", t.id);
+    lastSyncedPosRef.current = 0;
+
+    // Get saved position from backend D1
+    let initialPos = 0;
+    try {
+      const progressRes = await api.progress.getTrackProgress(t.id);
+      if (progressRes.success && progressRes.data) {
+        initialPos = progressRes.data.position || 0;
       }
-      audio.src = "";
+    } catch (err) {
+      console.warn("Failed to get track progress", err);
+    }
 
-      setCurrent(t);
-      setCurrentProgramId(programId ?? null);
-      currentProgramIdRef.current = programId ?? null;
-      setPosition(0);
-      setPlaying(false);
-      audio.setAttribute("data-track-id", t.id);
-      lastSyncedPosRef.current = 0;
+    // Direct streaming for Emotion Remediation songs from R2
+    if (t.id.startsWith("em_song_")) {
+      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL : `${BASE_URL}/api/v1`;
+      const streamUrl = `${origin}/emotion/content/songs/${t.id}/stream`;
+      audio.src = streamUrl;
+      audio.playbackRate = speed;
+      audio.volume = muted ? 0 : volume / 100;
+      audio.currentTime = initialPos;
+      audio.play()
+        .then(() => setPlaying(true))
+        .catch((err) => console.error("Emotion playback failed to start", err));
+      return;
+    }
 
-      // Get saved position from backend D1 (skip if playing a direct public URL)
-      let initialPos = 0;
-      if (!t.audioUrl) {
-        try {
-          const progressRes = await api.progress.getTrackProgress(t.id);
-          if (progressRes.success && progressRes.data) {
-            initialPos = progressRes.data.position || 0;
-          }
-        } catch (err) {
-          console.warn("Failed to get track progress", err);
-        }
+    try {
+      // 1. Get playback ticket
+      const res = await api.stream.getTicket(t.id);
+      if (!res.success || !res.data) {
+        throw new Error(res.message || "Failed to get streaming ticket");
       }
 
-      try {
-        let absoluteStreamUrl = "";
-        if (t.audioUrl) {
-          absoluteStreamUrl = t.audioUrl;
-        } else {
-          // 1. Get playback ticket
-          const res = await api.stream.getTicket(t.id);
-          if (!res.success || !res.data) {
-            throw new Error(res.message || "Failed to get streaming ticket");
-          }
+      const { streamUrl } = res.data;
+      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
+      const absoluteStreamUrl = streamUrl.startsWith("http") ? streamUrl : `${origin}${streamUrl}`;
 
-          const { streamUrl } = res.data;
-          const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
-          absoluteStreamUrl = `${origin}${streamUrl}`;
-        }
+      // 2. Play direct MP3 stream (for fallback or single-file audio)
+      if (streamUrl.includes(".mp3") || !streamUrl.includes(".m3u8")) {
+        audio.src = absoluteStreamUrl;
+        audio.playbackRate = speed;
+        audio.volume = muted ? 0 : volume / 100;
+        audio.currentTime = initialPos;
+        audio.play()
+          .then(() => setPlaying(true))
+          .catch((err) => console.error("Audio playback failed to start", err));
+        return;
+      }
 
-        const isM3u8 = absoluteStreamUrl.includes(".m3u8");
-
-        // 2. Play stream using Hls.js or native playback
-        if (isM3u8 && Hls.isSupported()) {
-          const hls = new Hls();
-          hlsRef.current = hls;
-          hls.loadSource(absoluteStreamUrl);
-          hls.attachMedia(audio);
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            audio.playbackRate = speed;
-            audio.volume = muted ? 0 : volume / 100;
-            audio.currentTime = initialPos;
-            audio
-              .play()
-              .then(() => setPlaying(true))
-              .catch((err) => console.error("Playback failed to start", err));
-          });
-          hls.on(Hls.Events.ERROR, async (event, data) => {
-            if (data.fatal) {
-              if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                const statusCode = data.response?.code;
-                // If unauthorized or forbidden, the streaming ticket has expired!
-                if (statusCode === 401 || statusCode === 403) {
-                  console.log(
-                    "Stream ticket expired (HTTP " + statusCode + "), renewing ticket...",
-                  );
-                  try {
-                    const currentTrack = currentRef.current;
-                    if (currentTrack && !currentTrack.audioUrl) {
-                      const res = await api.stream.getTicket(currentTrack.id);
-                      if (res.success && res.data) {
-                        const { streamUrl } = res.data;
-                        const origin = BASE_URL.endsWith("/api/v1")
-                          ? BASE_URL.slice(0, -7)
-                          : BASE_URL;
-                        const absoluteStreamUrl = `${origin}${streamUrl}`;
-
-                        // Save current position before reloading
-                        const currentPos = audio.currentTime;
-
-                        hls.loadSource(absoluteStreamUrl);
-                        audio.currentTime = currentPos;
-                        audio
-                          .play()
-                          .then(() => setPlaying(true))
-                          .catch((e) => console.error(e));
-                        return;
-                      }
+      // 3. Play stream using Hls.js or native playback
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hlsRef.current = hls;
+        hls.loadSource(absoluteStreamUrl);
+        hls.attachMedia(audio);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          audio.playbackRate = speed;
+          audio.volume = muted ? 0 : volume / 100;
+          audio.currentTime = initialPos;
+          audio.play()
+            .then(() => setPlaying(true))
+            .catch((err) => console.error("Playback failed to start", err));
+        });
+        hls.on(Hls.Events.ERROR, async (event, data) => {
+          if (data.fatal) {
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              const statusCode = data.response?.code;
+              // If unauthorized or forbidden, the streaming ticket has expired!
+              if (statusCode === 401 || statusCode === 403) {
+                console.log("Stream ticket expired (HTTP " + statusCode + "), renewing ticket...");
+                try {
+                  const currentTrack = currentRef.current;
+                  if (currentTrack) {
+                    const res = await api.stream.getTicket(currentTrack.id);
+                    if (res.success && res.data) {
+                      const { streamUrl } = res.data;
+                      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
+                      const absoluteStreamUrl = `${origin}${streamUrl}`;
+                      
+                      // Save current position before reloading
+                      const currentPos = audio.currentTime;
+                      
+                      hls.loadSource(absoluteStreamUrl);
+                      audio.currentTime = currentPos;
+                      audio.play()
+                        .then(() => setPlaying(true))
+                        .catch(e => console.error(e));
+                      return;
                     }
-                  } catch (err) {
-                    console.error("Failed to renew stream ticket", err);
                   }
+                } catch (err) {
+                  console.error("Failed to renew stream ticket", err);
                 }
-                hls.startLoad();
-              } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-                hls.recoverMediaError();
-              } else {
-                hls.destroy();
-                hlsRef.current = null;
               }
+              hls.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            } else {
+              hls.destroy();
+              hlsRef.current = null;
             }
-          });
-        } else if (!isM3u8 || audio.canPlayType("application/vnd.apple.mpegurl")) {
-          // Native MP3/M4A/etc. playback (e.g. direct public URLs or non-HLS safari streams)
-          audio.src = absoluteStreamUrl;
-          audio.addEventListener(
-            "canplay",
-            () => {
-              audio.playbackRate = speed;
-              audio.volume = muted ? 0 : volume / 100;
-              audio.currentTime = initialPos;
-              audio
-                .play()
-                .then(() => setPlaying(true))
-                .catch((err) => console.error("Native playback failed to start", err));
-            },
-            { once: true },
-          );
-
-          if (!t.audioUrl) {
-            audio.addEventListener(
-              "error",
-              async () => {
-                const error = audio.error;
-                if (
-                  error &&
-                  (error.code === error.MEDIA_ERR_NETWORK ||
-                    error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED)
-                ) {
-                  console.log("Native audio element network error, attempting ticket renewal...");
-                  try {
-                    const currentTrack = currentRef.current;
-                    if (currentTrack) {
-                      const res = await api.stream.getTicket(currentTrack.id);
-                      if (res.success && res.data) {
-                        const { streamUrl } = res.data;
-                        const origin = BASE_URL.endsWith("/api/v1")
-                          ? BASE_URL.slice(0, -7)
-                          : BASE_URL;
-                        const absoluteStreamUrl = `${origin}${streamUrl}`;
-                        const currentPos = audio.currentTime;
-                        audio.src = absoluteStreamUrl;
-                        audio.currentTime = currentPos;
-                        audio
-                          .play()
-                          .then(() => setPlaying(true))
-                          .catch((e) => console.error(e));
-                      }
-                    }
-                  } catch (err) {
-                    console.error("Failed to renew ticket natively", err);
-                  }
-                }
-              },
-              { once: true },
-            );
           }
-        } else {
-          console.error("HLS streaming is not supported in this browser");
-        }
-      } catch (err) {
-        console.error("Failed to load and play HLS track", err);
+        });
+      } else if (audio.canPlayType("application/vnd.apple.mpegurl")) {
+        audio.src = absoluteStreamUrl;
+        audio.addEventListener("canplay", () => {
+          audio.playbackRate = speed;
+          audio.volume = muted ? 0 : volume / 100;
+          audio.currentTime = initialPos;
+          audio.play()
+            .then(() => setPlaying(true))
+            .catch((err) => console.error("Native playback failed to start", err));
+        }, { once: true });
+
+        audio.addEventListener("error", async () => {
+          const error = audio.error;
+          if (error && (error.code === error.MEDIA_ERR_NETWORK || error.code === error.MEDIA_ERR_SRC_NOT_SUPPORTED)) {
+            console.log("Native audio element network error, attempting ticket renewal...");
+            try {
+              const currentTrack = currentRef.current;
+              if (currentTrack) {
+                const res = await api.stream.getTicket(currentTrack.id);
+                if (res.success && res.data) {
+                  const { streamUrl } = res.data;
+                  const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL.slice(0, -7) : BASE_URL;
+                  const absoluteStreamUrl = `${origin}${streamUrl}`;
+                  const currentPos = audio.currentTime;
+                  audio.src = absoluteStreamUrl;
+                  audio.currentTime = currentPos;
+                  audio.play()
+                    .then(() => setPlaying(true))
+                    .catch(e => console.error(e));
+                }
+              }
+            } catch (err) {
+              console.error("Failed to renew ticket natively", err);
+            }
+          }
+        }, { once: true });
+      } else {
+        console.error("HLS streaming is not supported in this browser");
       }
-    },
-    [getAudioElement, speed, volume, muted],
-  );
+    } catch (err) {
+      console.warn("Stream ticket request failed, engaging local audio fallback...", err);
+      // Direct local fallback: match Surawali or Emotion song directly
+      const cleanName = (t.title || t.id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const matchedPreset = SURAWALI_PRESETS.find(
+        (p) =>
+          p.id === t.id ||
+          p.canonicalKey.replace(/[^a-z0-9]/g, "") === cleanName ||
+          cleanName.includes(p.canonicalKey.replace(/[^a-z0-9]/g, ""))
+      );
+
+      const fallbackSongId = matchedPreset ? matchedPreset.fallbackSongId : (t.id.startsWith("em_song_") ? t.id : "em_song_001");
+      const origin = BASE_URL.endsWith("/api/v1") ? BASE_URL : `${BASE_URL}/api/v1`;
+      const directStreamUrl = `${origin}/emotion/content/songs/${fallbackSongId}/stream`;
+
+      audio.src = directStreamUrl;
+      audio.playbackRate = speed;
+      audio.volume = muted ? 0 : volume / 100;
+      audio.currentTime = initialPos;
+      audio.play()
+        .then(() => setPlaying(true))
+        .catch((playbackErr) => console.error("Fallback playback failed to start", playbackErr));
+    }
+  }, [getAudioElement, speed, volume, muted]);
 
   const toggle = useCallback(() => {
     const audio = audioRef.current;
@@ -842,8 +725,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       audio.pause();
       setPlaying(false);
     } else {
-      audio
-        .play()
+      audio.play()
         .then(() => setPlaying(true))
         .catch((err) => console.error("Playback failed to start", err));
     }
@@ -857,17 +739,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const skip = useCallback(
-    (delta: number) => {
-      const audio = audioRef.current;
-      if (audio && current) {
-        const newPos = Math.max(0, Math.min(current.duration, audio.currentTime + delta));
-        audio.currentTime = newPos;
-        setPosition(newPos);
-      }
-    },
-    [current],
-  );
+  const skip = useCallback((delta: number) => {
+    const audio = audioRef.current;
+    if (audio && current) {
+      const newPos = Math.max(0, Math.min(current.duration, audio.currentTime + delta));
+      audio.currentTime = newPos;
+      setPosition(newPos);
+    }
+  }, [current]);
 
   const stop = useCallback(() => {
     const audio = audioRef.current;
@@ -979,16 +858,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (audio) {
           audio.pause();
           const currentTrack = currentRef.current;
-          if (currentTrack && !currentTrack.audioUrl) {
-            api.progress
-              .update(
-                currentTrack.id,
-                Math.round(audio.currentTime),
-                Math.round(audio.duration || currentTrack.duration),
-                false,
-                currentProgramIdRef.current || undefined,
-              )
-              .catch((err) => console.warn(err));
+          if (currentTrack) {
+            api.progress.update(
+              currentTrack.id,
+              Math.round(audio.currentTime),
+              Math.round(audio.duration || currentTrack.duration),
+              false,
+              currentProgramIdRef.current || undefined
+            ).catch(err => console.warn(err));
           }
         }
         setPlaying(false);
@@ -1001,11 +878,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       notifications: notificationsList,
       markAsRead,
       markAllAsRead,
-      lang,
-      changeLanguage,
-      t,
-      theme,
-      toggleTheme,
+      sessionCompleteModalOpen,
+      completedSessionData,
+      openSessionCompleteModal,
+      closeSessionCompleteModal,
     }),
     [
       user,
@@ -1043,11 +919,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       notificationsList,
       markAsRead,
       markAllAsRead,
-      lang,
-      changeLanguage,
-      t,
-      theme,
-      toggleTheme,
+      sessionCompleteModalOpen,
+      completedSessionData,
+      openSessionCompleteModal,
+      closeSessionCompleteModal,
     ],
   );
 

@@ -1,20 +1,19 @@
+import { KULASEKHARA_VERSE } from "@/lib/home-data";
 import { Play, Pause, Maximize2, Sparkles, X } from "lucide-react";
-import { type VerseAudioState, VERSE_TRACKS } from "@/lib/use-verse-audio";
+import type { VerseAudioState } from "@/lib/use-verse-audio";
 
 interface VerseMiniPlayerProps {
   audio: VerseAudioState;
 }
 
 export function VerseMiniPlayer({ audio }: VerseMiniPlayerProps) {
-  const activeTrack = (VERSE_TRACKS.find((t) => t.id === audio.currentTrackId) || VERSE_TRACKS[0])!;
-
   if (!audio.isMiniPlayerVisible) {
     return (
       <button
         onClick={() => audio.setIsMiniPlayerVisible(true)}
         className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-surface border border-cat/40 p-2.5 shadow-lift text-cat hover:bg-cat-light backdrop-blur-md transition-all hover:scale-105"
-        title={`Open ${activeTrack.title} Player`}
-        aria-label={`Open ${activeTrack.title} Player`}
+        title="Open Kulasekhara Verse Player"
+        aria-label="Open Kulasekhara Verse Player"
       >
         <Sparkles className="h-5 w-5 text-cat animate-spin" style={{ animationDuration: "6s" }} />
       </button>
@@ -43,8 +42,8 @@ export function VerseMiniPlayer({ audio }: VerseMiniPlayerProps) {
         >
           <div className="relative h-11 w-11 shrink-0 rounded-full overflow-hidden border border-cat/40 shadow-sm bg-background group-hover:scale-105 transition-transform">
             <img
-              src={activeTrack.image}
-              alt={activeTrack.title}
+              src={KULASEKHARA_VERSE.image}
+              alt="Kulasekhara Alvar"
               className="h-full w-full object-cover object-top"
             />
             {audio.isPlaying && (
@@ -55,23 +54,15 @@ export function VerseMiniPlayer({ audio }: VerseMiniPlayerProps) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-bold uppercase tracking-widest text-cat font-sans">
-                {activeTrack.id === "kulasekhara"
-                  ? "Verse 24"
-                  : activeTrack.id === "chaitanya"
-                    ? "Verse 1"
-                    : "Mantra"}
+                Verse 24
               </span>
               <span className="text-[10px] text-muted-foreground">•</span>
               <span className="text-[10px] text-muted-foreground font-serif italic truncate">
-                {activeTrack.id === "kulasekhara"
-                  ? "Mukundamālā"
-                  : activeTrack.id === "chaitanya"
-                    ? "Śikṣāṣṭakam"
-                    : "Meditation"}
+                Mukundamālā
               </span>
             </div>
             <p className="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-cat transition-colors">
-              {activeTrack.artist}
+              Kulasekhara Alvar
             </p>
 
             {/* Waveform Bars */}

@@ -102,25 +102,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(playerProvider.notifier).playTrack(playedTrack);
       context.push('/player');
     } else {
-      // Try to find any track in similar categories, or play the first track as a fallback
-      final fallback = allTracks.isNotEmpty ? allTracks.first : <String, dynamic>{};
-      if (fallback.isNotEmpty) {
-        final playedTrack = Map<String, dynamic>.from(fallback);
-        if (isPreview) {
-          playedTrack['title'] = '$surawaliName (Preview)';
-          playedTrack['duration'] = 90;
-        } else {
-          playedTrack['title'] = surawaliName;
-        }
-        ref.read(playerProvider.notifier).playTrack(playedTrack);
-        context.push('/player');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Audio session not available for this Surāwali yet.'),
-          ),
-        );
-      }
+      // Dynamic Surawali audio session resolved via backend audio resolver
+      final surawaliTrack = {
+        'id': 'sur_${surawaliName.toLowerCase().replaceAll(RegExp(r'\s+'), '_')}',
+        'title': isPreview ? '$surawaliName (Preview)' : surawaliName,
+        'subtitle': 'Therapeutic Raga Chikitsa',
+        'artist': 'Krishna Sanjeevani',
+        'duration': isPreview ? 90 : 1800,
+        'category': 'secular',
+      };
+      ref.read(playerProvider.notifier).playTrack(surawaliTrack);
+      context.push('/player');
     }
   }
 

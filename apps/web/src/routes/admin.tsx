@@ -28,6 +28,11 @@ import {
   AlertTriangle,
   FileAudio,
   CheckCircle,
+  MessageSquare,
+  Star,
+  Smile,
+  Filter,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
@@ -35,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/app-state";
 import { AppShell } from "@/components/AppShell";
 import { type Track } from "@/lib/content";
+import { SURAWALI_PRESETS, findSurawaliByFilename, type SurawaliPreset } from "@/lib/surawali-presets";
 import logoWithoutText from "@/assets/logo-without-text.webp";
 
 export const Route = createFileRoute("/admin")({
@@ -54,11 +60,13 @@ export const Route = createFileRoute("/admin")({
 
 const nav = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "content", label: "Content", icon: Music4 },
+  { id: "surawalis", label: "Surāwali Catalog", icon: ListMusic },
+  { id: "content", label: "All Content", icon: Music4 },
   { id: "programs", label: "Programs", icon: ListMusic },
   { id: "users", label: "Users", icon: Users },
   { id: "subscriptions", label: "Subscriptions", icon: CreditCard },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "feedback", label: "Feedback", icon: MessageSquare },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -120,6 +128,12 @@ function Admin() {
   const [filterTier, setFilterTier] = useState<string>("All");
   const [filterProcessing, setFilterProcessing] = useState<string>("All");
   const [filterLanguage, setFilterLanguage] = useState<string>("All");
+
+  // Content Sub-tab ("tracks" vs "surawali_catalog")
+  const [contentSubTab, setContentSubTab] = useState<"tracks" | "surawali_catalog">("tracks");
+  const [surawaliCatalogQuery, setSurawaliCatalogQuery] = useState("");
+  const [surawaliCatalogCategory, setSurawaliCatalogCategory] = useState("All");
+  const [surawaliCatalogStatus, setSurawaliCatalogStatus] = useState<"All" | "actual" | "fallback">("All");
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -229,6 +243,8 @@ function Admin() {
   const [formSelectedTags, setFormSelectedTags] = useState<string[]>([]);
   const [formAudioFile, setFormAudioFile] = useState<File | null>(null);
   const [formImageFile, setFormImageFile] = useState<File | null>(null);
+  const [selectedSurawaliPreset, setSelectedSurawaliPreset] = useState<SurawaliPreset | null>(null);
+  const [isSurawaliLocked, setIsSurawaliLocked] = useState(false);
 
   // Transcoding Status State inside Form
   const [formStatus, setFormStatus] = useState<
@@ -319,6 +335,21 @@ function Admin() {
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
+  // Feedback state variables
+  const [feedbackList, setFeedbackList] = useState<any[]>([]);
+  const [feedbackTotal, setFeedbackTotal] = useState(0);
+  const [feedbackPage, setFeedbackPage] = useState(1);
+  const [feedbackPages, setFeedbackPages] = useState(1);
+  const [feedbackSummary, setFeedbackSummary] = useState<any>(null);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [feedbackModeFilter, setFeedbackModeFilter] = useState("All");
+  const [feedbackRatingFilter, setFeedbackRatingFilter] = useState("All");
+  const [feedbackMoodFilter, setFeedbackMoodFilter] = useState("All");
+  const [feedbackSearch, setFeedbackSearch] = useState("");
+  const [feedbackDebouncedSearch, setFeedbackDebouncedSearch] = useState("");
+  const [selectedFeedback, setSelectedFeedback] = useState<any>(null);
+  const [isFeedbackDetailsOpen, setIsFeedbackDetailsOpen] = useState(false);
+
   // Settings state variables
   const [settingsSupportEmail, setSettingsSupportEmail] = useState(() => localStorage.getItem("ks_settings_support_email") || "support@krishnasanjeevani.org");
   const [settingsDefaultVisibility, setSettingsDefaultVisibility] = useState(() => localStorage.getItem("ks_settings_default_visibility") || "draft");
@@ -378,6 +409,15 @@ function Admin() {
     }, 450);
     return () => clearTimeout(handler);
   }, [progQuery]);
+
+  // Debounce search query for feedback
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setFeedbackDebouncedSearch(feedbackSearch);
+      setFeedbackPage(1);
+    }, 450);
+    return () => clearTimeout(handler);
+  }, [feedbackSearch]);
 
   // ── Fetch Operations ──
   const loadOverview = useCallback(async () => {
@@ -758,6 +798,61 @@ function Admin() {
     }
   }, [section, analyticsPeriod, loadAnalyticsData]);
 
+  const loadFeedbackList = useCallback(async (targetPage = 1) => {
+    setLoadingFeedback(true);
+    try {
+      const res = await api.admin.feedback.list({
+        page: targetPage,
+        limit: 10,
+        mode: feedbackModeFilter !== "All" ? feedbackModeFilter : undefined,
+        rating: feedbackRatingFilter !== "All" ? Number(feedbackRatingFilter) : undefined,
+        mood: feedbackMoodFilter !== "All" ? feedbackMoodFilter : undefined,
+        search: feedbackDebouncedSearch.trim() || undefined,
+      });
+      if (res) {
+        const items = res.items || res.data?.items || (Array.isArray(res) ? res : []);
+        const total = res.total ?? res.data?.total ?? items.length;
+        const pages = res.pages ?? res.data?.pages ?? 1;
+        const page = res.page ?? res.data?.page ?? targetPage;
+        const summary = res.summary ?? res.data?.summary ?? null;
+
+        setFeedbackList(items);
+        setFeedbackTotal(total);
+        setFeedbackPages(pages);
+        setFeedbackPage(page);
+        setFeedbackSummary(summary);
+      }
+    } catch (err: any) {
+      console.error("Failed to load feedback", err);
+      toast.error(err?.message || "Failed to load session feedback");
+    } finally {
+      setLoadingFeedback(false);
+    }
+  }, [feedbackModeFilter, feedbackRatingFilter, feedbackMoodFilter, feedbackDebouncedSearch]);
+
+  useEffect(() => {
+    if (section === "feedback") {
+      loadFeedbackList(feedbackPage);
+    }
+  }, [section, feedbackPage, loadFeedbackList]);
+
+  // Real-time live feedback synchronization listener
+  useEffect(() => {
+    const handleLiveFeedback = () => {
+      if (section === "feedback") {
+        loadFeedbackList(1);
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("ks_feedback_submitted", handleLiveFeedback);
+      window.addEventListener("storage", handleLiveFeedback);
+      return () => {
+        window.removeEventListener("ks_feedback_submitted", handleLiveFeedback);
+        window.removeEventListener("storage", handleLiveFeedback);
+      };
+    }
+  }, [section, loadFeedbackList]);
+
   const loadSystemHealth = useCallback(async () => {
     setLoadingHealth(true);
     try {
@@ -960,7 +1055,7 @@ function Admin() {
   }, [user, loadOverview, loadTags, loadPrograms]);
 
   useEffect(() => {
-    if (section === "content") {
+    if (section === "content" || section === "surawalis") {
       loadTracks();
       loadStats();
     }
@@ -985,8 +1080,65 @@ function Admin() {
     setFormSelectedTags([]);
     setFormAudioFile(null);
     setFormImageFile(null);
+    setSelectedSurawaliPreset(null);
+    setIsSurawaliLocked(false);
     setFormStatus("idle");
     setFormStatusMessage("");
+  };
+
+  // Surawali Catalog Preset Applier
+  const applySurawaliPreset = (preset: SurawaliPreset | null) => {
+    setSelectedSurawaliPreset(preset);
+    if (!preset) return;
+
+    setFormTitle(preset.name);
+    setFormSubtitle(preset.subtitle);
+    setFormDescription(preset.description);
+    setFormCategory(preset.category);
+    setFormArtist(preset.artist);
+    setFormLanguage(preset.language);
+    setFormTier(preset.tier);
+
+    // Map suggested tags to allTags ids
+    if (preset.suggestedTags?.length && allTags.length) {
+      const matchedTagIds = allTags
+        .filter((t) => preset.suggestedTags.some((st) => st.toLowerCase() === t.name.toLowerCase()))
+        .map((t) => t.id);
+      if (matchedTagIds.length > 0) {
+        setFormSelectedTags(matchedTagIds);
+      }
+    }
+  };
+
+  // Smart Audio File Selector with Filename Auto-Detection
+  const handleAudioFileChange = (file: File | null) => {
+    setFormAudioFile(file);
+    if (file && !selectedSurawaliPreset && !editingTrack) {
+      const matched = findSurawaliByFilename(file.name);
+      if (matched) {
+        applySurawaliPreset(matched);
+        toast.info(`✨ Auto-matched Surawali preset: "${matched.name}" from file name!`);
+      }
+    }
+  };
+
+  // Dedicated Surawali Catalog 1-Click Upload Launcher
+  const handleUploadForSurawali = (preset: SurawaliPreset) => {
+    resetFormFields();
+    applySurawaliPreset(preset);
+    setIsSurawaliLocked(true);
+    const existing = tracksList.find((t) => t.id === preset.id || t.title?.toLowerCase() === preset.name.toLowerCase());
+    if (existing) {
+      setEditingTrack(existing);
+      setFormTitle(existing.title || preset.name);
+      setFormSubtitle(existing.subtitle || preset.subtitle);
+      setFormDescription(existing.description || preset.description);
+      setFormArtist(existing.artist || preset.artist);
+      setFormCategory(existing.category || preset.category);
+      setFormTier(existing.tier || preset.tier);
+      setFormLanguage(existing.language || preset.language);
+    }
+    setIsFormOpen(true);
   };
 
   // Form dirty checks
@@ -1016,7 +1168,8 @@ function Admin() {
         formArtist !== "" ||
         formSelectedTags.length > 0 ||
         formAudioFile !== null ||
-        formImageFile !== null
+        formImageFile !== null ||
+        selectedSurawaliPreset !== null
       );
     }
   }, [
@@ -1031,6 +1184,7 @@ function Admin() {
     formSelectedTags,
     formAudioFile,
     formImageFile,
+    selectedSurawaliPreset,
   ]);
 
   const handleCloseForm = useCallback(() => {
@@ -1066,7 +1220,7 @@ function Admin() {
 
     try {
       let thumbnailKey = editingTrack?.thumbnailKey || "";
-      const trackId = editingTrack?.id || crypto.randomUUID();
+      const trackId = editingTrack?.id || selectedSurawaliPreset?.id || crypto.randomUUID();
 
       // 1. Cover Artwork Upload
       if (formImageFile) {
@@ -1900,13 +2054,16 @@ function Admin() {
             {/* Header toolbar */}
             <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-5">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight capitalize leading-none text-foreground">{section}</h1>
+                <h1 className="text-2xl font-bold tracking-tight capitalize leading-none text-foreground">{section === "surawalis" ? "Surāwali Catalog" : section}</h1>
                 <p className="mt-1.5 text-xs text-muted-foreground font-medium">
                   {section === "overview" && "Dashboard operational health metrics and activity log."}
+                  {section === "surawalis" && "Authoritative clinical Raga chikitsa formulations and master audio ingestion console."}
                   {section === "content" && "Content management catalogue and stream encoder console."}
                   {section === "programs" && "Manage therapeutic programmes and their track sequences."}
                   {section === "users" && "Manage registered users and account access."}
-                  {!["overview", "content", "programs", "users"].includes(section) && "Operations section under construction."}
+                  {section === "subscriptions" && "Customer subscriptions, billing plans, and revenue records."}
+                  {section === "analytics" && "Platform streaming telemetry and user listening analytics."}
+                  {section === "settings" && "Admin preferences, system configurations, and infrastructure health."}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -2070,386 +2227,689 @@ function Admin() {
               </div>
             )}
 
-            {/* SECTION RENDERING: CONTENT CMS */}
-            {section === "content" && (
+            {/* SECTION RENDERING: CONTENT CMS & SURAWALI CATALOG */}
+            {(section === "content" || section === "surawalis") && (
               <div className="mt-8 space-y-6 animate-in fade-in duration-200">
-                {/* CMS Stats Cards */}
-                <div className="grid gap-4.5 sm:grid-cols-2 md:grid-cols-5">
-                  {[
-                    { label: "Total Tracks", value: trackStats?.total ?? 0, bg: "bg-surface border-border" },
-                    { label: "Published", value: trackStats?.published ?? 0, bg: "bg-success/5 border-success/20 text-success" },
-                    { label: "Drafts", value: trackStats?.draft ?? 0, bg: "bg-surface border-border text-muted-foreground" },
-                    { label: "Processing", value: trackStats?.processing ?? 0, bg: "bg-amber-500/5 border-amber-500/20 text-amber-500" },
-                    { label: "Failed Pipeline", value: trackStats?.failed ?? 0, bg: "bg-destructive/5 border-destructive/20 text-destructive" },
-                  ].map((stat) => (
-                    <div key={stat.label} className={cn(cardCls, "p-4.5 flex flex-col justify-between border-border/80 shadow-none", stat.bg)}>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                      <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">{loadingStats ? "..." : stat.value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Filter and search bar */}
-                <div className={cn(cardCls, "p-5 space-y-5 border-border/80 shadow-none")}>
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-2.5 rounded-field border border-border bg-background px-3.5 flex-1 min-w-[280px] max-w-md focus-within:ring-2 focus-within:ring-cat">
-                      <Search className="h-4 w-4 text-muted-foreground" />
-                      <input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search tracks by title, artist, subtitle/raga..."
-                        className="min-h-11 w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
-                      />
-                      {query && (
-                        <button onClick={() => setQuery("")} className="text-muted-foreground hover:text-foreground">
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                    
+                {/* Content Sub-tab Navigation */}
+                {section === "content" && (
+                  <div className="flex border-b border-border/60 select-none pb-0.5 gap-2 text-xs font-bold">
                     <button
-                      onClick={() => {
-                        setEditingTrack(null);
-                        resetFormFields();
-                        setIsFormOpen(true);
-                      }}
-                      className="press inline-flex min-h-11 items-center justify-center rounded-btn bg-primary px-5.5 text-xs font-bold text-primary-foreground hover:bg-primary-hover shadow-md hover:shadow-lg transition-all"
+                      onClick={() => setContentSubTab("tracks")}
+                      className={cn(
+                        "px-4 py-2.5 border-b-2 transition-all press flex items-center gap-2",
+                        contentSubTab === "tracks"
+                          ? "border-cat text-cat font-extrabold"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      )}
                     >
-                      <Plus className="mr-1.5 h-4 w-4" /> Add Track
+                      <Music4 className="h-4 w-4" /> All Audio Tracks ({totalTracksCount})
+                    </button>
+                    <button
+                      onClick={() => setContentSubTab("surawali_catalog")}
+                      className={cn(
+                        "px-4 py-2.5 border-b-2 transition-all press flex items-center gap-2",
+                        contentSubTab === "surawali_catalog"
+                          ? "border-cat text-cat font-extrabold"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <ListMusic className="h-4 w-4" /> Dedicated Surawali Catalog ({SURAWALI_PRESETS.length})
                     </button>
                   </div>
+                )}
 
-                  {/* Multi-attribute Filter pills */}
-                  <div className="space-y-3.5 border-t border-border/50 pt-4 text-xs">
-                    {/* Status filter */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="font-bold text-muted-foreground w-20">Status:</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {["All", "Published", "Draft", "Archived"].map((st) => (
-                          <button
-                            key={st}
-                            onClick={() => { setFilterStatus(st); setPage(1); }}
-                            className={cn(
-                              "press rounded-full px-4 py-1.5 font-bold transition-all border",
-                              filterStatus === st
-                                ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
-                            )}
-                          >
-                            {st}
-                          </button>
-                        ))}
-                      </div>
+                {/* ── SUB-TAB 1: ALL AUDIO TRACKS ── */}
+                {section === "content" && contentSubTab === "tracks" && (
+                  <div className="space-y-6 animate-in fade-in duration-150">
+                    {/* CMS Stats Cards */}
+                    <div className="grid gap-4.5 sm:grid-cols-2 md:grid-cols-5">
+                      {[
+                        { label: "Total Tracks", value: trackStats?.total ?? 0, bg: "bg-surface border-border" },
+                        { label: "Published", value: trackStats?.published ?? 0, bg: "bg-success/5 border-success/20 text-success" },
+                        { label: "Drafts", value: trackStats?.draft ?? 0, bg: "bg-surface border-border text-muted-foreground" },
+                        { label: "Processing", value: trackStats?.processing ?? 0, bg: "bg-amber-500/5 border-amber-500/20 text-amber-500" },
+                        { label: "Failed Pipeline", value: trackStats?.failed ?? 0, bg: "bg-destructive/5 border-destructive/20 text-destructive" },
+                      ].map((stat) => (
+                        <div key={stat.label} className={cn(cardCls, "p-4.5 flex flex-col justify-between border-border/80 shadow-none", stat.bg)}>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                          <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums">{loadingStats ? "..." : stat.value}</p>
+                        </div>
+                      ))}
                     </div>
 
-                    {/* Category filter */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="font-bold text-muted-foreground w-20">Category:</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {["All", "Devotional", "Secular", "Pregnancy"].map((cat) => (
-                          <button
-                            key={cat}
-                            onClick={() => { setFilterCategory(cat); setPage(1); }}
-                            className={cn(
-                              "press rounded-full px-4 py-1.5 font-bold transition-all border",
-                              filterCategory === cat
-                                ? "bg-cat border-cat text-cat-foreground"
-                                : "bg-background border-border text-muted-foreground hover:border-cat"
-                            )}
-                          >
-                            {cat}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Sub Tier and Processing status filters */}
-                    <div className="flex flex-wrap gap-6">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="font-bold text-muted-foreground w-20 sm:w-auto">Subscription:</span>
-                        <div className="flex flex-wrap gap-1.5">
-                          {["All", "Free", "Premium"].map((tier) => (
-                            <button
-                              key={tier}
-                              onClick={() => { setFilterTier(tier); setPage(1); }}
-                              className={cn(
-                                "press rounded-full px-4 py-1.5 font-bold transition-all border",
-                                filterTier === tier
-                                  ? "bg-cat border-cat text-cat-foreground"
-                                  : "bg-background border-border text-muted-foreground hover:border-cat"
-                              )}
-                            >
-                              {tier}
+                    {/* Filter and search bar */}
+                    <div className={cn(cardCls, "p-5 space-y-5 border-border/80 shadow-none")}>
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-2.5 rounded-field border border-border bg-background px-3.5 flex-1 min-w-[280px] max-w-md focus-within:ring-2 focus-within:ring-cat">
+                          <Search className="h-4 w-4 text-muted-foreground" />
+                          <input
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search tracks by title, artist, subtitle/raga..."
+                            className="min-h-11 w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                          />
+                          {query && (
+                            <button onClick={() => setQuery("")} className="text-muted-foreground hover:text-foreground">
+                              <X className="h-4 w-4" />
                             </button>
-                          ))}
+                          )}
                         </div>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="font-bold text-muted-foreground">Transcoder:</span>
-                        <div className="flex flex-wrap gap-1.5">
-                          {["All", "Ready", "Processing", "Failed"].map((proc) => (
-                            <button
-                              key={proc}
-                              onClick={() => { setFilterProcessing(proc); setPage(1); }}
-                              className={cn(
-                                "press rounded-full px-4 py-1.5 font-bold transition-all border",
-                                filterProcessing === proc
-                                  ? "bg-cat border-cat text-cat-foreground"
-                                  : "bg-background border-border text-muted-foreground hover:border-cat"
-                              )}
-                            >
-                              {proc}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Language dropdown */}
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-muted-foreground flex items-center gap-1.5">
-                          <Languages className="h-4 w-4" /> Language:
-                        </span>
-                        <select
-                          value={filterLanguage}
-                          onChange={(e) => { setFilterLanguage(e.target.value); setPage(1); }}
-                          className="rounded-btn border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-cat"
-                        >
-                          <option value="All">All Languages</option>
-                          <option value="hi">Hindi (hi)</option>
-                          <option value="sa">Sanskrit (sa)</option>
-                          <option value="en">English (en)</option>
-                          <option value="ta">Tamil (ta)</option>
-                        </select>
-                      </div>
-
-                      {/* Clear Filters helper button */}
-                      {(query || filterStatus !== "All" || filterCategory !== "All" || filterTier !== "All" || filterProcessing !== "All" || filterLanguage !== "All") && (
+                        
                         <button
-                          onClick={handleClearFilters}
-                          className="press text-xs font-bold text-cat hover:underline flex items-center gap-1 ml-auto"
+                          onClick={() => {
+                            setEditingTrack(null);
+                            resetFormFields();
+                            setIsFormOpen(true);
+                          }}
+                          className="press inline-flex min-h-11 items-center justify-center rounded-btn bg-primary px-5.5 text-xs font-bold text-primary-foreground hover:bg-primary-hover shadow-md hover:shadow-lg transition-all"
                         >
-                          <X className="h-3.5 w-3.5" /> Clear Filters
+                          <Plus className="mr-1.5 h-4 w-4" /> Add Track
                         </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                      </div>
 
-                {/* Primary Content Library Table */}
-                <section className={cn(cardCls, "overflow-hidden border-border/80 shadow-none")}>
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[900px] text-left text-xs border-collapse">
-                      <thead className="bg-muted/40 text-[10px] tracking-wider text-muted-foreground uppercase font-bold border-b border-border/60">
-                        <tr>
-                          <th scope="col" className="px-5 py-3.5 w-[50px] text-center">Preview</th>
-                          <th scope="col" className="px-5 py-3.5">Track & Artist</th>
-                          <th scope="col" className="px-5 py-3.5">Raga / Subtitle</th>
-                          <th scope="col" className="px-5 py-3.5">Category</th>
-                          <th scope="col" className="px-5 py-3.5">Duration</th>
-                          <th scope="col" className="px-5 py-3.5">Tier</th>
-                          <th scope="col" className="px-5 py-3.5">Transcoder</th>
-                          <th scope="col" className="px-5 py-3.5">Status</th>
-                          <th scope="col" className="px-5 py-3.5 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/50">
-                        {loadingTracks ? (
-                          <tr>
-                            <td colSpan={9} className="px-5 py-20 text-center">
-                              <div className="flex flex-col items-center gap-3">
-                                <Loader2 className="h-7 w-7 animate-spin text-cat" />
-                                <span className="text-[11px] font-semibold text-muted-foreground">Retrieving tracks...</span>
-                              </div>
-                            </td>
-                          </tr>
-                        ) : tracksList.map((t) => {
-                          const isCurrentPlaying = playingTrack?.id === t.id;
-                          const isPlayingThisRow = isCurrentPlaying && isAudioPlaying;
+                      {/* Multi-attribute Filter pills */}
+                      <div className="space-y-3.5 border-t border-border/50 pt-4 text-xs">
+                        {/* Status filter */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="font-bold text-muted-foreground w-20">Status:</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {["All", "Published", "Draft", "Archived"].map((st) => (
+                              <button
+                                key={st}
+                                onClick={() => { setFilterStatus(st); setPage(1); }}
+                                className={cn(
+                                  "press rounded-full px-4 py-1.5 font-bold transition-all border",
+                                  filterStatus === st
+                                    ? "bg-cat border-cat text-cat-foreground"
+                                    : "bg-background border-border text-muted-foreground hover:border-cat"
+                                )}
+                              >
+                                {st}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
 
-                          return (
-                            <tr key={t.id} className="hover:bg-muted/15 transition-all">
-                              {/* Audio stream play/pause preview toggle */}
-                              <td className="px-5 py-4 text-center">
+                        {/* Category filter */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="font-bold text-muted-foreground w-20">Category:</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {["All", "Devotional", "Secular", "Pregnancy"].map((cat) => (
+                              <button
+                                key={cat}
+                                onClick={() => { setFilterCategory(cat); setPage(1); }}
+                                className={cn(
+                                  "press rounded-full px-4 py-1.5 font-bold transition-all border",
+                                  filterCategory === cat
+                                    ? "bg-cat border-cat text-cat-foreground"
+                                    : "bg-background border-border text-muted-foreground hover:border-cat"
+                                )}
+                              >
+                                {cat}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Sub Tier and Processing status filters */}
+                        <div className="flex flex-wrap gap-6">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="font-bold text-muted-foreground w-20 sm:w-auto">Subscription:</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {["All", "Free", "Premium"].map((tier) => (
                                 <button
-                                  onClick={() => handlePreviewToggle(t)}
-                                  disabled={t.processingStatus !== "ready"}
+                                  key={tier}
+                                  onClick={() => { setFilterTier(tier); setPage(1); }}
                                   className={cn(
-                                    "press grid h-8 w-8 place-items-center rounded-full transition-all border shadow-sm",
-                                    t.processingStatus !== "ready"
-                                      ? "bg-muted border-border/30 text-muted-foreground/30 cursor-not-allowed"
-                                      : isPlayingThisRow
-                                      ? "bg-cat border-cat text-cat-foreground scale-105"
-                                      : "bg-surface border-border text-cat hover:bg-cat-light hover:border-cat"
+                                    "press rounded-full px-4 py-1.5 font-bold transition-all border",
+                                    filterTier === tier
+                                      ? "bg-cat border-cat text-cat-foreground"
+                                      : "bg-background border-border text-muted-foreground hover:border-cat"
                                   )}
-                                  aria-label={isPlayingThisRow ? "Pause preview" : "Play preview"}
                                 >
-                                  {isPlayingThisRow ? (
-                                    <Pause className="h-3.5 w-3.5 fill-current" />
-                                  ) : (
-                                    <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
-                                  )}
+                                  {tier}
                                 </button>
-                              </td>
+                              ))}
+                            </div>
+                          </div>
 
-                              {/* Title, artist & cover artwork thumbnail */}
-                              <td className="px-5 py-4 font-semibold text-foreground">
-                                <div className="flex items-center gap-3">
-                                  {t.thumbnailKey ? (
-                                    <img
-                                      src={getAssetUrl(t.thumbnailKey) || ""}
-                                      alt=""
-                                      className="h-10 w-10 rounded-md object-cover border border-border/60 bg-muted shrink-0"
-                                      onError={(e) => {
-                                        (e.target as HTMLElement).style.display = "none";
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-dashed border-border/60 bg-muted text-muted-foreground/60">
-                                      <FileAudio className="h-4 w-4" />
-                                    </div>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="font-bold text-muted-foreground">Transcoder:</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {["All", "Ready", "Processing", "Failed"].map((proc) => (
+                                <button
+                                  key={proc}
+                                  onClick={() => { setFilterProcessing(proc); setPage(1); }}
+                                  className={cn(
+                                    "press rounded-full px-4 py-1.5 font-bold transition-all border",
+                                    filterProcessing === proc
+                                      ? "bg-cat border-cat text-cat-foreground"
+                                      : "bg-background border-border text-muted-foreground hover:border-cat"
                                   )}
-                                  <div className="min-w-0">
-                                    <p className="font-bold text-foreground truncate max-w-[200px]">{t.title}</p>
-                                    <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[200px] mt-0.5">{t.artist}</p>
-                                  </div>
-                                </div>
-                              </td>
+                                >
+                                  {proc}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
 
-                              <td className="px-5 py-4 text-muted-foreground font-medium">{t.subtitle || "—"}</td>
-                              
-                              <td className="px-5 py-4 font-bold text-muted-foreground uppercase tracking-wider capitalize">
-                                <span className={cn(
-                                  "rounded px-2 py-0.5 text-[10px] font-bold border",
-                                  t.category === "devotional" && "bg-primary/5 text-primary border-primary/20",
-                                  t.category === "secular" && "bg-teal-500/5 text-teal-600 border-teal-500/20",
-                                  t.category === "pregnancy" && "bg-rose-500/5 text-rose-500 border-rose-500/20"
-                                )}>
-                                  {t.category}
-                                </span>
-                              </td>
+                          {/* Language dropdown */}
+                          <div className="flex items-center gap-3">
+                            <span className="font-bold text-muted-foreground flex items-center gap-1.5">
+                              <Languages className="h-4 w-4" /> Language:
+                            </span>
+                            <select
+                              value={filterLanguage}
+                              onChange={(e) => { setFilterLanguage(e.target.value); setPage(1); }}
+                              className="rounded-btn border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-cat"
+                            >
+                              <option value="All">All Languages</option>
+                              <option value="hi">Hindi (hi)</option>
+                              <option value="sa">Sanskrit (sa)</option>
+                              <option value="en">English (en)</option>
+                              <option value="ta">Tamil (ta)</option>
+                            </select>
+                          </div>
 
-                              <td className="px-5 py-4 tabular-nums font-semibold text-muted-foreground">
-                                {formatDuration(t.duration)}
-                              </td>
-
-                              <td className="px-5 py-4 font-bold capitalize">
-                                <span className={cn(
-                                  "rounded px-2 py-0.5 text-[10px] border font-bold",
-                                  t.tier === "premium" ? "bg-purple-500/5 text-purple-600 border-purple-500/20" : "bg-muted text-muted-foreground border-border"
-                                )}>
-                                  {t.tier}
-                                </span>
-                              </td>
-
-                              {/* Transcode processing status badge */}
-                              <td className="px-5 py-4">
-                                <span className={cn(
-                                  "rounded-full px-2.5 py-1 text-[10px] font-bold border capitalize",
-                                  t.processingStatus === "ready" && "bg-success/5 border-success/20 text-success",
-                                  ["processing", "transcoding", "uploading"].includes(t.processingStatus || "") && "bg-amber-500/5 border-amber-500/20 text-amber-500 animate-pulse",
-                                  t.processingStatus === "uploaded" && "bg-blue-500/5 border-blue-500/20 text-blue-500",
-                                  t.processingStatus === "failed" && "bg-destructive/5 border-destructive/20 text-destructive font-semibold"
-                                )}>
-                                  {t.processingStatus}
-                                </span>
-                              </td>
-
-                              {/* Catalog status badge */}
-                              <td className="px-5 py-4">
-                                <span className={cn(
-                                  "rounded-full px-2.5 py-1 text-[10px] font-bold border capitalize",
-                                  t.publishStatus === "published" && "bg-success/5 border-success/20 text-success",
-                                  t.publishStatus === "draft" && "bg-muted border-border text-muted-foreground",
-                                  t.publishStatus === "archived" && "bg-orange-500/5 border-orange-500/20 text-orange-500"
-                                )}>
-                                  {t.publishStatus}
-                                </span>
-                              </td>
-
-                              {/* Inline action buttons */}
-                              <td className="px-5 py-4 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  <button
-                                    onClick={() => { setSelectedTrack(t); setIsDetailsOpen(true); }}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    title="View full metadata"
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleOpenEdit(t)}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                    title="Edit metadata"
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </button>
-                                  {t.publishStatus === "draft" ? (
-                                    <button
-                                      onClick={() => handlePublish(t)}
-                                      disabled={t.processingStatus !== "ready"}
-                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-success/30 bg-success/5 text-success hover:bg-success/15 disabled:opacity-40 disabled:cursor-not-allowed"
-                                      title="Publish track"
-                                    >
-                                      <CheckCircle className="h-4 w-4" />
-                                    </button>
-                                  ) : t.publishStatus === "published" ? (
-                                    <button
-                                      onClick={() => handleUnpublish(t)}
-                                      className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-amber-600 hover:bg-amber-500/10"
-                                      title="Revert to draft"
-                                    >
-                                      <Archive className="h-4 w-4" />
-                                    </button>
-                                  ) : null}
-                                  <button
-                                    onClick={() => { setTrackToDelete(t); setShowDeleteConfirm(true); }}
-                                    className="press grid h-8 w-8 place-items-center rounded-btn border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15"
-                                    title="Delete track"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {tracksList.length === 0 && !loadingTracks && (
-                          <tr>
-                            <td colSpan={9} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
-                              No tracks match your query parameters. Click [ Add Track ] to create one.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* CMS Pagination controls */}
-                  <div className="flex items-center justify-between border-t border-border/50 px-5 py-4 text-xs font-bold text-muted-foreground bg-muted/20 select-none">
-                    <span>
-                      Page {page} of {pages} · {totalTracksCount} tracks matched
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                        className="press grid h-9 w-9 place-items-center rounded-btn border border-border bg-surface disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:bg-muted/10 transition-colors"
-                        aria-label="Previous page"
-                      >
-                        <ChevronLeft className="h-4.5 w-4.5" />
-                      </button>
-                      <button
-                        onClick={() => setPage((p) => Math.min(pages, p + 1))}
-                        disabled={page === pages}
-                        className="press grid h-9 w-9 place-items-center rounded-btn border border-border bg-surface disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:bg-muted/10 transition-colors"
-                        aria-label="Next page"
-                      >
-                        <ChevronRight className="h-4.5 w-4.5" />
-                      </button>
+                          {/* Clear Filters helper button */}
+                          {(query || filterStatus !== "All" || filterCategory !== "All" || filterTier !== "All" || filterProcessing !== "All" || filterLanguage !== "All") && (
+                            <button
+                              onClick={handleClearFilters}
+                              className="press text-xs font-bold text-cat hover:underline flex items-center gap-1 ml-auto"
+                            >
+                              <X className="h-3.5 w-3.5" /> Clear Filters
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Primary Content Library Table */}
+                    <section className={cn(cardCls, "overflow-hidden border-border/80 shadow-none")}>
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[900px] text-left text-xs border-collapse">
+                          <thead className="bg-muted/40 text-[10px] tracking-wider text-muted-foreground uppercase font-bold border-b border-border/60">
+                            <tr>
+                              <th scope="col" className="px-5 py-3.5 w-[50px] text-center">Preview</th>
+                              <th scope="col" className="px-5 py-3.5">Track & Artist</th>
+                              <th scope="col" className="px-5 py-3.5">Raga / Subtitle</th>
+                              <th scope="col" className="px-5 py-3.5">Category</th>
+                              <th scope="col" className="px-5 py-3.5">Duration</th>
+                              <th scope="col" className="px-5 py-3.5">Tier</th>
+                              <th scope="col" className="px-5 py-3.5">Transcoder</th>
+                              <th scope="col" className="px-5 py-3.5">Status</th>
+                              <th scope="col" className="px-5 py-3.5 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/50">
+                            {loadingTracks ? (
+                              <tr>
+                                <td colSpan={9} className="px-5 py-20 text-center">
+                                  <div className="flex flex-col items-center gap-3">
+                                    <Loader2 className="h-7 w-7 animate-spin text-cat" />
+                                    <span className="text-[11px] font-semibold text-muted-foreground">Retrieving tracks...</span>
+                                  </div>
+                                </td>
+                              </tr>
+                            ) : tracksList.map((t) => {
+                              const isCurrentPlaying = playingTrack?.id === t.id;
+                              const isPlayingThisRow = isCurrentPlaying && isAudioPlaying;
+
+                              return (
+                                <tr key={t.id} className="hover:bg-muted/15 transition-all">
+                                  {/* Audio stream play/pause preview toggle */}
+                                  <td className="px-5 py-4 text-center">
+                                    <button
+                                      onClick={() => handlePreviewToggle(t)}
+                                      disabled={t.processingStatus !== "ready"}
+                                      className={cn(
+                                        "press grid h-8 w-8 place-items-center rounded-full transition-all border shadow-sm",
+                                        t.processingStatus !== "ready"
+                                          ? "bg-muted border-border/30 text-muted-foreground/30 cursor-not-allowed"
+                                          : isPlayingThisRow
+                                          ? "bg-cat border-cat text-cat-foreground scale-105"
+                                          : "bg-surface border-border text-cat hover:bg-cat-light hover:border-cat"
+                                      )}
+                                      aria-label={isPlayingThisRow ? "Pause preview" : "Play preview"}
+                                    >
+                                      {isPlayingThisRow ? (
+                                        <Pause className="h-3.5 w-3.5 fill-current" />
+                                      ) : (
+                                        <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
+                                      )}
+                                    </button>
+                                  </td>
+
+                                  {/* Title, artist & cover artwork thumbnail */}
+                                  <td className="px-5 py-4 font-semibold text-foreground">
+                                    <div className="flex items-center gap-3">
+                                      {t.thumbnailKey ? (
+                                        <img
+                                          src={getAssetUrl(t.thumbnailKey) || ""}
+                                          alt=""
+                                          className="h-10 w-10 rounded-md object-cover border border-border shrink-0"
+                                        />
+                                      ) : (
+                                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-dashed border-border bg-muted/30 text-muted-foreground/50">
+                                          <Music4 className="h-4.5 w-4.5" />
+                                        </div>
+                                      )}
+                                      <div className="min-w-0">
+                                        <p className="font-bold truncate text-foreground">{t.title}</p>
+                                        <p className="text-[11px] text-muted-foreground font-mono truncate">{t.artist}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  {/* Subtitle / Raga chikitsa */}
+                                  <td className="px-5 py-4 text-muted-foreground">
+                                    {t.subtitle ? (
+                                      <span className="font-medium text-foreground">{t.subtitle}</span>
+                                    ) : (
+                                      <span className="text-muted-foreground/60 italic">—</span>
+                                    )}
+                                  </td>
+
+                                  {/* Category theme */}
+                                  <td className="px-5 py-4">
+                                    <span className={cn(
+                                      "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                                      t.category === "devotional" && "bg-cat/10 text-cat border-cat/20",
+                                      t.category === "secular" && "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                      t.category === "pregnancy" && "bg-pink-500/10 text-pink-500 border-pink-500/20"
+                                    )}>
+                                      {t.category}
+                                    </span>
+                                  </td>
+
+                                  {/* Duration */}
+                                  <td className="px-5 py-4 font-mono text-muted-foreground font-medium">
+                                    {t.duration ? `${Math.floor(t.duration / 60)}:${String(Math.floor(t.duration % 60)).padStart(2, "0")}` : "—"}
+                                  </td>
+
+                                  {/* Subscription tier */}
+                                  <td className="px-5 py-4 capitalize font-semibold">
+                                    <span className={cn(
+                                      "rounded px-2 py-0.5 text-[10px] font-bold border",
+                                      t.tier === "premium" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "bg-muted border-border text-muted-foreground"
+                                    )}>
+                                      {t.tier}
+                                    </span>
+                                  </td>
+
+                                  {/* Transcoding status */}
+                                  <td className="px-5 py-4">
+                                    <span className={cn(
+                                      "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border",
+                                      t.processingStatus === "ready" && "bg-success/5 border-success/20 text-success",
+                                      ["processing", "transcoding", "uploading"].includes(t.processingStatus || "") && "bg-amber-500/5 border-amber-500/20 text-amber-500 animate-pulse",
+                                      t.processingStatus === "uploaded" && "bg-blue-500/5 border-blue-500/20 text-blue-500",
+                                      t.processingStatus === "failed" && "bg-destructive/5 border-destructive/20 text-destructive font-semibold"
+                                    )}>
+                                      {t.processingStatus}
+                                    </span>
+                                  </td>
+
+                                  {/* Catalog status badge */}
+                                  <td className="px-5 py-4">
+                                    <span className={cn(
+                                      "rounded-full px-2.5 py-1 text-[10px] font-bold border capitalize",
+                                      t.publishStatus === "published" && "bg-success/5 border-success/20 text-success",
+                                      t.publishStatus === "draft" && "bg-muted border-border text-muted-foreground",
+                                      t.publishStatus === "archived" && "bg-orange-500/5 border-orange-500/20 text-orange-500"
+                                    )}>
+                                      {t.publishStatus}
+                                    </span>
+                                  </td>
+
+                                  {/* Inline action buttons */}
+                                  <td className="px-5 py-4 text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <button
+                                        onClick={() => { setSelectedTrack(t); setIsDetailsOpen(true); }}
+                                        className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                        title="View full metadata"
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleOpenEdit(t)}
+                                        className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                        title="Edit metadata"
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </button>
+                                      {t.publishStatus === "draft" ? (
+                                        <button
+                                          onClick={() => handlePublish(t)}
+                                          disabled={t.processingStatus !== "ready"}
+                                          className="press grid h-8 w-8 place-items-center rounded-btn border border-success/30 bg-success/5 text-success hover:bg-success/15 disabled:opacity-40 disabled:cursor-not-allowed"
+                                          title="Publish track"
+                                        >
+                                          <CheckCircle className="h-4 w-4" />
+                                        </button>
+                                      ) : t.publishStatus === "published" ? (
+                                        <button
+                                          onClick={() => handleUnpublish(t)}
+                                          className="press grid h-8 w-8 place-items-center rounded-btn border border-border bg-surface text-amber-600 hover:bg-amber-500/10"
+                                          title="Revert to draft"
+                                        >
+                                          <Archive className="h-4 w-4" />
+                                        </button>
+                                      ) : null}
+                                      <button
+                                        onClick={() => { setTrackToDelete(t); setShowDeleteConfirm(true); }}
+                                        className="press grid h-8 w-8 place-items-center rounded-btn border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15"
+                                        title="Delete track"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                            {tracksList.length === 0 && !loadingTracks && (
+                              <tr>
+                                <td colSpan={9} className="px-5 py-14 text-center text-[11px] text-muted-foreground font-semibold">
+                                  No tracks match your query parameters. Click [ Add Track ] to create one.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* CMS Pagination controls */}
+                      <div className="flex items-center justify-between border-t border-border/50 px-5 py-4 text-xs font-bold text-muted-foreground bg-muted/20 select-none">
+                        <span>
+                          Page {page} of {pages} · {totalTracksCount} tracks matched
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className="press grid h-9 w-9 place-items-center rounded-btn border border-border bg-surface disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:bg-muted/10 transition-colors"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="h-4.5 w-4.5" />
+                          </button>
+                          <button
+                            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                            disabled={page === pages}
+                            className="press grid h-9 w-9 place-items-center rounded-btn border border-border bg-surface disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:bg-muted/10 transition-colors"
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="h-4.5 w-4.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </section>
                   </div>
-                </section>
+                )}
+
+                {/* ── DEDICATED SURAWALI CATALOG CMS ── */}
+                {(section === "surawalis" || (section === "content" && contentSubTab === "surawali_catalog")) && (
+                  <div className="space-y-6 animate-in fade-in duration-150">
+                    {/* Surawali Metrics Cards */}
+                    <div className="grid gap-4.5 sm:grid-cols-2 md:grid-cols-4">
+                      {[
+                        { label: "Total Surawalis & Ragas", value: SURAWALI_PRESETS.length, info: "Authoritative clinical catalog" },
+                        { label: "Core Surawalis", value: 17, info: "Classical Raga chikitsa formulations" },
+                        { label: "Corporate Wellness", value: 4, info: "Weekday executive stress balance" },
+                        {
+                          label: "Master Ingestion Status",
+                          value: `${SURAWALI_PRESETS.filter(p => tracksList.some(t => (t.id === p.id || t.title?.toLowerCase() === p.name.toLowerCase()) && t.processingStatus === "ready")).length} / ${SURAWALI_PRESETS.length}`,
+                          info: "Actual audio uploaded & live",
+                        },
+                      ].map((k) => (
+                        <div key={k.label} className={cn(cardCls, "p-4.5 flex flex-col justify-between border-border/80 shadow-none")}>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{k.label}</p>
+                          <p className="mt-2 text-2.5xl font-extrabold tracking-tight tabular-nums text-foreground">{k.value}</p>
+                          <p className="mt-1 text-[11px] text-muted-foreground/80">{k.info}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Surawali Search & Filter Panel */}
+                    <div className={cn(cardCls, "p-5 space-y-4 border-border/80 shadow-none")}>
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-2.5 rounded-field border border-border bg-background px-3.5 flex-1 min-w-[280px] max-w-md focus-within:ring-2 focus-within:ring-cat">
+                          <Search className="h-4 w-4 text-muted-foreground" />
+                          <input
+                            value={surawaliCatalogQuery}
+                            onChange={(e) => setSurawaliCatalogQuery(e.target.value)}
+                            placeholder="Search Surawali by name, raga, or target ailment..."
+                            className="min-h-11 w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                          />
+                          {surawaliCatalogQuery && (
+                            <button onClick={() => setSurawaliCatalogQuery("")} className="text-muted-foreground hover:text-foreground">
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Category filter */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-bold text-muted-foreground">Category:</span>
+                          {["All", "Devotional", "Secular", "Pregnancy"].map((cat) => (
+                            <button
+                              key={cat}
+                              onClick={() => setSurawaliCatalogCategory(cat)}
+                              className={cn(
+                                "press rounded-full px-3.5 py-1 text-xs font-bold transition-all border",
+                                surawaliCatalogCategory === cat
+                                  ? "bg-cat border-cat text-cat-foreground"
+                                  : "bg-background border-border text-muted-foreground hover:border-cat"
+                              )}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Status filter */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-bold text-muted-foreground">Audio Status:</span>
+                          {[
+                            { id: "All", label: "All" },
+                            { id: "actual", label: "🟢 Actual Audio" },
+                            { id: "fallback", label: "🟡 Fallback" },
+                          ].map((st) => (
+                            <button
+                              key={st.id}
+                              onClick={() => setSurawaliCatalogStatus(st.id as any)}
+                              className={cn(
+                                "press rounded-full px-3.5 py-1 text-xs font-bold transition-all border",
+                                surawaliCatalogStatus === st.id
+                                  ? "bg-cat border-cat text-cat-foreground"
+                                  : "bg-background border-border text-muted-foreground hover:border-cat"
+                              )}
+                            >
+                              {st.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Surawali Catalog Table */}
+                    <section className={cn(cardCls, "overflow-hidden border-border/80 shadow-none")}>
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[950px] text-left text-xs border-collapse">
+                          <thead className="bg-muted/40 text-[10px] tracking-wider text-muted-foreground uppercase font-bold border-b border-border/60">
+                            <tr>
+                              <th scope="col" className="px-5 py-3.5 w-[50px] text-center">Preview</th>
+                              <th scope="col" className="px-5 py-3.5">Surāwali & Clinical Subtitle</th>
+                              <th scope="col" className="px-5 py-3.5">Category</th>
+                              <th scope="col" className="px-5 py-3.5">Target Ailments & Timings</th>
+                              <th scope="col" className="px-5 py-3.5">Audio Engine Mode</th>
+                              <th scope="col" className="px-5 py-3.5 text-right">Direct Ingest</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/50">
+                            {SURAWALI_PRESETS.filter((p) => {
+                              const matchQuery =
+                                !surawaliCatalogQuery ||
+                                p.name.toLowerCase().includes(surawaliCatalogQuery.toLowerCase()) ||
+                                p.subtitle.toLowerCase().includes(surawaliCatalogQuery.toLowerCase()) ||
+                                p.description.toLowerCase().includes(surawaliCatalogQuery.toLowerCase()) ||
+                                p.mappedAilments.some((a) => a.toLowerCase().includes(surawaliCatalogQuery.toLowerCase()));
+
+                              const matchCategory =
+                                surawaliCatalogCategory === "All" ||
+                                p.category.toLowerCase() === surawaliCatalogCategory.toLowerCase();
+
+                              const matchingTrack = tracksList.find(
+                                (t) => (t.id === p.id || t.title?.toLowerCase() === p.name.toLowerCase()) && t.processingStatus === "ready"
+                              );
+                              const isActual = Boolean(matchingTrack);
+
+                              const matchStatus =
+                                surawaliCatalogStatus === "All" ||
+                                (surawaliCatalogStatus === "actual" && isActual) ||
+                                (surawaliCatalogStatus === "fallback" && !isActual);
+
+                              return matchQuery && matchCategory && matchStatus;
+                            }).map((preset) => {
+                              const matchingTrack = tracksList.find(
+                                (t) => (t.id === preset.id || t.title?.toLowerCase() === preset.name.toLowerCase()) && t.processingStatus === "ready"
+                              );
+                              const isActual = Boolean(matchingTrack);
+                              const isCurrentPlaying = playingTrack?.id === (matchingTrack?.id || preset.id);
+                              const isPlayingThisRow = isCurrentPlaying && isAudioPlaying;
+
+                              return (
+                                <tr key={preset.id} className="hover:bg-muted/15 transition-all">
+                                  {/* Audio stream play/pause preview toggle */}
+                                  <td className="px-5 py-4 text-center">
+                                    <button
+                                      onClick={() => {
+                                        if (matchingTrack) {
+                                          handlePreviewToggle(matchingTrack);
+                                        } else {
+                                          handlePreviewToggle({
+                                            id: preset.id,
+                                            title: preset.name,
+                                            subtitle: preset.subtitle,
+                                            artist: preset.artist,
+                                            processingStatus: "ready",
+                                            tier: preset.tier,
+                                            category: preset.category,
+                                          });
+                                        }
+                                      }}
+                                      className={cn(
+                                        "press grid h-8 w-8 place-items-center rounded-full transition-all border shadow-sm",
+                                        isPlayingThisRow
+                                          ? "bg-cat border-cat text-cat-foreground scale-105"
+                                          : "bg-surface border-border text-cat hover:bg-cat-light hover:border-cat"
+                                      )}
+                                      aria-label={isPlayingThisRow ? "Pause preview" : "Play preview"}
+                                    >
+                                      {isPlayingThisRow ? (
+                                        <Pause className="h-3.5 w-3.5 fill-current" />
+                                      ) : (
+                                        <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
+                                      )}
+                                    </button>
+                                  </td>
+
+                                  {/* Surawali Name & Clinical Subtitle */}
+                                  <td className="px-5 py-4 font-semibold text-foreground">
+                                    <div className="flex items-center gap-3">
+                                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-cat/30 bg-cat/10 text-cat font-bold font-mono text-sm">
+                                        {preset.name.slice(0, 2).toUpperCase()}
+                                      </div>
+                                      <div className="min-w-0 max-w-xs">
+                                        <div className="flex items-center gap-1.5">
+                                          <p className="font-bold truncate text-foreground">{preset.name}</p>
+                                          <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-muted text-muted-foreground border">
+                                            {preset.type === "corporate" ? "Corporate" : "Core"}
+                                          </span>
+                                        </div>
+                                        <p className="text-[11px] text-muted-foreground truncate">{preset.subtitle}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  {/* Category */}
+                                  <td className="px-5 py-4">
+                                    <span className={cn(
+                                      "rounded-full px-2.5 py-0.5 text-[10px] font-bold border capitalize",
+                                      preset.category === "devotional" && "bg-cat/10 text-cat border-cat/20",
+                                      preset.category === "secular" && "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                                      preset.category === "pregnancy" && "bg-pink-500/10 text-pink-500 border-pink-500/20"
+                                    )}>
+                                      {preset.category}
+                                    </span>
+                                  </td>
+
+                                  {/* Target Ailments & Timings */}
+                                  <td className="px-5 py-4 max-w-sm">
+                                    <div className="space-y-1">
+                                      <div className="flex flex-wrap gap-1">
+                                        {preset.mappedAilments.slice(0, 3).map((a) => (
+                                          <span key={a} className="rounded bg-background border border-border px-1.5 py-0.5 text-[10px] text-foreground">
+                                            {a}
+                                          </span>
+                                        ))}
+                                        {preset.mappedAilments.length > 3 && (
+                                          <span className="text-[10px] text-muted-foreground font-mono self-center">
+                                            +{preset.mappedAilments.length - 3} more
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-1 text-[10px] text-cat font-medium font-mono">
+                                        <span>⏰</span> {preset.mappedTimings.join(", ")}
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  {/* Audio Engine Mode */}
+                                  <td className="px-5 py-4">
+                                    {isActual ? (
+                                      <div className="inline-flex items-center gap-1.5 rounded-full bg-success/10 border border-success/30 px-3 py-1 text-[11px] font-bold text-success">
+                                        <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                                        Actual Audio Live
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-0.5">
+                                        <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 text-[10px] font-bold text-amber-600">
+                                          <span>🟡</span> Temporary Fallback
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[200px]">
+                                          "{preset.fallbackSongTitle}"
+                                        </p>
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  {/* 1-Click Upload Action */}
+                                  <td className="px-5 py-4 text-right">
+                                    <button
+                                      onClick={() => handleUploadForSurawali(preset)}
+                                      className={cn(
+                                        "press inline-flex items-center gap-1.5 rounded-btn px-3.5 py-1.5 text-xs font-bold transition-all shadow-sm",
+                                        isActual
+                                          ? "border border-border bg-surface text-foreground hover:bg-muted"
+                                          : "bg-primary text-primary-foreground hover:bg-primary-hover shadow-md"
+                                      )}
+                                      title={`Upload audio master for ${preset.name}`}
+                                    >
+                                      <Upload className="h-3.5 w-3.5" />
+                                      {isActual ? "Update Audio" : "Upload Audio"}
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                )}
               </div>
             )}
 
@@ -4312,6 +4772,320 @@ function Admin() {
                 </footer>
               </div>
             )}
+
+            {/* SECTION RENDERING: FEEDBACK */}
+            {section === "feedback" && (
+              <div className="mt-8 space-y-6 animate-in fade-in duration-200">
+                {/* Header */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/40 pb-4 select-none">
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">Listening Session Feedback</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Monitor user ratings, emotional shifts, and listening feedback from completed therapeutic sessions.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => loadFeedbackList(feedbackPage)}
+                      disabled={loadingFeedback}
+                      className="press inline-flex min-h-10 items-center gap-2 rounded-btn border border-border bg-surface px-4 text-xs font-bold text-foreground hover:bg-muted disabled:opacity-50"
+                    >
+                      <RotateCcw className={cn("h-3.5 w-3.5", loadingFeedback && "animate-spin")} />
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                {/* Feedback KPI Cards */}
+                <div className="grid gap-5 sm:grid-cols-3">
+                  <div className={cn(cardCls, "p-5 relative overflow-hidden group border-border/80 hover:border-cat transition-all duration-300")}>
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Total Submissions</p>
+                    <p className="mt-3 text-3xl font-extrabold tracking-tight tabular-nums text-foreground">
+                      {feedbackSummary?.totalFeedback ?? feedbackTotal}
+                    </p>
+                    <p className="mt-1 text-[11px] font-medium text-muted-foreground/80">All logged session ratings</p>
+                  </div>
+
+                  <div className={cn(cardCls, "p-5 relative overflow-hidden group border-border/80 hover:border-cat transition-all duration-300")}>
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Average Rating</p>
+                    <div className="mt-3 flex items-baseline gap-2">
+                      <p className="text-3xl font-extrabold tracking-tight tabular-nums text-foreground">
+                        {feedbackSummary?.averageRating ? Number(feedbackSummary.averageRating).toFixed(1) : "—"}
+                      </p>
+                      {feedbackSummary?.averageRating && (
+                        <div className="flex items-center text-amber-500">
+                          <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
+                          <span className="text-xs font-bold text-muted-foreground ml-1">/ 5.0</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-1 text-[11px] font-medium text-muted-foreground/80">Overall user satisfaction</p>
+                  </div>
+
+                  <div className={cn(cardCls, "p-5 relative overflow-hidden group border-border/80 hover:border-cat transition-all duration-300")}>
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Today's Feedback</p>
+                    <p className="mt-3 text-3xl font-extrabold tracking-tight tabular-nums text-foreground">
+                      {feedbackSummary?.todayFeedback ?? "0"}
+                    </p>
+                    <p className="mt-1 text-[11px] font-medium text-muted-foreground/80">Submitted in last 24 hours</p>
+                  </div>
+                </div>
+
+                {/* Filters & Search Toolbar */}
+                <div className={cn(cardCls, "p-4 space-y-4 shadow-none border-border/80")}>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-[220px]">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Search user email or notes..."
+                        value={feedbackSearch}
+                        onChange={(e) => setFeedbackSearch(e.target.value)}
+                        className={cn(fieldCls, "pl-10 text-xs")}
+                      />
+                    </div>
+
+                    {/* Mode Filter */}
+                    <select
+                      value={feedbackModeFilter}
+                      onChange={(e) => {
+                        setFeedbackModeFilter(e.target.value);
+                        setFeedbackPage(1);
+                      }}
+                      className={cn(fieldCls, "w-auto text-xs font-medium cursor-pointer")}
+                    >
+                      <option value="All">All Modes</option>
+                      <option value="surawali">Surāwali Sessions</option>
+                      <option value="emotion_remediation">Emotion Remediation</option>
+                    </select>
+
+                    {/* Rating Filter */}
+                    <select
+                      value={feedbackRatingFilter}
+                      onChange={(e) => {
+                        setFeedbackRatingFilter(e.target.value);
+                        setFeedbackPage(1);
+                      }}
+                      className={cn(fieldCls, "w-auto text-xs font-medium cursor-pointer")}
+                    >
+                      <option value="All">All Ratings</option>
+                      <option value="5">★★★★★ (5 Stars)</option>
+                      <option value="4">★★★★☆ (4 Stars)</option>
+                      <option value="3">★★★☆☆ (3 Stars)</option>
+                      <option value="2">★★☆☆☆ (2 Stars)</option>
+                      <option value="1">★☆☆☆☆ (1 Star)</option>
+                    </select>
+
+                    {/* Mood Filter */}
+                    <select
+                      value={feedbackMoodFilter}
+                      onChange={(e) => {
+                        setFeedbackMoodFilter(e.target.value);
+                        setFeedbackPage(1);
+                      }}
+                      className={cn(fieldCls, "w-auto text-xs font-medium cursor-pointer")}
+                    >
+                      <option value="All">All Moods</option>
+                      <option value="Calmer">Calmer</option>
+                      <option value="Rested">Rested</option>
+                      <option value="Neutral">Neutral</option>
+                      <option value="Heavy">Heavy</option>
+                    </select>
+
+                    {/* Reset Button */}
+                    {(feedbackModeFilter !== "All" || feedbackRatingFilter !== "All" || feedbackMoodFilter !== "All" || feedbackSearch.trim()) && (
+                      <button
+                        onClick={() => {
+                          setFeedbackModeFilter("All");
+                          setFeedbackRatingFilter("All");
+                          setFeedbackMoodFilter("All");
+                          setFeedbackSearch("");
+                          setFeedbackPage(1);
+                        }}
+                        className="press min-h-11 inline-flex items-center gap-1.5 px-3 rounded-btn border border-border text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Feedback Table */}
+                <div className={cn(cardCls, "overflow-hidden border-border/80 shadow-none")}>
+                  {loadingFeedback ? (
+                    <div className="flex min-h-[300px] flex-col items-center justify-center gap-3.5">
+                      <Loader2 className="h-8 w-8 animate-spin text-cat" />
+                      <p className="text-xs font-medium text-muted-foreground">Loading session feedback...</p>
+                    </div>
+                  ) : feedbackList.length === 0 ? (
+                    <div className="p-12 text-center space-y-3">
+                      <MessageSquare className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+                      <h4 className="text-sm font-bold text-foreground">No session feedback found</h4>
+                      <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                        {feedbackSearch || feedbackModeFilter !== "All" || feedbackRatingFilter !== "All" || feedbackMoodFilter !== "All"
+                          ? "No feedback entries match your filter criteria. Try clearing search or filters."
+                          : "User ratings and feedback will appear here as listeners complete their therapeutic audio sessions."}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="w-full overflow-hidden">
+                      <table className="w-full table-fixed text-left text-xs">
+                        <thead>
+                          <tr className="border-b border-border bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <th className="w-[20%] p-3 text-left">User</th>
+                            <th className="w-[9%] px-1.5 py-3 text-center">Mode</th>
+                            <th className="w-[17%] px-2 py-3 text-left">Surāwali / Track</th>
+                            <th className="w-[11%] px-2 py-3 text-left">Rating</th>
+                            <th className="w-[9%] px-1.5 py-3 text-center">Mood</th>
+                            <th className="w-[7%] px-1 py-3 text-center">Duration</th>
+                            <th className="w-[13%] px-2 py-3 text-left">Notes</th>
+                            <th className="w-[9%] px-1.5 py-3 text-left">Date</th>
+                            <th className="w-[5%] px-2 py-3 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/60">
+                          {feedbackList.map((f: any) => {
+                            const surawaliInfo = f.surawaliId
+                              ? SURAWALI_PRESETS.find((p) => p.id === f.surawaliId)
+                              : null;
+                            const title = surawaliInfo?.name || f.surawaliId || f.trackTitle || "Therapeutic Session";
+
+                            return (
+                              <tr key={f.id} className="hover:bg-muted/30 transition-colors">
+                                <td className="p-3">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <div className="grid h-6 w-6 place-items-center rounded-full bg-[#7C1C24]/10 text-[#7C1C24] font-bold text-[10px] shrink-0">
+                                      {(f.userName || f.userEmail || "U")[0].toUpperCase()}
+                                    </div>
+                                    <div className="min-w-0 flex-1 truncate">
+                                      <p className="font-bold text-foreground truncate text-xs" title={f.userName || f.userEmail || "Anonymous Listener"}>
+                                        {f.userName || f.userEmail || "Anonymous Listener"}
+                                      </p>
+                                      {f.userEmail && f.userName && (
+                                        <p className="text-[10px] text-muted-foreground truncate" title={f.userEmail}>
+                                          {f.userEmail}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-1.5 py-3 text-center">
+                                  {f.mode === "surawali" ? (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#7C1C24]/10 text-[#7C1C24] border border-[#7C1C24]/20">
+                                      Surāwali
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                                      Emotion
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-2 py-3">
+                                  <p className="font-semibold text-foreground truncate text-xs" title={title}>
+                                    {title}
+                                  </p>
+                                </td>
+                                <td className="px-2 py-3">
+                                  {f.rating ? (
+                                    <div className="flex items-center gap-1">
+                                      <div className="flex text-amber-400">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <Star
+                                            key={star}
+                                            className={cn(
+                                              "h-3 w-3",
+                                              star <= f.rating ? "fill-amber-400 text-amber-400" : "text-border"
+                                            )}
+                                          />
+                                        ))}
+                                      </div>
+                                      <span className="font-bold text-[11px] text-foreground ml-0.5">{f.rating}</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">—</span>
+                                  )}
+                                </td>
+                                <td className="px-1.5 py-3 text-center">
+                                  {f.mood ? (
+                                    <span
+                                      className={cn(
+                                        "inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold",
+                                        f.mood === "Calmer" && "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20",
+                                        f.mood === "Rested" && "bg-sky-500/10 text-sky-700 border border-sky-500/20",
+                                        f.mood === "Neutral" && "bg-slate-500/10 text-slate-700 border border-slate-500/20",
+                                        f.mood === "Heavy" && "bg-amber-500/10 text-amber-700 border border-amber-500/20"
+                                      )}
+                                    >
+                                      {f.mood}
+                                    </span>
+                                  ) : (
+                                    <span className="text-muted-foreground">—</span>
+                                  )}
+                                </td>
+                                <td className="px-1 py-3 text-center font-mono text-[10px] text-muted-foreground">
+                                  {f.sessionDuration ? `${Math.round(f.sessionDuration / 60)}m` : "—"}
+                                </td>
+                                <td className="px-2 py-3">
+                                  {f.notes ? (
+                                    <p className="italic text-muted-foreground truncate text-[11px]" title={f.notes}>
+                                      "{f.notes}"
+                                    </p>
+                                  ) : (
+                                    <span className="text-muted-foreground/40 italic text-[11px]">No notes</span>
+                                  )}
+                                </td>
+                                <td className="px-1.5 py-3 text-muted-foreground text-[10px] truncate" title={formatDate(f.createdAt)}>
+                                  {formatDate(f.createdAt, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                </td>
+                                <td className="px-2 py-3 text-right">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedFeedback(f);
+                                      setIsFeedbackDetailsOpen(true);
+                                    }}
+                                    className="press rounded-md border border-border bg-surface px-2 py-1 text-[10px] font-bold text-foreground hover:bg-muted cursor-pointer"
+                                  >
+                                    View
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  {!loadingFeedback && feedbackPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-border/80 px-4 py-3 bg-muted/20">
+                      <p className="text-xs text-muted-foreground">
+                        Showing page <span className="font-bold text-foreground">{feedbackPage}</span> of{" "}
+                        <span className="font-bold text-foreground">{feedbackPages}</span> ({feedbackTotal} total entries)
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setFeedbackPage((p) => Math.max(1, p - 1))}
+                          disabled={feedbackPage <= 1}
+                          className="press inline-flex h-8 w-8 items-center justify-center rounded-btn border border-border bg-surface text-muted-foreground hover:bg-muted disabled:opacity-40"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setFeedbackPage((p) => Math.min(feedbackPages, p + 1))}
+                          disabled={feedbackPage >= feedbackPages}
+                          className="press inline-flex h-8 w-8 items-center justify-center rounded-btn border border-border bg-surface text-muted-foreground hover:bg-muted disabled:opacity-40"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </main>
         </div>
 
@@ -4341,8 +5115,122 @@ function Admin() {
 
               {/* Drawer Form Body */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Surawali Preset Banner */}
+                {selectedSurawaliPreset && (
+                  <div className="rounded-xl border border-cat/30 bg-cat/5 p-4 space-y-3 animate-in fade-in duration-200">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-full bg-cat text-cat-foreground px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider">
+                            {isSurawaliLocked ? "Direct Surawali Upload Mode" : "Surawali Preset Linked"}
+                          </span>
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase font-mono">
+                            {selectedSurawaliPreset.type === "corporate" ? "Corporate Raga" : "Core Surawali"}
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-bold text-foreground mt-1">
+                          {selectedSurawaliPreset.name} — <span className="font-normal text-muted-foreground">{selectedSurawaliPreset.subtitle}</span>
+                        </h4>
+                      </div>
+                      {!isSurawaliLocked && (
+                        <button
+                          type="button"
+                          onClick={() => applySurawaliPreset(null)}
+                          className="text-xs text-muted-foreground hover:text-foreground underline font-semibold"
+                        >
+                          Clear Preset
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Mapped Ailments & Timings Chips */}
+                    <div className="grid gap-2.5 sm:grid-cols-2 text-xs border-t border-border/50 pt-2.5">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                          Mapped Ailments (Therapeutic Targets)
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedSurawaliPreset.mappedAilments.map((a) => (
+                            <span key={a} className="rounded bg-background border border-border px-2 py-0.5 text-[10px] font-medium text-foreground">
+                              {a}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                          Recommended Timings
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedSurawaliPreset.mappedTimings.map((tm) => (
+                            <span key={tm} className="rounded bg-cat/10 text-cat border border-cat/20 px-2 py-0.5 text-[10px] font-bold">
+                              {tm}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Audio Source Resolver Status */}
+                    <div className="rounded-lg bg-background/80 border border-border p-2.5 flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground font-medium">Active Fallback Stream:</span>
+                      <span className="font-mono text-[11px] text-amber-600 font-bold flex items-center gap-1.5">
+                        <span>🟡</span> Resolves "{selectedSurawaliPreset.fallbackSongTitle}"
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <form className="grid gap-5 sm:grid-cols-2" onSubmit={(e) => e.preventDefault()}>
                   
+                  {/* Surawali Preset Selector Card */}
+                  <div className="sm:col-span-2 rounded-card border-2 border-cat/30 bg-cat/5 p-4 space-y-2">
+                    <label className="block">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-cat flex items-center gap-1.5">
+                          <ListMusic className="h-4 w-4" />
+                          Link Surawali / Raga Chikitsa Formulation Preset
+                        </span>
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                          {selectedSurawaliPreset ? "✨ Preset Active" : "Optional"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mb-2 leading-relaxed">
+                        Select a formulation from the clinical catalog to automatically auto-fill title, raga, description, purpose tags, and therapeutic ailment targets.
+                      </p>
+                      <select
+                        value={selectedSurawaliPreset?.id || ""}
+                        onChange={(e) => {
+                          const found = SURAWALI_PRESETS.find((p) => p.id === e.target.value);
+                          applySurawaliPreset(found || null);
+                        }}
+                        disabled={isSurawaliLocked}
+                        className={cn(
+                          fieldCls,
+                          selectedSurawaliPreset
+                            ? "border-cat bg-surface font-bold text-cat shadow-xs"
+                            : "bg-background"
+                        )}
+                      >
+                        <option value="">-- Custom Audio Track (No Surawali Preset) --</option>
+                        <optgroup label="Core Surawalis (17)">
+                          {SURAWALI_PRESETS.filter((p) => p.type === "core").map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} — {p.subtitle}
+                            </option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Corporate Wellness Ragas (4)">
+                          {SURAWALI_PRESETS.filter((p) => p.type === "corporate").map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} — {p.subtitle}
+                            </option>
+                          ))}
+                        </optgroup>
+                      </select>
+                    </label>
+                  </div>
+
                   {/* Title */}
                   <label className="sm:col-span-2 block">
                     <span className={labelCls}>Track Title <span className="text-destructive font-bold">*</span></span>
@@ -4489,12 +5377,12 @@ function Admin() {
 
                   {/* Audio master file upload */}
                   <div className="block">
-                    <span className={labelCls}>Audio Master file</span>
+                    <span className={labelCls}>Audio Master file (Smart Auto-Detection)</span>
                     <input
                       id="drawer-audio-file"
                       type="file"
-                      accept="audio/mpeg,audio/mp3"
-                      onChange={(e) => setFormAudioFile(e.target.files?.[0] || null)}
+                      accept="audio/mpeg,audio/mp3,audio/wav"
+                      onChange={(e) => handleAudioFileChange(e.target.files?.[0] || null)}
                       className="hidden"
                     />
                     <div className="space-y-2 mt-2">
@@ -6327,6 +7215,148 @@ function Admin() {
                   Extend Period
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── MODAL: FEEDBACK DETAILS ── */}
+        {isFeedbackDetailsOpen && selectedFeedback && (
+          <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-300">
+            <div className="w-full max-w-lg bg-surface h-full flex flex-col shadow-2xl relative border-l border-border animate-in slide-in-from-right duration-300">
+              {/* Header */}
+              <header className="flex items-center justify-between border-b border-border/80 p-5 bg-muted/25 select-none">
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Feedback Entry</h3>
+                  <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
+                    Submitted on {formatDate(selectedFeedback.createdAt, { dateStyle: "full", timeStyle: "short" })}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsFeedbackDetailsOpen(false);
+                    setSelectedFeedback(null);
+                  }}
+                  className="press rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Close modal"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </header>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* User Card */}
+                <div className="rounded-card border border-border/80 p-4 bg-muted/15 space-y-2">
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Listener Information</p>
+                  <div className="flex items-center gap-3 pt-1">
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-[#7C1C24]/10 text-[#7C1C24] font-extrabold text-sm shrink-0">
+                      {(selectedFeedback.userName || selectedFeedback.userEmail || "U")[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-foreground">{selectedFeedback.userName || "Anonymous Listener"}</p>
+                      <p className="text-xs text-muted-foreground">{selectedFeedback.userEmail || `User ID: ${selectedFeedback.userId || "—"}`}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Session Details */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-card border border-border/80 p-4 bg-muted/15">
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Listening Mode</p>
+                    <div className="mt-2">
+                      {selectedFeedback.mode === "surawali" ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-[#7C1C24]/10 text-[#7C1C24] border border-[#7C1C24]/20">
+                          Surāwali Preset
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                          Emotion Remediation
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-card border border-border/80 p-4 bg-muted/15">
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Duration</p>
+                    <p className="mt-2 text-base font-extrabold text-foreground">
+                      {selectedFeedback.sessionDuration ? `${Math.round(selectedFeedback.sessionDuration / 60)} minutes` : "—"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Rating & Mood */}
+                <div className="rounded-card border border-border/80 p-5 space-y-4">
+                  <div>
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Session Rating</p>
+                    {selectedFeedback.rating ? (
+                      <div className="mt-2 flex items-center gap-2">
+                        <div className="flex text-amber-400">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={cn(
+                                "h-6 w-6",
+                                star <= selectedFeedback.rating ? "fill-amber-400 text-amber-400" : "text-border"
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-lg font-black text-foreground ml-1">
+                          {selectedFeedback.rating} / 5
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground mt-1">Not rated</p>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-border/50">
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Mood Shift</p>
+                    {selectedFeedback.mood ? (
+                      <div className="mt-2">
+                        <span
+                          className={cn(
+                            "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold",
+                            selectedFeedback.mood === "Calmer" && "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20",
+                            selectedFeedback.mood === "Rested" && "bg-sky-500/10 text-sky-700 border border-sky-500/20",
+                            selectedFeedback.mood === "Neutral" && "bg-slate-500/10 text-slate-700 border border-slate-500/20",
+                            selectedFeedback.mood === "Heavy" && "bg-amber-500/10 text-amber-700 border border-amber-500/20"
+                          )}
+                        >
+                          {selectedFeedback.mood}
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground mt-1">Not specified</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="rounded-card border border-border/80 p-5 space-y-2">
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">User Experience Notes</p>
+                  {selectedFeedback.notes ? (
+                    <div className="mt-2 p-3.5 rounded-lg bg-background border border-border/60 text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                      "{selectedFeedback.notes}"
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic mt-2">No written notes submitted for this session.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <footer className="border-t border-border/80 p-4 bg-muted/20 flex justify-end">
+                <button
+                  onClick={() => {
+                    setIsFeedbackDetailsOpen(false);
+                    setSelectedFeedback(null);
+                  }}
+                  className="press min-h-10 rounded-btn bg-primary px-5 text-xs font-bold text-primary-foreground hover:bg-primary-hover"
+                >
+                  Close
+                </button>
+              </footer>
             </div>
           </div>
         )}

@@ -335,37 +335,20 @@ function DiscoverPage() {
   const handlePlayPreview = (surawaliName: string, subtext: string, forceSubscribed = false) => {
     toast.info(`Playing ${forceSubscribed ? "session" : "preview"} for ${surawaliName}`);
     
-    if (forceSubscribed) {
-      play({
-        id: `mock_${surawaliName}`,
-        title: surawaliName,
-        artist: "Krishna Sanjeevani Therapeutic",
-        subtitle: subtext,
-        duration: 558,
-        category: "secular",
-        playlistKey: "",
-        art: "/govinda-bhakta-pr-seminars-mukund.mp3"
-      } as any);
-      return;
-    }
-
-    // Find if we have a matching track in tracks, otherwise play the Suno track or default track
+    // Find if we have a matching track in tracks, otherwise play using Surawali resolver
     const existingTrack = tracks.find(t => t.title.toLowerCase().includes(surawaliName.toLowerCase()));
     
     if (existingTrack) {
       play(existingTrack);
     } else {
-      // Build an on-the-fly track pointing to suno audio download
       play({
-        id: `mock_${surawaliName}`,
-        title: surawaliName,
+        id: `sur_${surawaliName.toLowerCase().replace(/\s+/g, "_")}`,
+        title: surawaliName + (forceSubscribed ? "" : " (Preview)"),
         artist: "Krishna Sanjeevani Therapeutic",
         subtitle: subtext,
-        duration: 558,
+        duration: forceSubscribed ? 1800 : 90,
         category: "secular",
         playlistKey: "",
-        // Point to the loaded Suno MP3 at workspace root level (mapped to public)
-        art: "/govinda-bhakta-pr-seminars-mukund.mp3" 
       } as any);
     }
   };

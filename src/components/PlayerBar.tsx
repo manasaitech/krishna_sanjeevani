@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Gauge,
   Heart,
@@ -19,6 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Artwork } from "@/components/Artwork";
 import { useApp } from "@/lib/app-state";
 import { formatTime } from "@/lib/content";
 import { cn } from "@/lib/utils";
@@ -55,6 +56,7 @@ function IconBtn({
 }
 
 export function PlayerBar() {
+  const navigate = useNavigate();
   const {
     current,
     playing,
@@ -81,8 +83,24 @@ export function PlayerBar() {
   const fav = isFavorite(current.id);
   const progress = Math.min(100, (position / current.duration) * 100);
 
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // If click originated on or within an interactive element or popover, do not navigate
+    const target = e.target as HTMLElement | null;
+    if (
+      target?.closest(
+        'button, a, input, [role="slider"], [role="button"], [role="dialog"], [data-radix-popper-content-wrapper], [data-radix-collection-item], [data-radix-slider-thumb], [data-radix-slider-track], .press'
+      )
+    ) {
+      return;
+    }
+    navigate({ to: "/player" });
+  };
+
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-xl">
+    <div
+      onClick={handleCardClick}
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-xl cursor-pointer select-none transition-colors hover:bg-surface"
+    >
       <span
         aria-hidden="true"
         className="block h-0.5 w-full bg-border md:hidden"
@@ -101,9 +119,9 @@ export function PlayerBar() {
             className="press flex min-w-0 items-center gap-3 group text-left cursor-pointer hover:no-underline"
           >
             <div className="relative shrink-0 overflow-hidden rounded-xl">
-              <img
+              <Artwork
                 src={current.art}
-                alt=""
+                songTitle={current.title}
                 width={112}
                 height={112}
                 className="h-12 w-12 object-cover md:h-14 md:w-14"
@@ -195,8 +213,12 @@ export function PlayerBar() {
               </PopoverContent>
             </Popover>
           </div>
-          <div className="hidden w-full max-w-2xl items-center gap-3 md:flex">
-            <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="hidden w-full max-w-2xl items-center gap-3 md:flex cursor-default"
+          >
+            <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground select-none">
               {formatTime(position)}
             </span>
             <Slider
@@ -205,9 +227,9 @@ export function PlayerBar() {
               step={1}
               onValueChange={(v) => seek(v[0] ?? 0)}
               aria-label="Seek within session"
-              className="flex-1"
+              className="flex-1 cursor-pointer"
             />
-            <span className="w-10 shrink-0 text-[11px] tabular-nums text-muted-foreground">
+            <span className="w-10 shrink-0 text-[11px] tabular-nums text-muted-foreground select-none">
               -{formatTime(Math.max(0, current.duration - position))}
             </span>
           </div>
@@ -302,7 +324,11 @@ export function PlayerBar() {
             </PopoverContent>
           </Popover>
 
-          <div className="flex items-center gap-2 pl-1">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 pl-1 cursor-default"
+          >
             <IconBtn label={muted ? "Unmute" : "Mute"} onClick={toggleMuted}>
               {muted || volume === 0 ? (
                 <VolumeX className="h-[18px] w-[18px]" />
@@ -316,7 +342,7 @@ export function PlayerBar() {
               step={1}
               onValueChange={(v) => setVolume(v[0] ?? 0)}
               aria-label="Volume"
-              className="w-24 lg:w-28"
+              className="w-24 lg:w-28 cursor-pointer"
             />
           </div>
 

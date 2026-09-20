@@ -14,7 +14,13 @@ import {
   soundVibrationImg,
   templeSunriseImg,
 } from "@/lib/home-data";
-import { Users, Linkedin, Mail, ArrowRight, Sparkles } from "lucide-react";
+import {
+  Users,
+  Linkedin,
+  Mail,
+  ArrowRight,
+  Sparkles,
+} from "lucide-react";
 
 export const Route = createFileRoute("/team")({
   head: () => ({
@@ -155,8 +161,8 @@ function TeamPage() {
                 Our Spiritual Roots & Guardians
               </h2>
               <p className="mt-3 text-sm sm:text-base text-muted-foreground font-sans">
-                The divine preceptors whose sacred verses and life examples established the
-                foundation of devotional sound healing.
+                The divine preceptors whose sacred verses and life examples established the foundation
+                of devotional sound healing.
               </p>
             </div>
 
@@ -174,7 +180,9 @@ function TeamPage() {
                     />
                   </div>
 
-                  <h3 className="text-xl font-bold font-serif text-foreground">{item.name}</h3>
+                  <h3 className="text-xl font-bold font-serif text-foreground">
+                    {item.name}
+                  </h3>
 
                   <span className="text-xs font-serif italic text-cat mt-0.5 block font-semibold">
                     {item.role}
@@ -200,8 +208,7 @@ function TeamPage() {
                 Advisors, Physicians & Researchers
               </h2>
               <p className="mt-3 text-sm sm:text-base text-muted-foreground font-sans">
-                Bridging ancient classical musicology with integrative healthcare and digital
-                acoustics.
+                Bridging ancient classical musicology with integrative healthcare and digital acoustics.
               </p>
             </div>
 

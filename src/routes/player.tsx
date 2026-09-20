@@ -21,6 +21,7 @@ import { Slider } from "@/components/ui/slider";
 import { Panel } from "@/components/layout-bits";
 import { TrackRow } from "@/components/cards";
 import { EmptyState } from "@/components/States";
+import { Artwork } from "@/components/Artwork";
 import { useApp } from "@/lib/app-state";
 import { formatTime } from "@/lib/content";
 
@@ -80,6 +81,7 @@ function Player() {
     setSleepTimer,
     isFavorite,
     toggleFavorite,
+    openSessionCompleteModal,
   } = useApp();
   const navigate = useNavigate();
   const [localProgress, setLocalProgress] = useState<number | null>(null);
@@ -116,13 +118,13 @@ function Player() {
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:gap-12">
-        <div className="animate-rise overflow-hidden rounded-card border border-border bg-surface p-6 shadow-soft md:p-10">
-          <div className="grid gap-8 md:grid-cols-[minmax(0,320px)_minmax(0,1fr)] md:items-center xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+        <div className="animate-rise rounded-card border border-border bg-surface p-6 shadow-soft md:p-8 lg:p-10">
+          <div className="grid gap-6 md:gap-8 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)] xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:items-center">
             <div className="relative">
               <span className="animate-breathe absolute -inset-4 rounded-[36px] bg-cat-light" />
-              <img
+              <Artwork
                 src={current.art}
-                alt={`Artwork for ${current.title}`}
+                songTitle={current.title}
                 width={1024}
                 height={1024}
                 className="relative aspect-square w-full rounded-[28px] object-cover shadow-lift"
@@ -160,64 +162,54 @@ function Player() {
                 <span>-{formatTime(Math.max(0, current.duration - (localProgress !== null ? localProgress : position)))}</span>
               </div>
 
-              <div className="mt-7 flex items-center justify-between gap-3">
+              <div className="mt-7 flex items-center justify-center gap-2 sm:gap-3 md:gap-4">
                 <button
                   onClick={() => toggleFavorite(current.id)}
                   aria-pressed={fav}
                   aria-label={fav ? "Remove from favourites" : "Add to favourites"}
-                  className={`press grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-surface shadow-soft ${fav ? "text-cat" : "text-muted-foreground"}`}
+                  className={`press grid h-10 w-10 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full border border-border bg-surface shadow-soft ${fav ? "text-cat" : "text-muted-foreground"}`}
                 >
                   <Heart className="h-5 w-5" fill={fav ? "currentColor" : "none"} />
                 </button>
 
-                <div className="flex items-center gap-2 md:gap-3">
-                  <button
-                    onClick={previous}
-                    aria-label="Previous session"
-                    className="press grid h-11 w-11 place-items-center rounded-full text-muted-foreground hover:text-foreground"
-                  >
-                    <SkipBack className="h-5 w-5" fill="currentColor" />
-                  </button>
-                  <button
-                    onClick={() => skip(-15)}
-                    aria-label="Back 15 seconds"
-                    className="press grid h-11 w-11 place-items-center rounded-full text-foreground"
-                  >
-                    <RotateCcw className="h-5 w-5" strokeWidth={1.8} />
-                  </button>
-                  <button
-                    onClick={toggle}
-                    aria-label={playing ? "Pause session" : "Play session"}
-                    className="press grid h-16 w-16 place-items-center rounded-full bg-cat text-cat-foreground shadow-lift focus-visible:ring-2 focus-visible:ring-cat focus-visible:ring-offset-4 focus-visible:outline-none"
-                  >
-                    {playing ? (
-                      <Pause className="h-6 w-6" fill="currentColor" />
-                    ) : (
-                      <Play className="h-6 w-6 translate-x-0.5" fill="currentColor" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => skip(30)}
-                    aria-label="Forward 30 seconds"
-                    className="press grid h-11 w-11 place-items-center rounded-full text-foreground"
-                  >
-                    <RotateCw className="h-5 w-5" strokeWidth={1.8} />
-                  </button>
-                  <button
-                    onClick={next}
-                    aria-label="Next session"
-                    className="press grid h-11 w-11 place-items-center rounded-full text-muted-foreground hover:text-foreground"
-                  >
-                    <SkipForward className="h-5 w-5" fill="currentColor" />
-                  </button>
-                </div>
-
                 <button
-                  onClick={() => navigate({ to: "/session-complete" })}
-                  aria-label="Mark session completed"
-                  className="press grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-surface text-muted-foreground shadow-soft hover:text-cat"
+                  onClick={previous}
+                  aria-label="Previous session"
+                  className="press grid h-10 w-10 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-foreground"
                 >
-                  <CheckCircle2 className="h-5 w-5" />
+                  <SkipBack className="h-5 w-5" fill="currentColor" />
+                </button>
+                <button
+                  onClick={() => skip(-15)}
+                  aria-label="Back 15 seconds"
+                  className="press grid h-10 w-10 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full text-foreground"
+                >
+                  <RotateCcw className="h-5 w-5" strokeWidth={1.8} />
+                </button>
+                <button
+                  onClick={toggle}
+                  aria-label={playing ? "Pause session" : "Play session"}
+                  className="press grid h-14 w-14 sm:h-16 sm:w-16 shrink-0 place-items-center rounded-full bg-cat text-cat-foreground shadow-lift focus-visible:ring-2 focus-visible:ring-cat focus-visible:ring-offset-4 focus-visible:outline-none"
+                >
+                  {playing ? (
+                    <Pause className="h-6 w-6" fill="currentColor" />
+                  ) : (
+                    <Play className="h-6 w-6 translate-x-0.5" fill="currentColor" />
+                  )}
+                </button>
+                <button
+                  onClick={() => skip(30)}
+                  aria-label="Forward 30 seconds"
+                  className="press grid h-10 w-10 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full text-foreground"
+                >
+                  <RotateCw className="h-5 w-5" strokeWidth={1.8} />
+                </button>
+                <button
+                  onClick={next}
+                  aria-label="Next session"
+                  className="press grid h-10 w-10 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-foreground"
+                >
+                  <SkipForward className="h-5 w-5" fill="currentColor" />
                 </button>
               </div>
             </div>
@@ -239,8 +231,9 @@ function Player() {
           </div>
 
           <button
-            onClick={() => navigate({ to: "/session-complete" })}
-            className="press mt-8 flex min-h-13 w-full items-center justify-center gap-2 rounded-btn bg-primary px-6 text-[15px] font-semibold text-primary-foreground shadow-soft hover:bg-primary-hover md:w-auto md:px-10"
+            type="button"
+            onClick={() => openSessionCompleteModal(current, position || current.duration)}
+            className="press mt-8 flex min-h-13 w-full items-center justify-center gap-2 rounded-btn bg-primary px-6 text-[15px] font-semibold text-primary-foreground shadow-soft hover:bg-primary-hover md:w-auto md:px-10 cursor-pointer"
           >
             <CheckCircle2 className="h-4 w-4" /> Session completed
           </button>

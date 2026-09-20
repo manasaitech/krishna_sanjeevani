@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { BookmarkCheck, Bookmark, CalendarDays, Check, ListMusic, Play } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { TrackRow } from "@/components/cards";
+import { Artwork } from "@/components/Artwork";
 import { useApp } from "@/lib/app-state";
 import { api, BASE_URL } from "@/lib/api";
 import { type Program, type Track } from "@/lib/content";
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/program/$programId")({
       days: p.trackCount ? Math.ceil(p.trackCount / 2) : 7,
       benefits: p.benefits || [],
       usage: p.usage || "Listen once daily with focus.",
-      trackIds: tracksData.map((t: any) => t.id),
+      trackIds: tracksData.map((t: any) => t.id)
     };
 
     const mappedTracks = tracksData.map((t: any) => ({
@@ -75,10 +76,7 @@ export const Route = createFileRoute("/program/$programId")({
 });
 
 function ProgramDetails() {
-  const { program, tracks: programTracks } = Route.useLoaderData() as {
-    program: Program;
-    tracks: Track[];
-  };
+  const { program, tracks: programTracks } = Route.useLoaderData() as { program: Program; tracks: Track[] };
   const { savedPrograms, toggleSavedProgram, play } = useApp();
   const saved = savedPrograms.includes(program.id);
   const list = programTracks;
@@ -86,9 +84,9 @@ function ProgramDetails() {
   return (
     <AppShell>
       <div className="animate-rise relative -mx-5 -mt-4 overflow-hidden sm:mx-0 sm:rounded-card">
-        <img
+        <Artwork
           src={program.art}
-          alt={`Artwork for ${program.title}`}
+          songTitle={program.title}
           width={1024}
           height={1024}
           className="aspect-[16/11] w-full object-cover sm:aspect-[16/8]"

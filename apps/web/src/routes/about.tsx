@@ -5,7 +5,15 @@ import { VersePlayerModal } from "@/components/home/VersePlayerModal";
 import { HomeNavbar } from "@/components/home/HomeNavbar";
 import { HomeFooter } from "@/components/home/HomeFooter";
 import { templeSunriseImg, meditationImg } from "@/lib/home-data";
-import { Music2, HeartPulse, Brain, Compass, ArrowRight, Globe2, Sparkles } from "lucide-react";
+import {
+  Music2,
+  HeartPulse,
+  Brain,
+  Compass,
+  ArrowRight,
+  Globe2,
+  Sparkles,
+} from "lucide-react";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -100,8 +108,8 @@ function AboutPage() {
 
               <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed font-sans pt-1">
                 An institutional initiative dedicated to preserving, structuring, and broadcasting
-                scientifically calibrated Indian classical raga therapy and devotional mantra
-                meditation for global physical and psychological wellbeing.
+                scientifically calibrated Indian classical raga therapy and devotional mantra meditation
+                for global physical and psychological wellbeing.
               </p>
 
               <div className="pt-4 flex justify-center">
@@ -109,7 +117,7 @@ function AboutPage() {
                   to="/register"
                   className="press inline-flex items-center gap-2 rounded-btn bg-cat px-7 py-3.5 text-sm sm:text-base font-semibold text-cat-foreground shadow-lift hover:brightness-105"
                 >
-                  <span>Enter the Sound Sanctuary</span>
+                  <span>Explore the Platform</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -129,11 +137,9 @@ function AboutPage() {
                   An Amalgamation of Science & Sacred Sound
                 </h2>
                 <p className="text-base text-muted-foreground leading-relaxed font-sans">
-                  Krishna Sanjeevani is built upon the synergy of two profound traditions: the
-                  classical therapeutic science of{" "}
-                  <strong className="text-foreground">Sur Sanjeevan</strong> and the transcendental
-                  potency of the{" "}
-                  <strong className="text-foreground">Hare Krishna Mahamantra</strong>.
+                  Krishna Sanjeevani is built upon the synergy of two profound traditions: the classical
+                  therapeutic science of <strong className="text-foreground">Sur Sanjeevan</strong> and the
+                  transcendental potency of the <strong className="text-foreground">Hare Krishna Mahamantra</strong>.
                 </p>
                 <p className="text-base text-muted-foreground leading-relaxed font-sans">
                   Recognizing that music is a potent mental-somatic regulator, our platform curates
@@ -165,7 +171,9 @@ function AboutPage() {
                     <div className="h-12 w-12 rounded-xl bg-cat-light border border-cat/25 flex items-center justify-center text-cat mb-5">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <h3 className="text-xl font-bold font-serif text-foreground">{v.title}</h3>
+                    <h3 className="text-xl font-bold font-serif text-foreground">
+                      {v.title}
+                    </h3>
                     <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-sans">
                       {v.desc}
                     </p>
@@ -191,7 +199,7 @@ function AboutPage() {
                 to="/register"
                 className="press inline-flex items-center gap-2 rounded-btn bg-cat px-7 py-3.5 text-sm sm:text-base font-semibold text-cat-foreground shadow-lift hover:brightness-105"
               >
-                <span>Enter the Sound Sanctuary</span>
+                <span>Explore the Platform</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

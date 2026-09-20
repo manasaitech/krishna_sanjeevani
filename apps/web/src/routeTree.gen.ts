@@ -32,6 +32,7 @@ import { Route as RecentRouteImport } from './routes/recent'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SelectSanjeevaniRouteImport } from './routes/select-sanjeevani'
 import { Route as SessionCompleteRouteImport } from './routes/session-complete'
 import { Route as SubscriptionRouteImport } from './routes/subscription'
 import { Route as TeamRouteImport } from './routes/team'
@@ -156,6 +157,11 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SelectSanjeevaniRoute = SelectSanjeevaniRouteImport.update({
+  id: '/select-sanjeevani',
+  path: '/select-sanjeevani',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SessionCompleteRoute = SessionCompleteRouteImport.update({
   id: '/session-complete',
   path: '/session-complete',
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/select-sanjeevani': typeof SelectSanjeevaniRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
   '/team': typeof TeamRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/select-sanjeevani': typeof SelectSanjeevaniRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
   '/team': typeof TeamRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/select-sanjeevani': typeof SelectSanjeevaniRoute
   '/session-complete': typeof SessionCompleteRoute
   '/subscription': typeof SubscriptionRoute
   '/team': typeof TeamRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/search'
+    | '/select-sanjeevani'
     | '/session-complete'
     | '/subscription'
     | '/team'
@@ -356,6 +366,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/search'
+    | '/select-sanjeevani'
     | '/session-complete'
     | '/subscription'
     | '/team'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/search'
+    | '/select-sanjeevani'
     | '/session-complete'
     | '/subscription'
     | '/team'
@@ -423,6 +435,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
+  SelectSanjeevaniRoute: typeof SelectSanjeevaniRoute
   SessionCompleteRoute: typeof SessionCompleteRoute
   SubscriptionRoute: typeof SubscriptionRoute
   TeamRoute: typeof TeamRoute
@@ -596,6 +609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/select-sanjeevani': {
+      id: '/select-sanjeevani'
+      path: '/select-sanjeevani'
+      fullPath: '/select-sanjeevani'
+      preLoaderRoute: typeof SelectSanjeevaniRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session-complete': {
       id: '/session-complete'
       path: '/session-complete'
@@ -679,6 +699,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
+  SelectSanjeevaniRoute: SelectSanjeevaniRoute,
   SessionCompleteRoute: SessionCompleteRoute,
   SubscriptionRoute: SubscriptionRoute,
   TeamRoute: TeamRoute,
