@@ -9,17 +9,9 @@ export const Route = createFileRoute("/home")({
       { title: "Home — Krishna Sanjeevani" },
       {
         name: "description",
-        content: "Vedic Sound Therapy & Emotion Remediation Dashboard.",
+        content: "Vedic Sound Therapy & Surawali Dashboard.",
       },
     ],
   }),
-  component: HomeDashboard,
+  component: SurawaliHome,
 });
-
-function HomeDashboard() {
-  const { mode, isEmotionMode } = useMode();
-  const active = mode || getActiveMode();
-  const showEmotion = isEmotionMode ?? (active === "emotion_remediation");
-
-  return showEmotion ? <EmotionHome /> : <SurawaliHome />;
-}

@@ -41,13 +41,6 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const { isEmotionMode: ctxEmotion } = useMode();
-  const isEmotionMode = ctxEmotion ?? (getActiveMode() === "emotion_remediation");
-
-  if (isEmotionMode) {
-    return <EmotionHome />;
-  }
-
   const audio = useVerseAudio();
   const [openingFinished, setOpeningFinished] = useState(false);
   const { user } = useApp();
