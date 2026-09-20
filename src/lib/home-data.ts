@@ -1,6 +1,6 @@
 import krishnaFluteImg from "@/assets/cbabb2a5-2787-4997-986f-daf7b88017ff.webp";
 import kulasekharaImg from "@/assets/kulashekara-cutout.webp";
-import kulashekaraHeroImg from "@/assets/kulashekara-cutout.webp";
+import kulashekaraHeroImg from "@/assets/kulashekara.webp";
 import chaitanyaImg from "@/assets/18fc75d6-df05-469c-9855-d79c4931636d.webp";
 import prabhupadaImg from "@/assets/3f99cd1e-9061-4ee5-a720-ba4041cfae9d.webp";
 import ragaMusiciansImg from "@/assets/2978e827-6b28-45f0-bbce-575e6023a705.webp";
