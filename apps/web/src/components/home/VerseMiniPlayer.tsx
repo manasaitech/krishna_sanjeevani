@@ -42,27 +42,23 @@ export function VerseMiniPlayer({ audio }: VerseMiniPlayerProps) {
         >
           <div className="relative h-11 w-11 shrink-0 rounded-full overflow-hidden border border-[#C9A84C]/60 shadow-sm bg-white group-hover:scale-105 transition-transform flex items-center justify-center">
             <img
-              src={KULASEKHARA_VERSE.image}
-              alt="Kulasekhara Alvar"
+              src={audio.currentTrack?.image || KULASEKHARA_VERSE.image}
+              alt={audio.currentTrack?.title || "Kulasekhara Alvar"}
               className="h-full w-full object-contain p-0.5"
             />
             {audio.isPlaying && (
-              <span className="absolute inset-0 rounded-full border border-cat animate-ping opacity-30 pointer-events-none" />
+              <span className="absolute inset-0 rounded-full border border-[#7C1C24] animate-ping opacity-30 pointer-events-none" />
             )}
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-cat font-sans">
-                Verse 24
-              </span>
-              <span className="text-[10px] text-muted-foreground">•</span>
-              <span className="text-[10px] text-muted-foreground font-serif italic truncate">
-                Mukundamālā
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#7C1C24] font-sans">
+                {audio.currentTrack?.raga || "Vedic Sound"}
               </span>
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-cat transition-colors">
-              Kulasekhara Alvar
+            <p className="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-[#7C1C24] transition-colors">
+              {audio.currentTrack?.title || KULASEKHARA_VERSE.title}
             </p>
 
             {/* Waveform Bars */}
