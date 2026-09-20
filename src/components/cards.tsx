@@ -20,16 +20,20 @@ export function CategoryBadge({ id }: { id: Track["category"] }) {
   );
 }
 
-export function FavoriteButton({ id, className }: { id: string; className?: string }) {
+export function FavoriteButton({ id, track, className }: { id: string; track?: Track; className?: string }) {
   const { isFavorite, toggleFavorite } = useApp();
   const active = isFavorite(id);
   return (
     <button
-      onClick={() => toggleFavorite(id)}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFavorite(id, track);
+      }}
       aria-pressed={active}
       aria-label={active ? "Remove from favourites" : "Add to favourites"}
       className={cn(
-        "press grid h-10 w-10 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-cat focus-visible:ring-2 focus-visible:ring-cat focus-visible:outline-none",
+        "press grid h-10 w-10 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-cat focus-visible:ring-2 focus-visible:ring-cat focus-visible:outline-none transition-colors",
         active && "text-cat",
         className,
       )}
@@ -45,7 +49,11 @@ export function PlayButton({ track, small = false, programId }: { track: Track; 
   const isPlaying = isCurrent && playing;
   return (
     <button
-      onClick={() => (isCurrent ? toggle() : play(track, programId))}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        isCurrent ? toggle() : play(track, programId);
+      }}
       aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
       className={cn(
         "press grid place-items-center rounded-full bg-cat text-cat-foreground shadow-lift hover:scale-105 focus-visible:ring-2 focus-visible:ring-cat focus-visible:ring-offset-2 focus-visible:outline-none",
@@ -84,6 +92,13 @@ export function TrackTile({ track }: { track: Track }) {
             <Lock className="h-3.5 w-3.5" />
           </span>
         )}
+        <span className="absolute top-2.5 right-2.5 z-10">
+          <FavoriteButton
+            id={track.id}
+            track={track}
+            className="h-8 w-8 bg-surface/85 backdrop-blur shadow-xs hover:bg-surface"
+          />
+        </span>
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-2.5">
           <span className="rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
             {formatDuration(track.duration)}

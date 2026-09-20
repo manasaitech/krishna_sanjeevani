@@ -122,20 +122,6 @@ final historyProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   return [];
 });
 
-final favoritesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final repo = ref.watch(favoritesRepositoryProvider);
-  final res = await repo.list();
-  if (res.success && res.data != null) {
-    final data = res.data;
-    if (data is List) {
-      return List<Map<String, dynamic>>.from(data);
-    } else if (data is Map && data['data'] is List) {
-      return List<Map<String, dynamic>>.from(data['data'] as List);
-    }
-  }
-  return [];
-});
-
 final programDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, programId) async {
   final repo = ref.watch(programsRepositoryProvider);
   final res = await repo.get(programId);
@@ -164,46 +150,71 @@ final programTracksProvider = FutureProvider.family<List<Map<String, dynamic>>, 
   return [];
 });
 
-class FavoritesNotifier extends StateNotifier<AsyncValue<void>> {
+class FavoritesListNotifier extends StateNotifier<List<Map<String, dynamic>>> {
   final FavoritesRepository _repository;
-  final Ref _ref;
 
-  FavoritesNotifier(this._repository, this._ref) : super(const AsyncData(null));
+  FavoritesListNotifier(this._repository) : super([]) {
+    _loadFavorites();
+  }
 
-  Future<bool> toggleFavorite(Map<String, dynamic> track) async {
-    final trackId = track['id'] as String?;
-    if (trackId == null) return false;
-
-    final currentFavorites = _ref.read(favoritesProvider).value ?? [];
-    final isFav = currentFavorites.any((f) => f['id'] == trackId || f['trackId'] == trackId);
-
-    state = const AsyncLoading();
+  Future<void> _loadFavorites() async {
     try {
-      if (isFav) {
-        final res = await _repository.remove(trackId);
-        if (res.success) {
-          _ref.invalidate(favoritesProvider);
-          state = const AsyncData(null);
-          return true;
-        }
-      } else {
-        final res = await _repository.add(trackId, 'track');
-        if (res.success) {
-          _ref.invalidate(favoritesProvider);
-          state = const AsyncData(null);
-          return true;
+      final res = await _repository.list();
+      if (res.success && res.data != null) {
+        final data = res.data;
+        if (data is List) {
+          final serverList = List<Map<String, dynamic>>.from(data);
+          final map = <String, Map<String, dynamic>>{};
+          for (final item in state) {
+            final id = (item['id'] ?? item['trackId'])?.toString();
+            if (id != null) map[id] = item;
+          }
+          for (final item in serverList) {
+            final id = (item['id'] ?? item['trackId'])?.toString();
+            if (id != null) map[id] = item;
+          }
+          state = map.values.toList();
         }
       }
-      state = const AsyncData(null);
-      return false;
-    } catch (err, st) {
-      state = AsyncError(err, st);
-      return false;
+    } catch (_) {}
+  }
+
+  bool isFavorite(String? trackId) {
+    if (trackId == null) return false;
+    return state.any((f) => (f['id'] == trackId || f['trackId'] == trackId));
+  }
+
+  Future<bool> toggleFavorite(Map<String, dynamic> track) async {
+    final trackId = (track['id'] ?? track['trackId'])?.toString();
+    if (trackId == null) return false;
+
+    final isFav = isFavorite(trackId);
+    if (isFav) {
+      state = state.where((f) => f['id'] != trackId && f['trackId'] != trackId).toList();
+      try {
+        await _repository.remove(trackId);
+      } catch (_) {}
+      return true;
+    } else {
+      state = [...state, track];
+      try {
+        await _repository.add(trackId, 'track');
+      } catch (_) {}
+      return true;
     }
+  }
+
+  Future<void> refresh() async {
+    await _loadFavorites();
   }
 }
 
-final favoritesNotifierProvider = StateNotifierProvider<FavoritesNotifier, AsyncValue<void>>((ref) {
+final favoritesNotifierProvider = StateNotifierProvider<FavoritesListNotifier, List<Map<String, dynamic>>>((ref) {
   final repo = ref.watch(favoritesRepositoryProvider);
-  return FavoritesNotifier(repo, ref);
+  return FavoritesListNotifier(repo);
+});
+
+final favoritesProvider = Provider<AsyncValue<List<Map<String, dynamic>>>>((ref) {
+  final list = ref.watch(favoritesNotifierProvider);
+  return AsyncData(list);
 });

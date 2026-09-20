@@ -49,7 +49,8 @@ type AppState = {
   category: CategoryId;
   setCategory: (c: CategoryId) => void;
   favorites: string[];
-  toggleFavorite: (id: string) => void;
+  favoriteTracks: Record<string, Track>;
+  toggleFavorite: (id: string, trackObj?: Track) => void;
   isFavorite: (id: string) => boolean;
   savedPrograms: string[];
   toggleSavedProgram: (id: string) => void;
@@ -110,7 +111,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // ── Player State ──────────────────────────────────────
   const [category, setCategory] = useState<CategoryId>("devotional");
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ks_favorites");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+  const [favoriteTracks, setFavoriteTracks] = useState<Record<string, Track>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ks_favorite_tracks");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return {};
+        }
+      }
+    }
+    return {};
+  });
   const [savedPrograms, setSavedPrograms] = useState<string[]>([]);
   const [current, setCurrent] = useState<Track | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -123,6 +149,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [historyList, setHistoryList] = useState<any[]>([]);
   const [continueListeningList, setContinueListeningList] = useState<any[]>([]);
   const [notificationsList, setNotificationsList] = useState(() => [...staticNotifications]);
+
+  // Sync favorites to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ks_favorites", JSON.stringify(favorites));
+    }
+  }, [favorites]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ks_favorite_tracks", JSON.stringify(favoriteTracks));
+    }
+  }, [favoriteTracks]);
 
   // Session Complete Modal State
   const [sessionCompleteModalOpen, setSessionCompleteModalOpen] = useState(false);
@@ -470,7 +509,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.favorites.list("track");
       if (res.success && Array.isArray(res.data)) {
-        setFavorites(res.data.map((fav: any) => fav.id));
+        const serverIds = res.data.map((fav: any) => fav.id);
+        setFavorites((prev) => Array.from(new Set([...prev, ...serverIds])));
       }
     } catch (err) {
       console.warn("Failed to fetch favorites", err);
@@ -498,38 +538,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchFavorites();
       fetchHistoryAndContinueListening();
-    } else {
-      setFavorites([]);
-      setHistoryList([]);
-      setContinueListeningList([]);
     }
   }, [user, fetchFavorites, fetchHistoryAndContinueListening]);
 
-  const toggleFavorite = useCallback(async (id: string) => {
+  const toggleFavorite = useCallback(async (id: string, trackObj?: Track) => {
     const isFav = favorites.includes(id);
 
-    // Optimistic UI update
+    // Update favorite IDs
     setFavorites((prev) =>
       isFav ? prev.filter((x) => x !== id) : [...prev, id]
     );
 
-    try {
-      if (isFav) {
-        const res = await api.favorites.remove(id);
-        if (!res.success) throw new Error("API call failed");
-      } else {
-        const res = await api.favorites.add(id, "track");
-        if (!res.success) throw new Error("API call failed");
+    if (!isFav) {
+      // Find track object if not provided
+      const resolvedTrack =
+        trackObj ||
+        (currentRef.current?.id === id ? currentRef.current : null) ||
+        tracksList.find((t) => t.id === id) ||
+        SURAWALI_PRESETS.flatMap((p) => p.tracks).find((t) => t.id === id);
+
+      if (resolvedTrack) {
+        setFavoriteTracks((prev) => ({ ...prev, [id]: resolvedTrack }));
       }
-      fetchHistoryAndContinueListening();
-    } catch (err) {
-      console.error("Failed to toggle favorite", err);
-      // Revert optimistic update on error
-      setFavorites((prev) =>
-        isFav ? [...prev, id] : prev.filter((x) => x !== id)
-      );
+    } else {
+      setFavoriteTracks((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
     }
-  }, [favorites, fetchHistoryAndContinueListening]);
+
+    try {
+      if (user) {
+        if (isFav) {
+          await api.favorites.remove(id);
+        } else {
+          await api.favorites.add(id, "track");
+        }
+        fetchHistoryAndContinueListening();
+      }
+    } catch (err) {
+      console.warn("Failed to sync favorite with server (stored locally)", err);
+    }
+  }, [favorites, user, tracksList, fetchHistoryAndContinueListening]);
 
   const play = useCallback(async (t: Track, programId?: string) => {
     if (typeof window === "undefined") return;
@@ -830,6 +881,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       category,
       setCategory,
       favorites,
+      favoriteTracks,
       toggleFavorite,
       isFavorite: (id) => favorites.includes(id),
       savedPrograms,
@@ -897,6 +949,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       fetchTracksAndPrograms,
       category,
       favorites,
+      favoriteTracks,
       savedPrograms,
       current,
       playing,

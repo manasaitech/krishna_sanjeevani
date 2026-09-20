@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -5,7 +6,8 @@ import { CardGrid, Section } from "@/components/layout-bits";
 import { ProgramCard, TrackTile } from "@/components/cards";
 import { EmptyState } from "@/components/States";
 import { useApp } from "@/lib/app-state";
-import { programs, tracks } from "@/lib/content";
+import { programs as staticPrograms, type Track } from "@/lib/content";
+import { SURAWALI_PRESETS } from "@/lib/surawali-presets";
 
 export const Route = createFileRoute("/favorites")({
   head: () => ({
@@ -27,9 +29,28 @@ export const Route = createFileRoute("/favorites")({
 });
 
 function Favorites() {
-  const { favorites, savedPrograms } = useApp();
-  const favTracks = tracks.filter((t) => favorites.includes(t.id));
-  const favPrograms = programs.filter((p) => savedPrograms.includes(p.id));
+  const { favorites, savedPrograms, tracks: appTracks, favoriteTracks, programs: appPrograms } = useApp();
+
+  const favTracks = useMemo(() => {
+    const map = new Map<string, Track>();
+    SURAWALI_PRESETS.flatMap((p) => p.tracks).forEach((t) => map.set(t.id, t));
+    if (Array.isArray(appTracks)) {
+      appTracks.forEach((t) => map.set(t.id, t));
+    }
+    if (favoriteTracks) {
+      Object.entries(favoriteTracks).forEach(([id, t]) => {
+        if (t) map.set(id, t);
+      });
+    }
+    return favorites.map((id) => map.get(id)).filter((t): t is Track => Boolean(t));
+  }, [favorites, appTracks, favoriteTracks]);
+
+  const allPrograms = useMemo(() => {
+    const list = [...(Array.isArray(appPrograms) && appPrograms.length > 0 ? appPrograms : staticPrograms)];
+    return list;
+  }, [appPrograms]);
+
+  const favPrograms = allPrograms.filter((p) => savedPrograms.includes(p.id));
 
   return (
     <AppShell title="Favorites" subtitle={`${favTracks.length} sessions · ${favPrograms.length} programs`}>
