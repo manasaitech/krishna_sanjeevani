@@ -269,185 +269,135 @@ export function SurawaliHome() {
   }, [user]);
 
   const getSurawaliName = (id: string) => (catalog?.surawalis || DEFAULT_SURAWALI_CATALOG.surawalis).find(s => s.id === id)?.name || "Unknown Surawali";
-  const getTimingName = (id: string) => (catalog?.timings || DEFAULT_SURAWALI_CATALOG.timings).find(t => t.id === id)?.name || "Any Time";
 
-  const filteredSubscriptions = useMemo(() => {
-    const currentCatalog = catalog || DEFAULT_SURAWALI_CATALOG;
-    const ailmentList = currentCatalog.ailmentSurawalis || DEFAULT_SURAWALI_CATALOG.ailmentSurawalis;
-    const pregnancyList = currentCatalog.pregnancyMappings || DEFAULT_SURAWALI_CATALOG.pregnancyMappings;
-
-    return (subscriptions || []).filter(sub => {
-      if (activeCategory === "pregnancy" && (sub.surawaliName === "Greeshma" || sub.surawaliId === "sur_b719ad07-c4a5-51db-aaa5-48027611b68d")) {
-        return false;
-      }
-      if (activeCategory === "devotional") {
-        return ailmentList.some(m => m.surawaliId === sub.surawaliId);
-      } else if (activeCategory === "pregnancy") {
-        return pregnancyList.some(m => m.surawaliId === sub.surawaliId);
-      } else {
-        return false;
-      }
-    });
-  }, [subscriptions, catalog, activeCategory]);
-
+  // Build Filter Dropdown Options
   const paramDropdownList = useMemo(() => {
-    const currentCatalog = catalog || DEFAULT_SURAWALI_CATALOG;
     if (activeCategory === "devotional") {
-      const list = currentCatalog.ailments || DEFAULT_SURAWALI_CATALOG.ailments;
-      return list.map(a => ({ label: a.name, value: a.id }));
-    } else if (activeCategory === "pregnancy") {
-      return Array.from({ length: 9 }).map((_, i) => ({ label: `Month ${i + 1}`, value: String(i + 1) }));
-    } else {
+      return catalog.ailments.map((a) => ({ value: a.id, label: a.name }));
+    }
+    if (activeCategory === "pregnancy") {
       return [
-        { label: "Monday", value: "Monday" },
-        { label: "Tuesday", value: "Tuesday" },
-        { label: "Wednesday", value: "Wednesday" },
-        { label: "Thursday", value: "Thursday" },
-        { label: "Friday", value: "Friday" },
-        { label: "Saturday", value: "Saturday" },
-        { label: "Sunday", value: "Sunday" },
+        { value: "1", label: "Month 1 (First Trimester)" },
+        { value: "2", label: "Month 2 (First Trimester)" },
+        { value: "3", label: "Month 3 (First Trimester)" },
+        { value: "4", label: "Month 4 (Second Trimester)" },
+        { value: "5", label: "Month 5 (Second Trimester)" },
+        { value: "6", label: "Month 6 (Second Trimester)" },
+        { value: "7", label: "Month 7 (Third Trimester)" },
+        { value: "8", label: "Month 8 (Third Trimester)" },
+        { value: "9", label: "Month 9 (Third Trimester)" },
       ];
     }
-  }, [catalog, activeCategory]);
+    return [
+      { value: "Monday", label: "Monday Clarity" },
+      { value: "Tuesday", label: "Tuesday Focus" },
+      { value: "Wednesday", label: "Wednesday Stress Buster" },
+      { value: "Thursday", label: "Thursday Flow" },
+      { value: "Friday", label: "Friday Unwind" },
+      { value: "Saturday", label: "Saturday Recharge" },
+      { value: "Sunday", label: "Sunday Peace" },
+    ];
+  }, [activeCategory, catalog.ailments]);
 
-  const exploreResults = useMemo(() => {
-    if (!catalog) return [];
-    
+  // Compute Active Discovery / Explore Items
+  const exploreItems = useMemo(() => {
     if (activeCategory === "devotional") {
-      return catalog.ailmentSurawalis.filter(m => {
-        const sName = getSurawaliName(m.surawaliId);
-        const aName = catalog.ailments.find(a => a.id === m.ailmentId)?.name || "";
-        
-        const matchesChip = activeChip === "All" || 
-          (activeChip === "Disorder Relief" && ["Anxiety", "Migraine", "Hypertension", "Insomnia"].some(d => aName.includes(d))) ||
-          (activeChip === "Stress Relief" && ["Stress", "Anxiety"].some(d => aName.includes(d))) ||
-          (activeChip === "Focus" && ["Focus", "Concentration"].some(d => aName.includes(d))) ||
-          (activeChip === "Sleep" && ["Sleep", "Insomnia"].some(d => aName.includes(d))) ||
-          (activeChip === "Energy" && ["Depression", "Energy"].some(d => aName.includes(d))) ||
-          (activeChip === "Anxiety" && aName.includes("Anxiety")) ||
-          (activeChip === "Meditation" || activeChip === "Healing");
+      return catalog.ailmentSurawalis.map((m) => {
+        const ailment = catalog.ailments.find((a) => a.id === m.ailmentId)?.name ?? "Vedic Raga";
+        const surawali = catalog.surawalis.find((s) => s.id === m.surawaliId)?.name ?? "Surāwali";
+        const timing = getTimingName(m.timingId);
+        return {
+          id: m.id,
+          surawaliId: m.surawaliId,
+          title: surawali,
+          purpose: ailment,
+          timing: timing,
+          duration: "30 min",
+          description: `Vedic frequency calibrated to support ${ailment.toLowerCase()} via physical acoustics.`,
+          type: "devotional",
+          paramMatch: m.ailmentId,
+          timingMatch: m.timingId,
+        };
+      });
+    }
 
-        const matchesSearch = searchQuery.trim() 
-          ? sName.toLowerCase().includes(searchQuery.toLowerCase()) || aName.toLowerCase().includes(searchQuery.toLowerCase())
-          : true;
+    if (activeCategory === "pregnancy") {
+      return catalog.pregnancyMappings.map((m) => {
+        const surawali = catalog.surawalis.find((s) => s.id === m.surawaliId)?.name ?? "Surāwali";
+        const timing = getTimingName(m.timingId);
+        return {
+          id: m.id,
+          surawaliId: m.id,
+          title: `Month ${m.pregnancyMonth}: ${m.musicTrack}`,
+          purpose: `Pregnancy Care • Month ${m.pregnancyMonth}`,
+          timing: timing,
+          duration: "25 min",
+          description: `Garbha Sanskar sound therapy formulated to nurture maternal wellbeing and fetal development in Month ${m.pregnancyMonth}.`,
+          type: "pregnancy",
+          paramMatch: m.pregnancyMonth.toString(),
+          timingMatch: m.timingId,
+        };
+      });
+    }
 
-        const matchesParam = selectedParam ? m.ailmentId === selectedParam : true;
-        const matchesTiming = selectedTimingId ? m.timingId === selectedTimingId : true;
-
-        return matchesChip && matchesSearch && matchesParam && matchesTiming;
-      }).map(m => ({
-        id: m.id,
-        surawaliId: m.surawaliId,
-        title: getSurawaliName(m.surawaliId),
-        purpose: catalog.ailments.find(a => a.id === m.ailmentId)?.name || "Therapeutic",
-        timing: getTimingName(m.timingId),
-        duration: "30 min",
-        description: "Curated harmonic resonance session optimized for restorative bio-acoustic alignment.",
-        type: "ailment"
-      }));
-
-    } else if (activeCategory === "pregnancy") {
-      return catalog.pregnancyMappings.filter(m => {
-        const sName = getSurawaliName(m.surawaliId);
-        if (sName === "Greeshma" || m.surawaliId === "sur_b719ad07-c4a5-51db-aaa5-48027611b68d") {
-          return false;
-        }
-
-        const matchesChip = activeChip === "All" ||
-          (activeChip === "Month 1-3" && [1, 2, 3].includes(m.pregnancyMonth)) ||
-          (activeChip === "Month 4-6" && [4, 5, 6].includes(m.pregnancyMonth)) ||
-          (activeChip === "Month 7-9" && [7, 8, 9].includes(m.pregnancyMonth));
-
-        const matchesSearch = searchQuery.trim() 
-          ? sName.toLowerCase().includes(searchQuery.toLowerCase()) 
-          : true;
-
-        const matchesParam = selectedParam ? String(m.pregnancyMonth) === selectedParam : true;
-        const matchesTiming = selectedTimingId ? m.timingId === selectedTimingId : true;
-
-        return matchesChip && matchesSearch && matchesParam && matchesTiming;
-      }).map(m => ({
-        id: m.id,
-        surawaliId: m.surawaliId,
-        title: getSurawaliName(m.surawaliId),
-        purpose: `Pregnancy Care (Month ${m.pregnancyMonth})`,
-        timing: getTimingName(m.timingId),
-        duration: "28 min",
-        description: "Delicate and calming sound therapy to support maternal comfort and healthy fetal cognitive development.",
-        type: "pregnancy"
-      }));
-
-    } else {
-      return catalog.corporateRagas.filter(m => {
-        const matchesChip = activeChip === "All" ||
-          (activeChip === "Workplace Stress" && ["Monday", "Wednesday", "Friday"].includes(m.weekDay)) ||
-          (activeChip === "Focus Boost" && ["Tuesday", "Thursday"].includes(m.weekDay));
-
-        const matchesSearch = searchQuery.trim() 
-          ? m.ragaName.toLowerCase().includes(searchQuery.toLowerCase()) 
-          : true;
-
-        const matchesParam = selectedParam ? m.weekDay === selectedParam : true;
-        const matchesTiming = selectedTimingId ? m.timingId === selectedTimingId : true;
-
-        return matchesChip && matchesSearch && matchesParam && matchesTiming;
-      }).map(m => ({
+    // Corporate Mode
+    return catalog.corporateRagas.map((m) => {
+      const timing = getTimingName(m.timingId);
+      return {
         id: m.id,
         surawaliId: m.id,
         title: m.ragaName,
-        purpose: `Workspace Wellness (${m.weekDay})`,
-        timing: getTimingName(m.timingId),
+        purpose: `Workplace Wellness (${m.weekDay})`,
+        timing: timing,
         duration: "32 min",
-        description: "Professional auditory composition calibrated to suppress cognitive fatigue and elevate office focus.",
-        type: "corporate"
-      }));
-    }
-  }, [catalog, activeCategory, activeChip, searchQuery, selectedParam, selectedTimingId]);
+        description: `Circadian-aligned auditory composition calibrated to suppress cognitive fatigue and elevate office focus on ${m.weekDay}s.`,
+        type: "corporate",
+        paramMatch: m.weekDay,
+        timingMatch: m.timingId,
+      };
+    });
+  }, [activeCategory, catalog]);
 
-  const totalPages = Math.max(1, Math.ceil(exploreResults.length / itemsPerPage));
-  const paginatedResults = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return exploreResults.slice(start, start + itemsPerPage);
-  }, [exploreResults, currentPage]);
-
-  const handlePlayPreview = (surawaliName: string, subtext: string, forceSubscribed = false) => {
-    toast.info(`Playing ${forceSubscribed ? "session" : "preview"} for ${surawaliName}`);
-    play({
-      id: `sur_${surawaliName.toLowerCase().replace(/\s+/g, "_")}`,
-      title: surawaliName + (forceSubscribed ? "" : " (Preview)"),
-      artist: config.name,
-      subtitle: subtext,
-      duration: forceSubscribed ? 1800 : 90,
-      category: activeCategory,
-      playlistKey: "",
-    } as any);
-  };
-
-  const handleSubscribeClick = (surawali: { id: string; name: string }) => {
-    setSubscribingSurawali(surawali);
-    setPaymentModalOpen(true);
-  };
-
-  const handlePaymentSubmit = async () => {
-    if (!subscribingSurawali) return;
-    try {
-      const txnId = `mock_txn_${Math.random().toString(36).substring(7)}`;
-      const res = await api.discover.subscribe(subscribingSurawali.id, "monthly", txnId);
-      if (res.success) {
-        toast.success(`Successfully subscribed to ${subscribingSurawali.name}!`);
-        const subRes = await api.discover.listSubscriptions();
-        if (subRes.success && Array.isArray(subRes.data)) {
-          const active = subRes.data.filter((s: any) => s.status === "active" && s.endDate > Date.now());
-          setSubscriptions(active);
-        }
+  // Filtered & Paginated Items
+  const filteredExploreItems = useMemo(() => {
+    return exploreItems.filter((item) => {
+      // Keyword search
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const matchTitle = item.title.toLowerCase().includes(q);
+        const matchPurpose = item.purpose.toLowerCase().includes(q);
+        const matchDesc = item.description.toLowerCase().includes(q);
+        if (!matchTitle && !matchPurpose && !matchDesc) return false;
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to subscribe");
-    } finally {
-      setPaymentModalOpen(false);
-      setSubscribingSurawali(null);
-    }
-  };
+
+      // Chip Filter
+      if (activeChip !== "All") {
+        const chip = activeChip.toLowerCase();
+        const inTitle = item.title.toLowerCase().includes(chip);
+        const inPurpose = item.purpose.toLowerCase().includes(chip);
+        const inDesc = item.description.toLowerCase().includes(chip);
+        if (!inTitle && !inPurpose && !inDesc) return false;
+      }
+
+      // Dropdown Param Filter
+      if (selectedParam && item.paramMatch !== selectedParam) {
+        return false;
+      }
+
+      // Dropdown Timing Filter
+      if (selectedTimingId && item.timingMatch !== selectedTimingId) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [exploreItems, searchQuery, activeChip, selectedParam, selectedTimingId]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredExploreItems.length / itemsPerPage));
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredExploreItems.slice(start, start + itemsPerPage);
+  }, [filteredExploreItems, currentPage, itemsPerPage]);
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -457,7 +407,7 @@ export function SurawaliHome() {
     setCurrentPage(1);
   };
 
-  const filterPills = [
+  const filterPills = config.filters || [
     "All",
     "Disorder Relief",
     "Stress Relief",
@@ -473,27 +423,33 @@ export function SurawaliHome() {
     <AppShell>
       <div 
         className="space-y-8 max-w-[1360px] mx-auto pb-24"
-        style={{ "--theme-color": "#7C1C24" } as React.CSSProperties}
+        style={{ "--theme-color": currentTheme.primary } as React.CSSProperties}
       >
         {/* ── 1. ACTIVE SANJEEVANI PATHWAY HERO BANNER ── */}
         <section 
           aria-label="Active Sanjeevani Pathway"
-          className="relative overflow-hidden rounded-[24px] border border-[#B88A2A]/20 bg-gradient-to-r from-[#F7EFE3] via-[#F3E2CB] to-[#E9CEAB] p-6 sm:p-8 md:p-10 shadow-xs"
+          className={`relative overflow-hidden rounded-[24px] border ${currentTheme.heroBorder} bg-gradient-to-r ${currentTheme.heroGradient} p-6 sm:p-8 md:p-10 shadow-xs`}
         >
-          {/* Subtle background glow & lotus watermark motif */}
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-600 via-amber-700 to-transparent blur-2xl" />
+          {/* Subtle background glow & watermark motif */}
+          <div className={`absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] ${currentTheme.glowColor} blur-2xl`} />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             {/* Left Content */}
             <div className="space-y-3 max-w-xl">
-              <span className="inline-block text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#7C1C24]">
+              <span 
+                className="inline-block text-[11px] font-extrabold uppercase tracking-[0.2em]"
+                style={{ color: currentTheme.primary }}
+              >
                 ACTIVE SANJEEVANI PATHWAY
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-[40px] font-bold text-[#65151C] leading-[1.15] tracking-tight">
-                {activeCategory === "devotional" ? "Krishna Sanjeevani" : config.name}
+              <h2 
+                className="font-serif text-3xl sm:text-4xl lg:text-[40px] font-bold leading-[1.15] tracking-tight"
+                style={{ color: currentTheme.primaryDark }}
+              >
+                {config.name}
               </h2>
               <p className="text-xs sm:text-sm text-[#3A2A1A]/90 leading-relaxed font-medium">
-                Therapeutic sound frequencies calibrated to support physical and neurological wellbeing through Raga Chikitsa.
+                {config.description}
               </p>
               <div className="pt-2">
                 <button
@@ -501,7 +457,8 @@ export function SurawaliHome() {
                     const el = document.getElementById("explore-surawalis");
                     if (el) el.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="press inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#7C1C24] hover:bg-[#65151C] text-white text-xs sm:text-[13px] font-bold shadow-md shadow-[#7C1C24]/25 transition-all cursor-pointer"
+                  style={{ backgroundColor: currentTheme.primary }}
+                  className="press inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-xs sm:text-[13px] font-bold shadow-md transition-all cursor-pointer hover:opacity-90"
                 >
                   <span>Continue Your Journey</span>
                   <ArrowRight className="h-4 w-4" />
@@ -510,13 +467,18 @@ export function SurawaliHome() {
             </div>
 
             {/* Right Sloka & Quote Card */}
-            <div className="shrink-0 lg:max-w-xs xl:max-w-sm rounded-2xl bg-white/40 backdrop-blur-md border border-white/60 p-5 shadow-2xs space-y-2 text-right">
-              <p className="font-serif italic text-xs sm:text-[13px] text-[#65151C]/90 leading-snug">
-                "Let the divine frequencies restore your natural harmony."
+            <div className="shrink-0 lg:max-w-xs xl:max-w-sm rounded-2xl bg-white/50 backdrop-blur-md border border-white/70 p-5 shadow-2xs space-y-2 text-right">
+              <p 
+                className="font-serif italic text-xs sm:text-[13px] leading-snug"
+                style={{ color: currentTheme.primaryDark }}
+              >
+                "{currentTheme.quoteTitle}"
               </p>
-              <p className="font-serif text-sm font-bold text-[#7C1C24] leading-relaxed">
-                ॐ सर्वे भवन्तु सुखिनः<br />
-                सर्वे सन्तु निरामयाः।
+              <p 
+                className="font-serif text-sm font-bold leading-relaxed whitespace-pre-line"
+                style={{ color: currentTheme.primary }}
+              >
+                {currentTheme.quoteText}
               </p>
             </div>
           </div>
@@ -531,7 +493,8 @@ export function SurawaliHome() {
             <div className="flex items-center gap-3">
               <Link
                 to="/subscription"
-                className="text-xs font-bold text-[#7C1C24] hover:underline flex items-center gap-1"
+                style={{ color: currentTheme.primary }}
+                className="text-xs font-bold hover:underline flex items-center gap-1"
               >
                 <span>View All</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -547,7 +510,10 @@ export function SurawaliHome() {
             <div className="lg:col-span-2">
               {loading ? (
                 <div className="h-48 rounded-[20px] border border-dashed border-border bg-surface flex items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-[#7C1C24]" />
+                  <Loader2 
+                    className="h-6 w-6 animate-spin" 
+                    style={{ color: currentTheme.primary }}
+                  />
                 </div>
               ) : filteredSubscriptions.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -555,7 +521,7 @@ export function SurawaliHome() {
                     <div
                       key={sub.id}
                       onClick={() => navigate({ to: "/discover", search: { search: sub.surawaliName } })}
-                      className="press group rounded-[20px] border border-border/70 bg-surface p-4 flex flex-col justify-between space-y-3.5 shadow-xs hover:border-[#7C1C24]/40 hover:shadow-md transition-all duration-300 cursor-pointer"
+                      className="press group rounded-[20px] border border-border/70 bg-surface p-4 flex flex-col justify-between space-y-3.5 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer"
                     >
                       <div className="space-y-3">
                         {/* Artwork Banner */}
@@ -566,12 +532,15 @@ export function SurawaliHome() {
                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-                          <div className="absolute top-2.5 left-2.5 z-10 rounded-full bg-white/90 backdrop-blur-md px-2.5 py-0.5 text-[9px] font-extrabold text-[#7C1C24] uppercase tracking-wider shadow-xs">
+                          <div 
+                            className="absolute top-2.5 left-2.5 z-10 rounded-full bg-white/90 backdrop-blur-md px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shadow-xs"
+                            style={{ color: currentTheme.primary }}
+                          >
                             SUBSCRIBED
                           </div>
                           <div className="absolute bottom-2.5 left-3 text-white">
                             <p className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
-                              RAGA CHIKITSA
+                              {currentTheme.subTag}
                             </p>
                             <h4 className="font-serif text-base font-bold leading-tight">
                               {sub.surawaliName}
@@ -589,7 +558,7 @@ export function SurawaliHome() {
                       {/* Card Footer */}
                       <div className="flex items-center justify-between pt-2 border-t border-border/50">
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                          <Clock className="h-3.5 w-3.5 text-[#B88A2A]" />
+                          <Clock className="h-3.5 w-3.5" style={{ color: currentTheme.primary }} />
                           <span>30 min</span>
                         </div>
                         <button
@@ -597,7 +566,8 @@ export function SurawaliHome() {
                             e.stopPropagation();
                             handlePlayPreview(sub.surawaliName, "Subscribed active session", true);
                           }}
-                          className="press h-8 w-8 rounded-full bg-[#7C1C24] text-white flex items-center justify-center hover:scale-105 shadow-sm transition-transform cursor-pointer"
+                          style={{ backgroundColor: currentTheme.primary }}
+                          className="press h-8 w-8 rounded-full text-white flex items-center justify-center hover:scale-105 shadow-sm transition-transform cursor-pointer"
                         >
                           <Play className="h-3.5 w-3.5 fill-current ml-0.5" />
                         </button>
@@ -607,7 +577,10 @@ export function SurawaliHome() {
                 </div>
               ) : (
                 <div className="h-full min-h-[180px] rounded-[20px] border border-border/80 bg-gradient-to-br from-[#FAF6F0] to-[#F5ECE0] p-6 flex flex-col items-center justify-center text-center space-y-3 shadow-2xs">
-                  <div className="h-10 w-10 rounded-full bg-[#F7E6E7] text-[#7C1C24] flex items-center justify-center">
+                  <div 
+                    className="h-10 w-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: `${currentTheme.primary}18`, color: currentTheme.primary }}
+                  >
                     <Sparkles className="h-5 w-5" />
                   </div>
                   <div>
@@ -621,7 +594,8 @@ export function SurawaliHome() {
                       const el = document.getElementById("explore-surawalis");
                       if (el) el.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="press px-4 py-2 rounded-full bg-[#7C1C24] text-white text-xs font-bold shadow-xs hover:bg-[#65151C] transition-all cursor-pointer"
+                    style={{ backgroundColor: currentTheme.primary }}
+                    className="press px-4 py-2 rounded-full text-white text-xs font-bold shadow-xs hover:opacity-90 transition-all cursor-pointer"
                   >
                     Explore Surawalis
                   </button>
@@ -630,27 +604,38 @@ export function SurawaliHome() {
             </div>
 
             {/* Personalized Healing Journey Card */}
-            <div className="rounded-[20px] border border-amber-900/10 bg-gradient-to-br from-[#FAF5EE] to-[#F3EADB] p-6 flex flex-col items-center justify-center text-center space-y-3 shadow-xs">
-              <div className="h-14 w-14 rounded-full bg-white shadow-xs border border-amber-900/10 flex items-center justify-center text-[#B88A2A]">
-                <Sparkles className="h-7 w-7 text-[#B88A2A]" />
+            <div className={`rounded-[20px] border border-border/70 bg-gradient-to-br ${currentTheme.cardBg} p-6 flex flex-col items-center justify-center text-center space-y-3 shadow-xs`}>
+              <div 
+                className="h-14 w-14 rounded-full bg-white shadow-xs border border-border/50 flex items-center justify-center"
+                style={{ color: currentTheme.primary }}
+              >
+                <Sparkles className="h-7 w-7" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-serif text-base font-bold text-[#7C1C24]">
+                <h4 
+                  className="font-serif text-base font-bold"
+                  style={{ color: currentTheme.primaryDark }}
+                >
                   Your healing journey is in progress
                 </h4>
                 <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
-                  Listen daily to experience the full benefits of Raga Chikitsa.
+                  {config.bannerText}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Plato Quote Card */}
-          <div className="rounded-2xl border border-amber-900/10 bg-[#FDF9F3] p-4.5 flex items-center gap-3.5 shadow-2xs">
-            <Quote className="h-5 w-5 text-[#B88A2A] shrink-0 rotate-180" />
+          <div className="rounded-2xl border border-border/60 bg-[#FDF9F3] p-4.5 flex items-center gap-3.5 shadow-2xs">
+            <Quote className="h-5 w-5 shrink-0 rotate-180" style={{ color: currentTheme.primary }} />
             <p className="font-serif italic text-xs sm:text-[13px] text-foreground/85 leading-relaxed flex-1">
               "Music gives a soul to the universe, wings to the mind, flight to the imagination, and life to everything."
-              <span className="ml-2 not-italic font-sans text-[11px] font-bold text-[#7C1C24]">— Plato</span>
+              <span 
+                className="ml-2 not-italic font-sans text-[11px] font-bold"
+                style={{ color: currentTheme.primary }}
+              >
+                — Plato
+              </span>
             </p>
           </div>
         </section>
@@ -668,7 +653,8 @@ export function SurawaliHome() {
             </div>
             <Link
               to="/discover"
-              className="text-xs font-bold text-[#7C1C24] hover:underline flex items-center gap-1 shrink-0"
+              style={{ color: currentTheme.primary }}
+              className="text-xs font-bold hover:underline flex items-center gap-1 shrink-0"
             >
               <span>View All Surawalis</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -686,10 +672,11 @@ export function SurawaliHome() {
                     setActiveChip(pill);
                     setCurrentPage(1);
                   }}
+                  style={isSelected ? { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary } : {}}
                   className={`press shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all select-none cursor-pointer border ${
                     isSelected
-                      ? "bg-[#7C1C24] border-[#7C1C24] text-white shadow-xs"
-                      : "bg-surface border-border text-foreground hover:border-[#7C1C24]/50 hover:bg-[#FDF9F5]"
+                      ? "text-white shadow-xs"
+                      : "bg-surface border-border text-foreground hover:bg-secondary"
                   }`}
                 >
                   {pill}
@@ -715,8 +702,8 @@ export function SurawaliHome() {
                       setSearchQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    placeholder="Search by name, tags, or benefits..."
-                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-background text-xs sm:text-sm outline-none focus:border-[#7C1C24] focus:ring-1 focus:ring-[#7C1C24] transition-all"
+                    placeholder={config.placeholderSearch || "Search by name, tags, or benefits..."}
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-background text-xs sm:text-sm outline-none transition-all"
                   />
                 </div>
               </div>
@@ -732,7 +719,7 @@ export function SurawaliHome() {
                     setSelectedParam(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-full h-10 px-3 rounded-xl border border-border bg-background text-xs sm:text-sm outline-none focus:border-[#7C1C24] focus:ring-1 focus:ring-[#7C1C24] cursor-pointer"
+                  className="w-full h-10 px-3 rounded-xl border border-border bg-background text-xs sm:text-sm outline-none cursor-pointer"
                 >
                   <option value="">All Options</option>
                   {paramDropdownList.map((item) => (
@@ -748,44 +735,46 @@ export function SurawaliHome() {
                 <label className="block text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                   Best Listening Time
                 </label>
-                <div className="flex gap-2">
-                  <select
-                    value={selectedTimingId}
-                    onChange={(e) => {
-                      setSelectedTimingId(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="w-full h-10 px-3 rounded-xl border border-border bg-background text-xs sm:text-sm outline-none focus:border-[#7C1C24] focus:ring-1 focus:ring-[#7C1C24] cursor-pointer"
-                  >
-                    <option value="">Any Time</option>
-                    {catalog?.timings.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <button
-                    onClick={resetFilters}
-                    title="Reset Filters"
-                    className="press shrink-0 h-10 px-3 rounded-xl border border-border bg-background hover:bg-secondary text-xs font-bold text-muted-foreground flex items-center gap-1 cursor-pointer transition-colors"
-                  >
-                    <SlidersHorizontal className="h-3.5 w-3.5" />
-                    <span className="hidden xl:inline">Reset</span>
-                  </button>
-                </div>
+                <select
+                  value={selectedTimingId}
+                  onChange={(e) => {
+                    setSelectedTimingId(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full h-10 px-3 rounded-xl border border-border bg-background text-xs sm:text-sm outline-none cursor-pointer"
+                >
+                  <option value="">Any Time</option>
+                  {catalog.timings.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
+
+            {/* Reset Button */}
+            {(searchQuery || selectedParam || selectedTimingId || activeChip !== "All") && (
+              <div className="mt-4 pt-3 border-t border-border flex justify-end">
+                <button
+                  onClick={resetFilters}
+                  className="press text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-1.5 cursor-pointer"
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  <span>Reset All Filters</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* ── 4. SURAWALI RESULT ROWS LIST ── */}
           <div className="space-y-3.5">
             {loading ? (
               <div className="h-48 rounded-2xl border border-border bg-surface flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-[#7C1C24]" />
+                <Loader2 className="h-8 w-8 animate-spin" style={{ color: currentTheme.primary }} />
               </div>
-            ) : exploreResults.length > 0 ? (
-              paginatedResults.map((item, idx) => {
+            ) : paginatedItems.length > 0 ? (
+              paginatedItems.map((item, idx) => {
                 const isSubscribed = activeCategory === "devotional" 
                   ? subscriptions.some(s => s.surawaliId === item.surawaliId)
                   : activeCategory === "pregnancy"
@@ -799,7 +788,7 @@ export function SurawaliHome() {
                   <div
                     key={item.id}
                     onClick={() => navigate({ to: "/discover", search: { search: item.title } })}
-                    className="press group rounded-2xl border border-border/80 bg-surface p-4 sm:p-4.5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-[#7C1C24]/40 hover:shadow-md transition-all duration-300 cursor-pointer shadow-2xs"
+                    className="press group rounded-2xl border border-border/80 bg-surface p-4 sm:p-4.5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md transition-all duration-300 cursor-pointer shadow-2xs"
                   >
                     {/* Left: Thumbnail & Details */}
                     <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
@@ -816,7 +805,10 @@ export function SurawaliHome() {
                           <h4 className="font-serif text-base sm:text-lg font-bold text-foreground leading-snug">
                             {item.title}
                           </h4>
-                          <span className="rounded-full bg-[#FDF2E2] text-[#945617] border border-[#B88A2A]/20 px-2.5 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider">
+                          <span 
+                            className="rounded-full border px-2.5 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider"
+                            style={{ backgroundColor: `${currentTheme.primary}12`, borderColor: `${currentTheme.primary}30`, color: currentTheme.primary }}
+                          >
                             {badge.label}
                           </span>
                         </div>
@@ -828,17 +820,17 @@ export function SurawaliHome() {
                         {/* Meta Chips */}
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground font-medium pt-0.5">
                           <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3 text-[#B88A2A]" />
+                            <Clock className="h-3 w-3" style={{ color: currentTheme.primary }} />
                             <span>{item.duration}</span>
                           </span>
                           <span>•</span>
                           <span className="flex items-center gap-1">
-                            <Sun className="h-3 w-3 text-[#B88A2A]" />
+                            <Sun className="h-3 w-3" style={{ color: currentTheme.primary }} />
                             <span>{item.timing}</span>
                           </span>
                           <span>•</span>
                           <span className="flex items-center gap-1">
-                            <Heart className="h-3 w-3 text-[#7C1C24]" />
+                            <Heart className="h-3 w-3" style={{ color: currentTheme.primary }} />
                             <span>{badge.benefit}</span>
                           </span>
                         </div>
@@ -875,7 +867,8 @@ export function SurawaliHome() {
                             e.stopPropagation();
                             handleSubscribeClick({ id: item.surawaliId, name: item.title });
                           }}
-                          className="press flex-1 md:flex-none h-9.5 px-5 rounded-xl bg-[#7C1C24] hover:bg-[#65151C] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm shadow-[#7C1C24]/20 transition-all cursor-pointer"
+                          style={{ backgroundColor: currentTheme.primary }}
+                          className="press flex-1 md:flex-none h-9.5 px-5 rounded-xl text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer hover:opacity-90"
                         >
                           <Lock className="h-3.5 w-3.5" />
                           <span>Subscribe</span>
@@ -911,9 +904,10 @@ export function SurawaliHome() {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
+                    style={isSelected ? { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary } : {}}
                     className={`press h-9 w-9 rounded-full text-xs font-bold transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-[#7C1C24] text-white shadow-xs"
+                        ? "text-white shadow-xs"
                         : "bg-surface border border-border/80 text-foreground hover:bg-secondary"
                     }`}
                   >
@@ -935,10 +929,13 @@ export function SurawaliHome() {
 
         {/* ── 6. PROFESSIONAL AUDITORY WELLNESS STATEMENT ── */}
         <section aria-label="Medical Disclaimer" className="pt-2">
-          <div className="rounded-2xl border border-amber-900/15 bg-gradient-to-r from-[#FAF5EC] to-[#F5ECE0] p-5 flex gap-4 items-start shadow-xs">
-            <ShieldCheck className="h-5 w-5 text-[#B88A2A] shrink-0 mt-0.5" />
+          <div className="rounded-2xl border border-border/60 bg-gradient-to-r from-[#FAF5EC] to-[#F5ECE0] p-5 flex gap-4 items-start shadow-xs">
+            <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: currentTheme.primary }} />
             <div className="space-y-1">
-              <h4 className="font-serif font-bold text-xs sm:text-[13px] text-[#65151C]">
+              <h4 
+                className="font-serif font-bold text-xs sm:text-[13px]"
+                style={{ color: currentTheme.primaryDark }}
+              >
                 Professional Auditory Wellness Statement
               </h4>
               <p className="text-[11.5px] leading-relaxed text-[#3A2A1A]/85">
@@ -955,7 +952,10 @@ export function SurawaliHome() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-6 shadow-lift space-y-4 animate-scaleUp">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-[#7C1C24] text-white flex items-center justify-center">
+              <div 
+                className="h-10 w-10 rounded-full text-white flex items-center justify-center"
+                style={{ backgroundColor: currentTheme.primary }}
+              >
                 <Crown className="h-5 w-5" />
               </div>
               <div>
@@ -991,7 +991,8 @@ export function SurawaliHome() {
               </button>
               <button
                 onClick={handlePaymentSubmit}
-                className="press flex-1 h-10 rounded-xl bg-[#7C1C24] hover:bg-[#65151C] text-xs font-bold text-white shadow-md shadow-[#7C1C24]/20 cursor-pointer transition-all"
+                style={{ backgroundColor: currentTheme.primary }}
+                className="press flex-1 h-10 rounded-xl text-xs font-bold text-white shadow-md cursor-pointer transition-all hover:opacity-90"
               >
                 Mock Success Payment
               </button>

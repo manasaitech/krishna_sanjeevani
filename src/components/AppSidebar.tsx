@@ -38,15 +38,15 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
         >
           <img
             src={logoWithoutText}
-            alt="Krishna Sanjeevani Logo"
+            alt={`${activeConfig?.name || "Krishna Sanjeevani"} Logo`}
             className="h-10 w-10 shrink-0 object-contain drop-shadow-sm"
           />
           <div className="min-w-0">
             <span className="block truncate font-display text-[15px] font-bold text-foreground leading-snug tracking-tight">
-              Krishna Sanjeevani
+              {activeConfig?.name || "Krishna Sanjeevani"}
             </span>
             <span className="block truncate text-[11px] font-medium text-muted-foreground">
-              Therapeutic Sound Healing
+              {activeConfig?.subtitle || "Therapeutic Sound Healing"}
             </span>
           </div>
         </Link>
@@ -57,19 +57,21 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.to;
+              const primaryColor = activeConfig?.theme?.primary || "#7C1C24";
               return (
                 <li key={item.to}>
                   <Link
                     to={item.to}
                     onClick={onNavigate}
+                    style={isActive ? { backgroundColor: primaryColor } : {}}
                     className={cn(
                       "press flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[13.5px] font-semibold transition-all duration-200",
                       isActive
-                        ? "bg-[#7C1C24] text-white shadow-md shadow-[#7C1C24]/20"
-                        : "text-muted-foreground hover:bg-[#F7E6E7]/60 hover:text-[#7C1C24]"
+                        ? "text-white shadow-md shadow-black/10"
+                        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                     )}
                   >
-                    <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-white" : "text-muted-foreground group-hover:text-[#7C1C24]")} />
+                    <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-white" : "text-muted-foreground")} />
                     <span className="truncate">{item.label}</span>
                   </Link>
                 </li>
@@ -82,14 +84,24 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
       {/* Bottom Section: Informative Wellness Cards */}
       <div className="space-y-3 pt-2">
         {/* Your Journey Card */}
-        <div className="rounded-2xl border border-amber-900/10 bg-[#F8F5EF] p-3.5 flex items-center gap-3 shadow-xs">
-          <div className="h-9 w-9 rounded-xl bg-[#F7E6E7] flex items-center justify-center shrink-0 text-[#7C1C24]">
+        <div className="rounded-2xl border border-border/70 bg-[#F8F5EF] p-3.5 flex items-center gap-3 shadow-xs">
+          <div 
+            className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ 
+              backgroundColor: `${activeConfig?.theme?.primary || "#7C1C24"}15`,
+              color: activeConfig?.theme?.primary || "#7C1C24"
+            }}
+          >
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="min-w-0">
             <h4 className="text-[12px] font-bold text-foreground leading-tight">Your Journey</h4>
             <p className="text-[10.5px] text-muted-foreground leading-tight mt-0.5">
-              Healing through the ancient science of Raga Chikitsa
+              {activeCategory === "pregnancy"
+                ? "Sacred sound frequencies for a harmonious pregnancy"
+                : activeCategory === "secular"
+                  ? "Circadian-aligned wellness for stress reduction & focus"
+                  : "Healing through the ancient science of Raga Chikitsa"}
             </p>
           </div>
         </div>
