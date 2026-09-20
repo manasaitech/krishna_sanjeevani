@@ -89,33 +89,48 @@ class CategoryColors extends ThemeExtension<CategoryColors> {
   final Color catLight;
   final Color catAccent;
   final Color catForeground;
+  final Color catText;
+  final Color catQuoteBg;
+  final Color catSubtext;
 
   const CategoryColors({
     required this.cat,
     required this.catLight,
     required this.catAccent,
     required this.catForeground,
+    required this.catText,
+    required this.catQuoteBg,
+    required this.catSubtext,
   });
 
   static const CategoryColors devotional = CategoryColors(
     cat: Color(0xFF7C1C24),
-    catLight: Color(0xFFF7E6E7),
+    catLight: Color(0xFFF3E8D0),
     catAccent: Color(0xFFC9A84C),
     catForeground: Color(0xFFFFFFFF),
+    catText: Color(0xFF4D0F1B),
+    catQuoteBg: Color(0xFFFAF6EE),
+    catSubtext: Color(0xFF8A7963),
   );
 
   static const CategoryColors secular = CategoryColors(
     cat: Color(0xFF0F766E),
     catLight: Color(0xFFE6F5F3),
-    catAccent: Color(0xFF0F766E),
-    catForeground: Color(0xFFFCFCFC),
+    catAccent: Color(0xFF14B8A6),
+    catForeground: Color(0xFFFFFFFF),
+    catText: Color(0xFF0D4A44),
+    catQuoteBg: Color(0xFFECF5F2),
+    catSubtext: Color(0xFF4A6B65),
   );
 
   static const CategoryColors pregnancy = CategoryColors(
-    cat: Color(0xFFC07B8A),
-    catLight: Color(0xFFF5E4E8),
-    catAccent: Color(0xFFC07B8A),
-    catForeground: Color(0xFFFCFCFC),
+    cat: Color(0xFFD01C5C),
+    catLight: Color(0xFFFFF0F5),
+    catAccent: Color(0xFFFB7185),
+    catForeground: Color(0xFFFFFFFF),
+    catText: Color(0xFF7A0C35),
+    catQuoteBg: Color(0xFFFAF0F4),
+    catSubtext: Color(0xFF7B4E5C),
   );
 
   static const CategoryColors devotionalDark = CategoryColors(
@@ -123,6 +138,9 @@ class CategoryColors extends ThemeExtension<CategoryColors> {
     catLight: Color(0xFF38181E),
     catAccent: Color(0xFFE0C475),
     catForeground: Color(0xFF141218),
+    catText: Color(0xFFFAD2E1),
+    catQuoteBg: Color(0xFF2D161C),
+    catSubtext: Color(0xFFC4B5A8),
   );
 
   static const CategoryColors secularDark = CategoryColors(
@@ -130,6 +148,9 @@ class CategoryColors extends ThemeExtension<CategoryColors> {
     catLight: Color(0xFF113835),
     catAccent: Color(0xFF2DD4BF),
     catForeground: Color(0xFF141218),
+    catText: Color(0xFFDDEBE4),
+    catQuoteBg: Color(0xFF132D29),
+    catSubtext: Color(0xFFA5C4BF),
   );
 
   static const CategoryColors pregnancyDark = CategoryColors(
@@ -137,6 +158,9 @@ class CategoryColors extends ThemeExtension<CategoryColors> {
     catLight: Color(0xFF3D2127),
     catAccent: Color(0xFFF4A3B4),
     catForeground: Color(0xFF141218),
+    catText: Color(0xFFFDE2E8),
+    catQuoteBg: Color(0xFF331620),
+    catSubtext: Color(0xFFD4B0BC),
   );
 
   static CategoryColors ofCategory(AppCategory category, {bool isDark = false}) {
@@ -166,12 +190,18 @@ class CategoryColors extends ThemeExtension<CategoryColors> {
     Color? catLight,
     Color? catAccent,
     Color? catForeground,
+    Color? catText,
+    Color? catQuoteBg,
+    Color? catSubtext,
   }) {
     return CategoryColors(
       cat: cat ?? this.cat,
       catLight: catLight ?? this.catLight,
       catAccent: catAccent ?? this.catAccent,
       catForeground: catForeground ?? this.catForeground,
+      catText: catText ?? this.catText,
+      catQuoteBg: catQuoteBg ?? this.catQuoteBg,
+      catSubtext: catSubtext ?? this.catSubtext,
     );
   }
 
@@ -183,6 +213,9 @@ class CategoryColors extends ThemeExtension<CategoryColors> {
       catLight: Color.lerp(catLight, other.catLight, t)!,
       catAccent: Color.lerp(catAccent, other.catAccent, t)!,
       catForeground: Color.lerp(catForeground, other.catForeground, t)!,
+      catText: Color.lerp(catText, other.catText, t)!,
+      catQuoteBg: Color.lerp(catQuoteBg, other.catQuoteBg, t)!,
+      catSubtext: Color.lerp(catSubtext, other.catSubtext, t)!,
     );
   }
 }
