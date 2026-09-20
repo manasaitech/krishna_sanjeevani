@@ -3,6 +3,7 @@ import {
   House,
   Sparkles,
   Music,
+  Headphones,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/app-state";
