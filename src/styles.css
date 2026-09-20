@@ -160,18 +160,27 @@
   --cat: oklch(0.372 0.121 15.7);
   --cat-light: oklch(0.945 0.019 12);
   --cat-accent: oklch(0.719 0.128 87.3);
+  --primary: oklch(0.372 0.121 15.7);
+  --primary-hover: oklch(0.300 0.110 15.7);
+  --sidebar-primary: oklch(0.372 0.121 15.7);
 }
 
 [data-category="secular"] {
   --cat: oklch(0.474 0.089 181.5);
   --cat-light: oklch(0.958 0.029 178);
   --cat-accent: oklch(0.474 0.089 181.5);
+  --primary: oklch(0.474 0.089 181.5);
+  --primary-hover: oklch(0.400 0.080 181.5);
+  --sidebar-primary: oklch(0.474 0.089 181.5);
 }
 
 [data-category="pregnancy"] {
   --cat: oklch(0.646 0.079 5.9);
   --cat-light: oklch(0.958 0.017 4);
   --cat-accent: oklch(0.646 0.079 5.9);
+  --primary: oklch(0.646 0.079 5.9);
+  --primary-hover: oklch(0.550 0.075 5.9);
+  --sidebar-primary: oklch(0.646 0.079 5.9);
 }
 
 @layer base {
