@@ -57,20 +57,20 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
   };
 
   useEffect(() => {
-    // Slide 1 -> Slide 2 at 2.2s
+    // Slide 1 -> Slide 2 at 2.5s
     const t1 = setTimeout(() => {
       setCurrentSlide(1);
-    }, 2200);
+    }, 2500);
 
-    // Slide 2 -> Slide 3 at 4.4s
+    // Slide 2 -> Slide 3 at 5.0s
     const t2 = setTimeout(() => {
       setCurrentSlide(2);
-    }, 4400);
+    }, 5000);
 
-    // Automatically transition to landing page at 6.6s
+    // Automatically transition to landing page at 7.5s
     const t3 = setTimeout(() => {
       dismiss();
-    }, 6600);
+    }, 7500);
 
     return () => {
       clearTimeout(t1);
@@ -105,7 +105,7 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
             e.stopPropagation();
             dismiss();
           }}
-          className="flex items-center gap-1.5 rounded-full bg-white/85 backdrop-blur-sm border border-amber-900/15 px-4 py-1.5 text-xs font-semibold text-[#4D0F1B] hover:bg-white transition-all shadow-sm cursor-pointer"
+          className="flex items-center gap-1.5 rounded-full bg-white/85 backdrop-blur-sm border border-amber-900/15 px-4 py-1.5 text-xs font-semibold text-[#4D0F1B] hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-sm cursor-pointer"
         >
           <span>Enter Website</span>
           <ArrowRight className="h-3.5 w-3.5 text-[#C9A84C]" />
@@ -169,7 +169,7 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
         </div>
       </div>
 
-      {/* 3. Bottom Dedication Details */}
+      {/* 3. Bottom Dedication Details & Interactive Click Button */}
       <div className="pb-8 sm:pb-10 w-full max-w-lg px-6 flex flex-col items-center text-center z-10">
         <span className="text-[10.5px] sm:text-[11px] font-extrabold tracking-[0.25em] text-[#C9A84C] uppercase font-sans">
           DEDICATED TO
@@ -177,13 +177,13 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
         <h2 className="mt-1.5 text-xl sm:text-2xl md:text-3xl font-bold font-serif text-[#4D0F1B] tracking-tight transition-all duration-500">
           {currentData.title}
         </h2>
-        <div className="h-px w-16 bg-[#C9A84C]/50 my-2.5" />
+        <div className="h-px w-16 bg-[#C9A84C]/50 my-2" />
         <p className="text-xs sm:text-sm italic font-serif text-[#8A7963] max-w-md transition-all duration-500">
           {currentData.role}
         </p>
 
-        {/* Slide progress indicators & Tap anywhere hint */}
-        <div className="flex items-center gap-1.5 mt-4">
+        {/* Slide progress indicators */}
+        <div className="flex items-center gap-1.5 mt-3">
           {SLIDES.map((_, idx) => (
             <button
               key={idx}
@@ -201,10 +201,18 @@ export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps)
           ))}
         </div>
 
-        <div className="mt-3 flex items-center gap-1.5 text-[11px] text-[#4D0F1B]/70 font-medium">
-          <Volume2 className="h-3.5 w-3.5 text-[#C9A84C]" />
-          <span>Click anywhere to enter & start listening</span>
-        </div>
+        {/* Prominent Click Anywhere Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            dismiss();
+          }}
+          className="press mt-4 flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#4D0F1B] via-[#631422] to-[#7C1C24] text-white px-6 py-2.5 text-xs sm:text-sm font-semibold shadow-lg shadow-[#4D0F1B]/25 hover:scale-105 active:scale-95 transition-all duration-300 border border-[#C9A84C]/50 cursor-pointer"
+        >
+          <Volume2 className="h-4 w-4 text-[#C9A84C] animate-pulse" />
+          <span>Click anywhere to start listening</span>
+          <ArrowRight className="h-4 w-4 text-[#C9A84C]" />
+        </button>
       </div>
     </div>
   );
