@@ -110,7 +110,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   // ── Player State ──────────────────────────────────────
-  const [category, setCategory] = useState<CategoryId>("devotional");
+  const [category, setCategoryState] = useState<CategoryId>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ks_category");
+      if (saved && (saved === "devotional" || saved === "secular" || saved === "pregnancy")) {
+        return saved as CategoryId;
+      }
+    }
+    return "devotional";
+  });
+
+  const setCategory = useCallback((c: CategoryId) => {
+    setCategoryState(c);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ks_category", c);
+      document.documentElement.setAttribute("data-category", c);
+    }
+  }, []);
   const [favorites, setFavorites] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("ks_favorites");

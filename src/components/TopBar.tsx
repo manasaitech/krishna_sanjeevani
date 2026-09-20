@@ -146,7 +146,7 @@ export function TopBar({
         {/* Search Bar */}
         <button
           onClick={() => navigate({ to: "/search" })}
-          className="press hidden min-h-10 w-full max-w-md items-center gap-3 rounded-full border border-border/80 bg-surface/90 px-4 text-left text-[12.5px] text-muted-foreground hover:border-[#7C1C24]/40 hover:bg-surface shadow-2xs md:flex transition-all"
+          className="press hidden min-h-10 w-full max-w-md items-center gap-3 rounded-full border border-border/80 bg-surface/90 px-4 text-left text-[12.5px] text-muted-foreground hover:bg-surface shadow-2xs md:flex transition-all"
         >
           <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="truncate">
@@ -175,7 +175,10 @@ export function TopBar({
             >
               <Bell className="h-4 w-4" />
               {hasUnread && (
-                <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-[#7C1C24] border-2 border-surface" />
+                <span 
+                  className="absolute top-2 right-2.5 h-2 w-2 rounded-full border-2 border-surface" 
+                  style={{ backgroundColor: active?.id === "secular" ? "#0F766E" : active?.id === "pregnancy" ? "#D01C5C" : "#7C1C24" }}
+                />
               )}
             </button>
 

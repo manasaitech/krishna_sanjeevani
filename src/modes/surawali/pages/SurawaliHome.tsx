@@ -193,6 +193,55 @@ function getBadgeInfo(purpose: string, type: string): { label: string; benefit: 
   return { label: purpose.toUpperCase(), benefit: "Emotional balance • Vitality" };
 }
 
+const SANJEEVANI_THEMES: Record<
+  "devotional" | "secular" | "pregnancy",
+  {
+    primary: string;
+    primaryDark: string;
+    heroBorder: string;
+    heroGradient: string;
+    glowColor: string;
+    cardBg: string;
+    subTag: string;
+    quoteTitle: string;
+    quoteText: string;
+  }
+> = {
+  devotional: {
+    primary: "#7C1C24",
+    primaryDark: "#4D0F1B",
+    heroBorder: "border-[#EAD3B8]",
+    heroGradient: "from-[#F7EBE1] via-[#F3E2D0] to-[#EBD5BC]",
+    glowColor: "from-[#7C1C24]",
+    cardBg: "from-[#FFF5F5] to-[#FDF4F4]",
+    subTag: "Krishna Sanjeevani",
+    quoteTitle: "Let the divine frequencies restore your natural harmony.",
+    quoteText: "ॐ सर्वे भवन्तु सुखिनः\nसर्वे सन्तु निरामयाः।",
+  },
+  secular: {
+    primary: "#0F766E",
+    primaryDark: "#0B534C",
+    heroBorder: "border-[#B2DED5]",
+    heroGradient: "from-[#E6F4F1] via-[#D8EEE9] to-[#C8E7E0]",
+    glowColor: "from-[#0F766E]",
+    cardBg: "from-[#F4F8F6] to-[#ECF2EF]",
+    subTag: "Arogya Sanjeevani",
+    quoteTitle: "Restore natural equilibrium through circadian acoustics.",
+    quoteText: "स्वस्थस्य स्वास्थ्य रक्षणं,\nआतुरस्य विकार प्रशमनं च।",
+  },
+  pregnancy: {
+    primary: "#D01C5C",
+    primaryDark: "#9C0F42",
+    heroBorder: "border-[#F5C4D1]",
+    heroGradient: "from-[#FDF2F4] via-[#FCE8ED] to-[#FADCE3]",
+    glowColor: "from-[#D01C5C]",
+    cardBg: "from-[#FFF0F5] to-[#FDF2F4]",
+    subTag: "Garbh Sanjeevani",
+    quoteTitle: "Nurture divine life with sacred Garbha Sanskar melodies.",
+    quoteText: "पुत्रं कुरु प्रवरं कुलवर्धनम्,\nगर्भं रक्ष सुशोभनम्।",
+  },
+};
+
 export function SurawaliHome() {
   const {
     category,
@@ -207,6 +256,7 @@ export function SurawaliHome() {
     ? (category as Exclude<CategoryId, "unset">)
     : "devotional";
   const config = sanjeevaniConfigs[activeCategory] || sanjeevaniConfigs.devotional;
+  const currentTheme = SANJEEVANI_THEMES[activeCategory] || SANJEEVANI_THEMES.devotional;
 
   // Master Data & Subscriptions
   const [catalog, setCatalog] = useState<{
