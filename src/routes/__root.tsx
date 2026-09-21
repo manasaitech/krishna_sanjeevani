@@ -149,7 +149,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
     if (authLoading) return;
 
     // ── Route isolation: block access to routes not in current mode ──
-    if (!isRouteAllowedForMode(location.pathname, location.searchStr)) {
+    if (!isRouteAllowedForMode(location.pathname, location.search || location.searchStr)) {
       navigate({ to: modeRoutes.defaultHomePath, search: (prev: any) => prev });
       return;
     }
@@ -191,7 +191,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
   }
 
   // If the requested path is not allowed in the current mode, render 404 (route does not exist)
-  if (!isRouteAllowedForMode(location.pathname, location.searchStr)) {
+  if (!isRouteAllowedForMode(location.pathname, location.search || location.searchStr)) {
     return <NotFoundComponent />;
   }
 

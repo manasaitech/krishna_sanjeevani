@@ -271,6 +271,8 @@ export function SurawaliHome() {
   const [subscriptions, setSubscriptions] = useState<ActiveSub[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const getTimingName = (id: string) => (catalog?.timings || DEFAULT_SURAWALI_CATALOG.timings).find(t => t.id === id)?.name || "Any Time";
+
   // Filters State
   const [activeChip, setActiveChip] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");

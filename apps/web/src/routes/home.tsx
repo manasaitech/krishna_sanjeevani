@@ -4,6 +4,9 @@ import { SurawaliHome } from "@/modes/surawali/pages/SurawaliHome";
 import { EmotionHome } from "@/modes/emotion-remediation/pages/EmotionHome";
 
 export const Route = createFileRoute("/home")({
+  validateSearch: (search: Record<string, unknown>): { flag?: string } => ({
+    flag: typeof search["flag"] === "string" ? search["flag"] : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Home — Krishna Sanjeevani" },

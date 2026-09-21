@@ -21,6 +21,9 @@ import { useMode, getActiveMode } from "@/core/mode";
 import { EmotionHome } from "@/modes/emotion-remediation/pages/EmotionHome";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): { flag?: string } => ({
+    flag: typeof search["flag"] === "string" ? search["flag"] : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Krishna Sanjeevani — The Divine Therapeutic Music" },

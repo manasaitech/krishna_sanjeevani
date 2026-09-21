@@ -46,7 +46,7 @@ function RegisterScreen() {
 
   useEffect(() => {
     if (showDedication) {
-      const t = setTimeout(() => navigate({ to: redirect || "/home" }), 3000);
+      const t = setTimeout(() => navigate({ to: redirect || "/home", search: (prev: any) => prev }), 3000);
       return () => clearTimeout(t);
     }
     return;
@@ -321,7 +321,7 @@ function RegisterScreen() {
         {/* Sign in link */}
         <p className="rg-legal">
           Already have an account?{" "}
-          <Link to="/login" className="rg-link">
+          <Link to="/login" search={(prev: any) => ({ ...prev, redirect })} className="rg-link">
             Sign in
           </Link>
         </p>

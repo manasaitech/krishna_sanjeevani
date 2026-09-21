@@ -42,7 +42,7 @@ function LoginScreen() {
       const res = await loginWithGoogle(response.credential);
       if (res.success) {
         toast.success("Welcome to Krishna Sanjeevani!");
-        navigate({ to: redirect || "/home" });
+        navigate({ to: redirect || "/home", search: (prev: any) => prev });
       } else {
         toast.error(res.message);
       }
@@ -64,7 +64,7 @@ function LoginScreen() {
       const res = await login(email, password);
       if (res.success) {
         toast.success("Welcome to Krishna Sanjeevani!");
-        navigate({ to: redirect || "/home" });
+        navigate({ to: redirect || "/home", search: (prev: any) => prev });
       } else {
         toast.error(res.message);
       }
@@ -203,7 +203,7 @@ function LoginScreen() {
             {/* CTA */}
             <Link
               to="/register"
-              search={{ redirect }}
+              search={(prev: any) => ({ ...prev, redirect })}
               id="ks-get-started-btn"
               className="ks-primary"
               aria-label="Get Started"
@@ -225,7 +225,7 @@ function LoginScreen() {
               </button>
               <Link
                 to="/register"
-                search={{ redirect }}
+                search={(prev: any) => ({ ...prev, redirect })}
                 id="ks-create-account-btn"
                 className="ks-secondary"
                 aria-label="Create account"

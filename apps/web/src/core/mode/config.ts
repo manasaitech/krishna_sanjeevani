@@ -37,16 +37,16 @@ export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
  * During SSR (window is undefined), defaults to "surawali".
  */
 export function getActiveMode(search?: string | Record<string, unknown>): AppMode {
-  if (typeof search === "string") {
+  if (typeof search === "string" && search.trim().length > 0) {
     const flag = new URLSearchParams(search.startsWith("?") ? search : `?${search}`).get("flag");
     if (flag === "1") return "emotion_remediation";
-    return "surawali";
+    if (flag !== null) return "surawali";
   }
-  if (search && typeof search === "object" && "flag" in search) {
+  if (search && typeof search === "object") {
     if (search.flag === "1" || search.flag === 1) return "emotion_remediation";
-    return "surawali";
+    if (search.flag !== undefined && search.flag !== null && search.flag !== "") return "surawali";
   }
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && window.location.search) {
     const flag = new URLSearchParams(window.location.search).get("flag");
     if (flag === "1") return "emotion_remediation";
   }

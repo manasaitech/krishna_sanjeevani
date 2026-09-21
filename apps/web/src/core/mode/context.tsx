@@ -28,11 +28,10 @@ const ModeContext = createContext<ModeContextValue | null>(null);
 
 export function ModeProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const searchStr = location.searchStr || (typeof window !== "undefined" ? window.location.search : "");
 
   const mode = useMemo(() => {
-    return getActiveMode(searchStr);
-  }, [searchStr]);
+    return getActiveMode(location.search || location.searchStr);
+  }, [location.search, location.searchStr]);
 
   const config = useMemo(() => {
     return MODE_CONFIGS[mode];
