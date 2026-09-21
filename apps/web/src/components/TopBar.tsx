@@ -150,7 +150,9 @@ export function TopBar({
         >
           <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="truncate">
-            Search surawalis, ragas, ailments, or benefits...
+            {isEmotionMode
+              ? "Search emotion compositions, doshas, or trajectories..."
+              : "Search surawalis, ragas, ailments, or benefits..."}
           </span>
         </button>
 

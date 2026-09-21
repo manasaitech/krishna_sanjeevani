@@ -97,11 +97,13 @@ export function SidebarBody({ onNavigate }: { onNavigate?: (() => void) | undefi
           <div className="min-w-0">
             <h4 className="text-[12px] font-bold text-foreground leading-tight">Your Journey</h4>
             <p className="text-[10.5px] text-muted-foreground leading-tight mt-0.5">
-              {activeCategory === "pregnancy"
-                ? "Sacred sound frequencies for a harmonious pregnancy"
-                : activeCategory === "secular"
-                  ? "Circadian-aligned wellness for stress reduction & focus"
-                  : "Healing through the ancient science of Raga Chikitsa"}
+              {isEmotionMode
+                ? "Therapeutic frequencies for emotional equilibrium & dosha balance"
+                : activeCategory === "pregnancy"
+                  ? "Sacred sound frequencies for a harmonious pregnancy"
+                  : activeCategory === "secular"
+                    ? "Circadian-aligned wellness for stress reduction & focus"
+                    : "Healing through the ancient science of Raga Chikitsa"}
             </p>
           </div>
         </div>
