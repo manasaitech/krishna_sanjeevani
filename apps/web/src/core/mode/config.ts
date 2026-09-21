@@ -1,9 +1,11 @@
 // ─────────────────────────────────────────────────────────────
-// Core Mode Config — Master Application Mode Switch
+// Core Mode Config — Runtime URL-Based Mode Switch
 //
-// Controlled directly via code:
-//   ACTIVE_APP_MODE = "emotion_remediation"  (Active Emotion Mode)
-//   ACTIVE_APP_MODE = "surawali"             (Active Surawali Mode)
+// The active mode is determined by the URL query parameter:
+//   ?flag=1  → emotion_remediation
+//   (default / anything else) → surawali
+//
+// The same production build supports both modes.
 // ─────────────────────────────────────────────────────────────
 
 import type { AppMode, ModeConfig } from "./types";
@@ -11,15 +13,12 @@ import { surawaliConfig } from "@/modes/surawali/config";
 import { emotionRemediationConfig } from "@/modes/emotion-remediation/config";
 
 /**
- * ─────────────────────────────────────────────────────────────
- * 🎯 MASTER APPLICATION MODE SWITCH
- * Change this single line to switch modes across the entire app!
- * ─────────────────────────────────────────────────────────────
+ * SSR / module-level fallback.
+ * Kept for compatibility with code that imports the constant directly
+ * (e.g. module-level head-meta in __root.tsx). Always resolves to
+ * "surawali" because Surawali is the default mode.
  */
-export const ACTIVE_APP_MODE: AppMode =
-  (import.meta.env?.VITE_APP_MODE as AppMode) === "emotion_remediation"
-    ? "emotion_remediation"
-    : "surawali";
+export const ACTIVE_APP_MODE: AppMode = "surawali";
 
 /** Registry of all available mode configurations */
 export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
@@ -28,11 +27,20 @@ export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
 };
 
 /**
- * Read the active application mode.
- * Evaluates the master code-level switch without depending on .env files.
+ * Read the active application mode at runtime.
+ *
+ * On the client, reads the `flag` query parameter from the current URL:
+ *   ?flag=1  → "emotion_remediation"
+ *   anything else / missing → "surawali"
+ *
+ * During SSR (window is undefined), defaults to "surawali".
  */
 export function getActiveMode(): AppMode {
-  return ACTIVE_APP_MODE;
+  if (typeof window !== "undefined") {
+    const flag = new URLSearchParams(window.location.search).get("flag");
+    if (flag === "1") return "emotion_remediation";
+  }
+  return "surawali";
 }
 
 /**
