@@ -8,7 +8,6 @@ import {
   Scripts,
   useLocation,
   useNavigate,
-  retainSearchParams,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -85,7 +84,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     flag: typeof search["flag"] === "string" ? search["flag"] : undefined,
   }),
   search: {
-    middlewares: [retainSearchParams(["flag"])],
+    middlewares: [
+      ({ search, next }) => {
+        const nextSearch = next(search);
+        if (search && (search as any).flag && !(nextSearch as any).flag) {
+          return { ...nextSearch, flag: (search as any).flag };
+        }
+        return nextSearch;
+      },
+    ],
   },
   head: () => ({
     meta: [
