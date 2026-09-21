@@ -34,15 +34,28 @@ const SLIDES = [
   },
 ];
 
+const SPLASH_STORAGE_KEY = "krishna_sanjeevani_splash_shown";
+
 export function OpeningExperience({ audio, onComplete }: OpeningExperienceProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isDismissing, setIsDismissing] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(SPLASH_STORAGE_KEY) === "true";
+    }
+    return false;
+  });
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
   const dismiss = () => {
     if (isDismissing || isDismissed) return;
+
+    try {
+      localStorage.setItem(SPLASH_STORAGE_KEY, "true");
+    } catch (e) {
+      // Ignore storage error
+    }
     
     // Start audio playback on user interaction / dismissal
     if (audio) {

@@ -40,10 +40,26 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
+const SPLASH_STORAGE_KEY = "krishna_sanjeevani_splash_shown";
+
 function HomePage() {
   const audio = useVerseAudio();
-  const [openingFinished, setOpeningFinished] = useState(false);
+  const [openingFinished, setOpeningFinished] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(SPLASH_STORAGE_KEY) === "true";
+    }
+    return false;
+  });
   const { user } = useApp();
+
+  const handleOpeningComplete = () => {
+    setOpeningFinished(true);
+    try {
+      localStorage.setItem(SPLASH_STORAGE_KEY, "true");
+    } catch (e) {
+      // Ignore storage error
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-cat-light selection:text-cat flex flex-col">
@@ -51,7 +67,7 @@ function HomePage() {
       {!openingFinished && (
         <OpeningExperience
           audio={audio}
-          onComplete={() => setOpeningFinished(true)}
+          onComplete={handleOpeningComplete}
         />
       )}
 
