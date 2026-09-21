@@ -5,9 +5,10 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/reset-password")({
-  validateSearch: (search: Record<string, unknown>): { email?: string } => {
+  validateSearch: (search: Record<string, unknown>): { email?: string; flag?: string } => {
     return {
       email: typeof search.email === "string" ? search.email : undefined,
+      flag: typeof search.flag === "string" ? search.flag : undefined,
     };
   },
   head: () => ({

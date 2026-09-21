@@ -25,10 +25,11 @@ import { toast } from "sonner";
 import { MockPaymentModal } from "@/components/discover/MockPaymentModal";
 
 export const Route = createFileRoute("/discover")({
-  validateSearch: (search: Record<string, unknown>): { search?: string | undefined; tab?: "ailments" | "pregnancy" | "corporate" | undefined } => {
+  validateSearch: (search: Record<string, unknown>): { search?: string | undefined; tab?: "ailments" | "pregnancy" | "corporate" | undefined; flag?: string | undefined } => {
     return {
       search: (search['search'] as string) || undefined,
       tab: (search['tab'] as "ailments" | "pregnancy" | "corporate") || undefined,
+      flag: typeof search['flag'] === "string" ? (search['flag'] as string) : undefined,
     };
   },
   head: () => ({

@@ -10,9 +10,10 @@ import prabhupadaImg from "@/assets/prabhupada.webp";
 import logoWithoutText from "@/assets/logo-without-text.webp";
 
 export const Route = createFileRoute("/register")({
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; flag?: string } => {
     return {
       redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+      flag: typeof search.flag === "string" ? search.flag : undefined,
     };
   },
   head: () => ({

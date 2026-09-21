@@ -8,9 +8,10 @@ import { useApp } from "@/lib/app-state";
 import logoWithoutText from "@/assets/logo-without-text.webp";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; flag?: string } => {
     return {
       redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+      flag: typeof search.flag === "string" ? search.flag : undefined,
     };
   },
   head: () => ({

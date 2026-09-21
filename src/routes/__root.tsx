@@ -150,7 +150,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
 
     // ── Route isolation: block access to routes not in current mode ──
     if (!isRouteAllowedForMode(location.pathname, location.searchStr)) {
-      navigate({ to: modeRoutes.defaultHomePath });
+      navigate({ to: modeRoutes.defaultHomePath, search: (prev: any) => prev });
       return;
     }
 
@@ -158,7 +158,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
     const isPublic = modeRoutes.publicPaths.includes(location.pathname);
 
     if (!user && !isPublic) {
-      navigate({ to: "/login" });
+      navigate({ to: "/login", search: (prev: any) => prev });
       return;
     }
 
@@ -168,11 +168,11 @@ function RouteGuard({ children }: { children: ReactNode }) {
         const selectedPathway = user.profile?.category;
         if (!selectedPathway || selectedPathway === "unset") {
           if (location.pathname !== "/select-sanjeevani") {
-            navigate({ to: "/select-sanjeevani" });
+            navigate({ to: "/select-sanjeevani", search: (prev: any) => prev });
           }
         } else {
           if (location.pathname === "/select-sanjeevani") {
-            navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home" });
+            navigate({ to: selectedPathway === "pregnancy" ? "/journey" : "/home", search: (prev: any) => prev });
           }
         }
       }
