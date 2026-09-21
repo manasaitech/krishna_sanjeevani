@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Gauge,
@@ -6,6 +7,8 @@ import {
   Maximize2,
   Pause,
   Play,
+  RotateCcw,
+  RotateCw,
   SkipBack,
   SkipForward,
   Timer,
@@ -63,6 +66,7 @@ export function PlayerBar() {
     toggle,
     position,
     seek,
+    skip,
     next,
     previous,
     speed,
@@ -79,9 +83,12 @@ export function PlayerBar() {
     close,
   } = useApp();
 
+  const [localProgress, setLocalProgress] = useState<number | null>(null);
+
   if (!current) return null;
   const fav = isFavorite(current.id);
-  const progress = Math.min(100, (position / current.duration) * 100);
+  const currentPos = localProgress !== null ? localProgress : position;
+  const progress = Math.min(100, (currentPos / (current.duration || 1)) * 100);
 
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // If click originated on or within an interactive element or popover, do not navigate
@@ -152,8 +159,11 @@ export function PlayerBar() {
         {/* Center: transport */}
         <div className="flex items-center gap-1 md:flex-col md:gap-1.5">
           <div className="flex items-center gap-1 md:gap-2">
-            <IconBtn label="Previous session" onClick={previous} className="hidden md:grid">
+            <IconBtn label="Previous session" onClick={previous}>
               <SkipBack className="h-[18px] w-[18px]" fill="currentColor" />
+            </IconBtn>
+            <IconBtn label="Back 15 seconds" onClick={() => skip(-15)}>
+              <RotateCcw className="h-4 w-4" />
             </IconBtn>
             <button
               onClick={toggle}
@@ -166,6 +176,9 @@ export function PlayerBar() {
                 <Play className="h-4 w-4 translate-x-px" fill="currentColor" />
               )}
             </button>
+            <IconBtn label="Forward 15 seconds" onClick={() => skip(15)}>
+              <RotateCw className="h-4 w-4" />
+            </IconBtn>
             <IconBtn label="Next session" onClick={next}>
               <SkipForward className="h-[18px] w-[18px]" fill="currentColor" />
             </IconBtn>
@@ -219,18 +232,29 @@ export function PlayerBar() {
             className="hidden w-full max-w-2xl items-center gap-3 md:flex cursor-default"
           >
             <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground select-none">
-              {formatTime(position)}
+              {formatTime(currentPos)}
             </span>
             <Slider
-              value={[position]}
-              max={current.duration}
+              value={[currentPos]}
+              max={current.duration || 300}
               step={1}
-              onValueChange={(v) => seek(v[0] ?? 0)}
+              onValueChange={(v) => setLocalProgress(v[0] ?? 0)}
+              onValueCommit={(v) => {
+                const targetSec = v[0] ?? 0;
+                seek(targetSec);
+                setLocalProgress(null);
+              }}
+              onPointerUp={() => {
+                if (localProgress !== null) {
+                  seek(localProgress);
+                  setLocalProgress(null);
+                }
+              }}
               aria-label="Seek within session"
               className="flex-1 cursor-pointer"
             />
             <span className="w-10 shrink-0 text-[11px] tabular-nums text-muted-foreground select-none">
-              -{formatTime(Math.max(0, current.duration - position))}
+              -{formatTime(Math.max(0, (current.duration || 0) - currentPos))}
             </span>
           </div>
         </div>

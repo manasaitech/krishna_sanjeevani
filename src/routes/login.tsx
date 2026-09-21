@@ -28,7 +28,8 @@ export const Route = createFileRoute("/login")({
 
 function LoginScreen() {
   const { login, loginWithGoogle } = useApp();
-  const { redirect } = Route.useSearch();
+  const searchParams = Route.useSearch();
+  const { redirect } = searchParams;
   const navigate = useNavigate();
   const [_googleLoading, setGoogleLoading] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
@@ -42,7 +43,7 @@ function LoginScreen() {
       const res = await loginWithGoogle(response.credential);
       if (res.success) {
         toast.success("Welcome to Krishna Sanjeevani!");
-        navigate({ to: redirect || "/home", search: (prev: any) => prev });
+        navigate({ to: redirect || "/home", search: searchParams });
       } else {
         toast.error(res.message);
       }
@@ -64,7 +65,7 @@ function LoginScreen() {
       const res = await login(email, password);
       if (res.success) {
         toast.success("Welcome to Krishna Sanjeevani!");
-        navigate({ to: redirect || "/home", search: (prev: any) => prev });
+        navigate({ to: redirect || "/home", search: searchParams });
       } else {
         toast.error(res.message);
       }

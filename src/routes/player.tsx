@@ -155,6 +155,12 @@ function Player() {
                   seek(v[0] ?? 0);
                   setLocalProgress(null);
                 }}
+                onPointerUp={() => {
+                  if (localProgress !== null) {
+                    seek(localProgress);
+                    setLocalProgress(null);
+                  }
+                }}
                 aria-label="Seek within session"
               />
               <div className="mt-2.5 flex justify-between text-[12px] tabular-nums text-muted-foreground">
@@ -198,8 +204,8 @@ function Player() {
                   )}
                 </button>
                 <button
-                  onClick={() => skip(30)}
-                  aria-label="Forward 30 seconds"
+                  onClick={() => skip(15)}
+                  aria-label="Forward 15 seconds"
                   className="press grid h-10 w-10 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full text-foreground"
                 >
                   <RotateCw className="h-5 w-5" strokeWidth={1.8} />

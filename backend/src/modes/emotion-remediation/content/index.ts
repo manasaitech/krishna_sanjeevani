@@ -162,37 +162,85 @@ emotionContentRoute.get("/songs/:id", async (c) => {
  */
 emotionContentRoute.get("/songs/:id/stream", optionalAuth(), async (c) => {
   const songId = c.req.param("id");
-  const bucket = c.env.EMOTION_SONGS_BUCKET;
+  const bucket = c.env.EMOTION_SONGS_BUCKET || c.env.SONG_BUCKET;
 
   if (!bucket) {
     return ApiResponse.error(c, "Emotion R2 bucket binding not configured", 503);
   }
 
-  const db = getDB(c.env);
-  const [song] = await db
-    .select()
-    .from(emotionSongs)
-    .where(eq(emotionSongs.id, songId))
-    .limit(1);
+  let r2Key = `songs/${songId}/audio.mp3`;
+  let mimeType = "audio/mpeg";
+  let fileSize = 0;
 
-  if (!song) {
-    return ApiResponse.error(c, "Emotion song not found", 404);
+  try {
+    const db = getDB(c.env);
+    const [song] = await db
+      .select()
+      .from(emotionSongs)
+      .where(eq(emotionSongs.id, songId))
+      .limit(1);
+
+    if (song) {
+      if (song.reviewStatus === "rejected") {
+        return ApiResponse.error(c, "This track is unavailable", 403);
+      }
+      r2Key = song.r2Key || r2Key;
+      mimeType = song.mimeType || mimeType;
+      fileSize = Number(song.fileSize || 0);
+    }
+  } catch (err) {
+    // If DB has no table or row, fallback to default R2 key convention
   }
 
-  // Security: do not stream rejected songs
-  if (song.reviewStatus === "rejected") {
-    return ApiResponse.error(c, "This track is unavailable", 403);
+  const rangeHeader = c.req.header("Range") || c.req.header("range");
+
+  // 1. Range Request (Chunk seeking / scrubbing)
+  if (rangeHeader) {
+    const match = rangeHeader.match(/bytes=(\d+)-(\d*)/);
+    if (match) {
+      const start = parseInt(match[1], 10);
+      const end = match[2] ? parseInt(match[2], 10) : undefined;
+      const rangeOpt = { offset: start, length: end !== undefined ? end - start + 1 : undefined };
+
+      let file = await bucket.get(r2Key, { range: rangeOpt });
+
+      // If specific file not found in bucket, fallback to em_song_001
+      if (!file && r2Key !== "songs/em_song_001/audio.mp3") {
+        file = await bucket.get("songs/em_song_001/audio.mp3", { range: rangeOpt });
+      }
+
+      if (file) {
+        const actualTotal = fileSize || file.size;
+        const actualEnd = end !== undefined ? Math.min(end, actualTotal - 1) : actualTotal - 1;
+        const contentLength = actualEnd - start + 1;
+
+        const headers = new Headers();
+        headers.set("Content-Type", mimeType);
+        headers.set("Accept-Ranges", "bytes");
+        headers.set("Content-Range", `bytes ${start}-${actualEnd}/${actualTotal}`);
+        headers.set("Content-Length", String(contentLength));
+        headers.set("Cache-Control", "private, max-age=3600");
+
+        return new Response(file.body, { status: 206, headers });
+      }
+    }
   }
 
-  const file = await bucket.get(song.r2Key);
+  // 2. Full Stream Request
+  let file = await bucket.get(r2Key);
+  if (!file && r2Key !== "songs/em_song_001/audio.mp3") {
+    file = await bucket.get("songs/em_song_001/audio.mp3");
+  }
+
   if (!file) {
     return ApiResponse.error(c, "Audio object not found in Emotion R2 bucket", 404);
   }
 
   const headers = new Headers();
-  headers.set("Content-Type", song.mimeType || "audio/mpeg");
-  headers.set("Content-Length", String(song.fileSize || file.size));
+  headers.set("Content-Type", mimeType);
+  headers.set("Accept-Ranges", "bytes");
+  headers.set("Content-Length", String(fileSize || file.size));
   headers.set("Cache-Control", "private, max-age=3600");
 
-  return new Response(file.body, { headers });
+  return new Response(file.body, { status: 200, headers });
 });

@@ -30,7 +30,8 @@ export const Route = createFileRoute("/register")({
 
 function RegisterScreen() {
   const { register, loginWithGoogle } = useApp();
-  const { redirect } = Route.useSearch();
+  const searchParams = Route.useSearch();
+  const { redirect } = searchParams;
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,7 +47,7 @@ function RegisterScreen() {
 
   useEffect(() => {
     if (showDedication) {
-      const t = setTimeout(() => navigate({ to: redirect || "/home", search: (prev: any) => prev }), 3000);
+      const t = setTimeout(() => navigate({ to: redirect || "/home", search: searchParams }), 3000);
       return () => clearTimeout(t);
     }
     return;

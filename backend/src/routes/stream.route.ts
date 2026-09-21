@@ -256,6 +256,41 @@ stream.get("/:trackId/audio.mp3", async (c) => {
     throw new NotFoundError("Storage bucket not available");
   }
 
+  const rangeHeader = c.req.header("Range") || c.req.header("range");
+  if (rangeHeader) {
+    const match = rangeHeader.match(/bytes=(\d+)-(\d*)/);
+    if (match) {
+      const start = parseInt(match[1], 10);
+      const end = match[2] ? parseInt(match[2], 10) : undefined;
+
+      const file = await bucket.get(resolution.r2Key, {
+        range: { offset: start, length: end !== undefined ? end - start + 1 : undefined }
+      });
+
+      if (!file) {
+        throw new NotFoundError("Audio file not found in storage");
+      }
+
+      const actualTotal = file.size;
+      const actualEnd = end !== undefined ? Math.min(end, actualTotal - 1) : actualTotal - 1;
+      const contentLength = actualEnd - start + 1;
+
+      const headers = new Headers();
+      headers.set("Content-Type", resolution.mimeType || "audio/mpeg");
+      headers.set("Accept-Ranges", "bytes");
+      headers.set("Content-Range", `bytes ${start}-${actualEnd}/${actualTotal}`);
+      headers.set("Content-Length", String(contentLength));
+      headers.set("Cache-Control", "private, max-age=3600");
+      if (resolution.status === "fallback") {
+        headers.set("X-Audio-Source", "TEMPORARY_FALLBACK");
+      } else {
+        headers.set("X-Audio-Source", "ACTUAL");
+      }
+
+      return new Response(file.body, { status: 206, headers });
+    }
+  }
+
   const file = await bucket.get(resolution.r2Key);
   if (!file) {
     throw new NotFoundError("Audio file not found in storage");
@@ -263,6 +298,7 @@ stream.get("/:trackId/audio.mp3", async (c) => {
 
   const headers = new Headers();
   headers.set("Content-Type", resolution.mimeType || "audio/mpeg");
+  headers.set("Accept-Ranges", "bytes");
   headers.set("Content-Length", String(file.size));
   headers.set("Cache-Control", "private, max-age=3600");
   if (resolution.status === "fallback") {
@@ -271,7 +307,7 @@ stream.get("/:trackId/audio.mp3", async (c) => {
     headers.set("X-Audio-Source", "ACTUAL");
   }
 
-  return new Response(file.body, { headers });
+  return new Response(file.body, { status: 200, headers });
 });
 
 // ── GET Playlists (master.m3u8) ─────────────────────────

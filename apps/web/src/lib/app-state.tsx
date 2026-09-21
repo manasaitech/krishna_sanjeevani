@@ -10,6 +10,7 @@ import {
 } from "react";
 import { type CategoryId, type Track, tracks as staticTracks, programs as staticPrograms, notifications as staticNotifications } from "@/lib/content";
 import { SURAWALI_PRESETS } from "@/lib/surawali-presets";
+import { AUTHORITATIVE_EMOTION_SONGS } from "@/modes/emotion-remediation/content-provider";
 import { api, storeTokens, clearTokens, getAccessToken, BASE_URL } from "@/lib/api";
 import Hls from "hls.js";
 
@@ -49,7 +50,8 @@ type AppState = {
   category: CategoryId;
   setCategory: (c: CategoryId) => void;
   favorites: string[];
-  toggleFavorite: (id: string) => void;
+  favoriteTracks: Record<string, Track>;
+  toggleFavorite: (id: string, trackObj?: Track) => void;
   isFavorite: (id: string) => boolean;
   savedPrograms: string[];
   toggleSavedProgram: (id: string) => void;
@@ -109,8 +111,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   // ── Player State ──────────────────────────────────────
-  const [category, setCategory] = useState<CategoryId>("devotional");
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [category, setCategoryState] = useState<CategoryId>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ks_category");
+      if (saved && (saved === "devotional" || saved === "secular" || saved === "pregnancy")) {
+        return saved as CategoryId;
+      }
+    }
+    return "devotional";
+  });
+
+  const setCategory = useCallback((c: CategoryId) => {
+    setCategoryState(c);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ks_category", c);
+      document.documentElement.setAttribute("data-category", c);
+    }
+  }, []);
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ks_favorites");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+  const [favoriteTracks, setFavoriteTracks] = useState<Record<string, Track>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ks_favorite_tracks");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return {};
+        }
+      }
+    }
+    return {};
+  });
   const [savedPrograms, setSavedPrograms] = useState<string[]>([]);
   const [current, setCurrent] = useState<Track | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -123,6 +166,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [historyList, setHistoryList] = useState<any[]>([]);
   const [continueListeningList, setContinueListeningList] = useState<any[]>([]);
   const [notificationsList, setNotificationsList] = useState(() => [...staticNotifications]);
+
+  // Sync favorites to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ks_favorites", JSON.stringify(favorites));
+    }
+  }, [favorites]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ks_favorite_tracks", JSON.stringify(favoriteTracks));
+    }
+  }, [favoriteTracks]);
 
   // Session Complete Modal State
   const [sessionCompleteModalOpen, setSessionCompleteModalOpen] = useState(false);
@@ -470,7 +526,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.favorites.list("track");
       if (res.success && Array.isArray(res.data)) {
-        setFavorites(res.data.map((fav: any) => fav.id));
+        const serverIds = res.data.map((fav: any) => fav.id);
+        setFavorites((prev) => Array.from(new Set([...prev, ...serverIds])));
       }
     } catch (err) {
       console.warn("Failed to fetch favorites", err);
@@ -498,38 +555,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (user) {
       fetchFavorites();
       fetchHistoryAndContinueListening();
-    } else {
-      setFavorites([]);
-      setHistoryList([]);
-      setContinueListeningList([]);
     }
   }, [user, fetchFavorites, fetchHistoryAndContinueListening]);
 
-  const toggleFavorite = useCallback(async (id: string) => {
+  const toggleFavorite = useCallback(async (id: string, trackObj?: Track) => {
     const isFav = favorites.includes(id);
 
-    // Optimistic UI update
+    // Update favorite IDs
     setFavorites((prev) =>
       isFav ? prev.filter((x) => x !== id) : [...prev, id]
     );
 
-    try {
-      if (isFav) {
-        const res = await api.favorites.remove(id);
-        if (!res.success) throw new Error("API call failed");
-      } else {
-        const res = await api.favorites.add(id, "track");
-        if (!res.success) throw new Error("API call failed");
+    if (!isFav) {
+      // Find track object if not provided
+      const resolvedTrack =
+        trackObj ||
+        (currentRef.current?.id === id ? currentRef.current : null) ||
+        tracksList.find((t) => t.id === id) ||
+        SURAWALI_PRESETS.flatMap((p) => p.tracks).find((t) => t.id === id);
+
+      if (resolvedTrack) {
+        setFavoriteTracks((prev) => ({ ...prev, [id]: resolvedTrack }));
       }
-      fetchHistoryAndContinueListening();
-    } catch (err) {
-      console.error("Failed to toggle favorite", err);
-      // Revert optimistic update on error
-      setFavorites((prev) =>
-        isFav ? [...prev, id] : prev.filter((x) => x !== id)
-      );
+    } else {
+      setFavoriteTracks((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
     }
-  }, [favorites, fetchHistoryAndContinueListening]);
+
+    try {
+      if (user) {
+        if (isFav) {
+          await api.favorites.remove(id);
+        } else {
+          await api.favorites.add(id, "track");
+        }
+        fetchHistoryAndContinueListening();
+      }
+    } catch (err) {
+      console.warn("Failed to sync favorite with server (stored locally)", err);
+    }
+  }, [favorites, user, tracksList, fetchHistoryAndContinueListening]);
 
   const play = useCallback(async (t: Track, programId?: string) => {
     if (typeof window === "undefined") return;
@@ -571,9 +639,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       audio.playbackRate = speed;
       audio.volume = muted ? 0 : volume / 100;
       audio.currentTime = initialPos;
+      
+      // Auto-fallback handler if individual asset is unavailable
+      audio.onerror = () => {
+        console.warn(`Stream for ${t.id} encountered error, falling back to primary emotion stream...`);
+        if (!audio.src.includes("em_song_001")) {
+          audio.src = `${origin}/emotion/content/songs/em_song_001/stream`;
+          audio.currentTime = initialPos;
+          audio.play().then(() => setPlaying(true)).catch(console.error);
+        }
+      };
+
       audio.play()
         .then(() => setPlaying(true))
-        .catch((err) => console.error("Emotion playback failed to start", err));
+        .catch((err) => {
+          console.warn("Emotion playback initial start catch:", err);
+        });
       return;
     }
 
@@ -718,6 +799,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [getAudioElement, speed, volume, muted]);
 
+  // Sync playbackRate to audio element whenever speed changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+  }, [speed]);
+
+  // Sync volume and muted to audio element
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = muted ? 0 : Math.max(0, Math.min(1, volume / 100));
+      audioRef.current.muted = muted;
+    }
+  }, [volume, muted]);
+
   const toggle = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !current) return;
@@ -734,19 +830,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const seek = useCallback((s: number) => {
     const audio = audioRef.current;
     if (audio) {
-      audio.currentTime = s;
-      setPosition(s);
+      const maxDur = audio.duration || current?.duration || s;
+      const targetTime = Math.max(0, Math.min(maxDur, s));
+      audio.currentTime = targetTime;
+      setPosition(Math.round(targetTime));
+    } else {
+      setPosition(Math.round(s));
     }
-  }, []);
+  }, [current]);
 
   const skip = useCallback((delta: number) => {
     const audio = audioRef.current;
     if (audio && current) {
-      const newPos = Math.max(0, Math.min(current.duration, audio.currentTime + delta));
+      const maxDur = audio.duration || current.duration || 600;
+      const newPos = Math.max(0, Math.min(maxDur, (audio.currentTime || position) + delta));
       audio.currentTime = newPos;
-      setPosition(newPos);
+      setPosition(Math.round(newPos));
     }
-  }, [current]);
+  }, [current, position]);
 
   const stop = useCallback(() => {
     const audio = audioRef.current;
@@ -771,22 +872,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPosition(0);
   }, []);
 
+  // Mode-aware track list for step and queue
+  const getActiveTrackList = useCallback((): Track[] => {
+    if (current?.id?.startsWith("em_song_") || tracksList.length === 0) {
+      return AUTHORITATIVE_EMOTION_SONGS.map((song) => ({
+        id: song.id,
+        title: song.title,
+        artist: `Krishna Sanjeevani • ${song.dosha?.toUpperCase()} Balancing`,
+        subtitle: song.trajectory,
+        duration: song.duration,
+        category: "devotional" as any,
+        playlistKey: "",
+        art: song.art || "/govinda-bhakta-pr-seminars-mukund.mp3",
+        instructions: song.description,
+        frequency: "Daily recommended session",
+        raga: song.trajectory,
+        purpose: song.dosha ? `${song.dosha.toUpperCase()} Balancing` : "Healing",
+      }));
+    }
+    return tracksList;
+  }, [current?.id, tracksList]);
+
   const queue = useMemo(() => {
-    if (!current || tracksList.length === 0) return tracksList.slice(0, 5);
-    const i = tracksList.findIndex((t) => t.id === current.id);
-    if (i === -1) return tracksList.slice(0, 5);
-    return [...tracksList.slice(i + 1), ...tracksList.slice(0, i)].slice(0, 6);
-  }, [current, tracksList]);
+    const activeList = getActiveTrackList();
+    if (!current || activeList.length === 0) return activeList.slice(0, 5);
+    const i = activeList.findIndex((t) => t.id === current.id);
+    if (i === -1) return activeList.slice(0, 5);
+    return [...activeList.slice(i + 1), ...activeList.slice(0, i)].slice(0, 6);
+  }, [current, getActiveTrackList]);
 
   const step = useCallback(
     (dir: 1 | -1) => {
-      if (!current || tracksList.length === 0) return;
-      const i = tracksList.findIndex((t) => t.id === current.id);
+      const activeList = getActiveTrackList();
+      if (!current || activeList.length === 0) return;
+      const i = activeList.findIndex((t) => t.id === current.id);
       const idx = i === -1 ? 0 : i;
-      const nextTrack = tracksList[(idx + dir + tracksList.length) % tracksList.length];
+      const nextTrack = activeList[(idx + dir + activeList.length) % activeList.length];
       if (nextTrack) play(nextTrack);
     },
-    [current, play, tracksList],
+    [current, play, getActiveTrackList],
   );
 
   // Sync ended event to play next track
@@ -830,6 +954,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       category,
       setCategory,
       favorites,
+      favoriteTracks,
       toggleFavorite,
       isFavorite: (id) => favorites.includes(id),
       savedPrograms,
@@ -897,6 +1022,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       fetchTracksAndPrograms,
       category,
       favorites,
+      favoriteTracks,
       savedPrograms,
       current,
       playing,
