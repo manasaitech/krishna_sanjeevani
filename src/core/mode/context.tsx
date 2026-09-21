@@ -31,9 +31,9 @@ export function ModeProvider({ children }: { children: ReactNode }) {
 
   const mode = useMemo(() => {
     const res = getActiveMode(location.search || location.searchStr);
-    console.log("[ModeProvider memo]", { locationSearch: location.search, locationSearchStr: location.searchStr, res });
+    console.log("[ModeProvider memo]", { locationHref: location.href, locationSearch: location.search, locationSearchStr: location.searchStr, res });
     return res;
-  }, [location.search, location.searchStr]);
+  }, [location.href, location.search, location.searchStr]);
 
   const config = useMemo(() => {
     return MODE_CONFIGS[mode];

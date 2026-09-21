@@ -44,7 +44,7 @@ function SelectSanjeevaniScreen() {
         setCategory(pathway);
         await restoreSession();
         toast.success(`Welcome to ${pathway === "devotional" ? "Krishna" : pathway === "secular" ? "Arogya" : "Garbh"} Sanjeevani!`);
-        navigate({ to: pathway === "pregnancy" ? "/journey" : "/home" });
+        navigate({ to: pathway === "pregnancy" ? "/journey" : "/home", search: (prev: any) => prev });
       } else {
         toast.error(res.message || "Failed to save pathway selection. Please try again.");
       }
