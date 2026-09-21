@@ -29,13 +29,23 @@ export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
 /**
  * Read the active application mode at runtime.
  *
- * On the client, reads the `flag` query parameter from the current URL:
+ * Can receive an explicit search string or search record (e.g. from TanStack Router useLocation).
+ * On the client, reads the `flag` query parameter from window.location.search if not provided.
  *   ?flag=1  → "emotion_remediation"
  *   anything else / missing → "surawali"
  *
  * During SSR (window is undefined), defaults to "surawali".
  */
-export function getActiveMode(): AppMode {
+export function getActiveMode(search?: string | Record<string, unknown>): AppMode {
+  if (typeof search === "string") {
+    const flag = new URLSearchParams(search.startsWith("?") ? search : `?${search}`).get("flag");
+    if (flag === "1") return "emotion_remediation";
+    return "surawali";
+  }
+  if (search && typeof search === "object" && "flag" in search) {
+    if (search.flag === "1" || search.flag === 1) return "emotion_remediation";
+    return "surawali";
+  }
   if (typeof window !== "undefined") {
     const flag = new URLSearchParams(window.location.search).get("flag");
     if (flag === "1") return "emotion_remediation";
@@ -46,15 +56,15 @@ export function getActiveMode(): AppMode {
 /**
  * Get the full mode configuration for the currently active mode.
  */
-export function getModeConfig(): ModeConfig {
-  return MODE_CONFIGS[getActiveMode()];
+export function getModeConfig(search?: string | Record<string, unknown>): ModeConfig {
+  return MODE_CONFIGS[getActiveMode(search)];
 }
 
 /**
  * Check whether a given pathname is accessible in the current mode.
  */
-export function isRouteAllowedForMode(pathname: string): boolean {
-  const config = getModeConfig();
+export function isRouteAllowedForMode(pathname: string, search?: string | Record<string, unknown>): boolean {
+  const config = getModeConfig(search);
   const allAllowed = [
     ...config.routes.publicPaths,
     ...config.routes.modePaths,

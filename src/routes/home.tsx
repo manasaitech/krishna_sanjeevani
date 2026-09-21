@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMode, getActiveMode } from "@/core/mode";
+import { useMode } from "@/core/mode";
 import { SurawaliHome } from "@/modes/surawali/pages/SurawaliHome";
 import { EmotionHome } from "@/modes/emotion-remediation/pages/EmotionHome";
 
@@ -13,5 +13,10 @@ export const Route = createFileRoute("/home")({
       },
     ],
   }),
-  component: SurawaliHome,
+  component: HomePageComponent,
 });
+
+function HomePageComponent() {
+  const { isEmotionMode } = useMode();
+  return isEmotionMode ? <EmotionHome /> : <SurawaliHome />;
+}

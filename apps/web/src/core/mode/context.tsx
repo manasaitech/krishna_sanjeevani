@@ -4,8 +4,9 @@
 // ─────────────────────────────────────────────────────────────
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { useLocation } from "@tanstack/react-router";
 import type { AppMode, ModeConfig, ModeFeatures, ModeBranding, ContentMappingProvider, ContentSearchProvider, ModeSubscriptionConfig, ModeRouteConfig, NavItem } from "./types";
-import { getActiveMode, getModeConfig } from "./config";
+import { getActiveMode, getModeConfig, MODE_CONFIGS } from "./config";
 
 export interface ModeContextValue {
   mode: AppMode;
@@ -26,10 +27,18 @@ export interface ModeContextValue {
 const ModeContext = createContext<ModeContextValue | null>(null);
 
 export function ModeProvider({ children }: { children: ReactNode }) {
-  const value = useMemo<ModeContextValue>(() => {
-    const mode = getActiveMode();
-    const config = getModeConfig();
+  const location = useLocation();
+  const searchStr = location.searchStr || (typeof window !== "undefined" ? window.location.search : "");
 
+  const mode = useMemo(() => {
+    return getActiveMode(searchStr);
+  }, [searchStr]);
+
+  const config = useMemo(() => {
+    return MODE_CONFIGS[mode];
+  }, [mode]);
+
+  const value = useMemo<ModeContextValue>(() => {
     return {
       mode,
       isEmotionMode: mode === "emotion_remediation",
@@ -44,7 +53,7 @@ export function ModeProvider({ children }: { children: ReactNode }) {
       searchProvider: config.searchProvider,
       hasFeature: (key: keyof ModeFeatures) => !!config.features[key],
     };
-  }, []);
+  }, [mode, config]);
 
   return (
     <ModeContext.Provider value={value}>

@@ -43,6 +43,14 @@ export const Route = createFileRoute("/")({
 const SPLASH_STORAGE_KEY = "krishna_sanjeevani_splash_shown";
 
 function HomePage() {
+  const { isEmotionMode } = useMode();
+  if (isEmotionMode) {
+    return <EmotionHome />;
+  }
+  return <SurawaliLandingPage />;
+}
+
+function SurawaliLandingPage() {
   const audio = useVerseAudio();
   const [openingFinished, setOpeningFinished] = useState(() => {
     if (typeof window !== "undefined") {
