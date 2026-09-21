@@ -1,28 +1,21 @@
 // ─────────────────────────────────────────────────────────────
 // Core Mode Config — Runtime URL-Based Mode Switch
 //
-// The active mode is determined by the URL query parameter:
-//   ?flag=1 (or ?flag=1/home, ?flag=emotion, ?flag=true)  → emotion_remediation
-//   (default / anything else / ?flag=0 / ?flag=surawali) → surawali
+// The active mode is determined SOLELY by the current URL query parameter:
+//   ?flag=1  → emotion_remediation
+//   anything else / absent / ?flag=2 / ?flag=abc → surawali
 //
-// When an emotion flag is detected, it is persisted to
-// sessionStorage and localStorage so the mode survives route transitions,
-// login redirects, and TanStack Router's search param serialization quirks.
-//
-// The same production build supports both modes simultaneously.
+// Purely stateless: No localStorage, no sessionStorage, no cookies.
+// When flag=1 disappears from the URL, the mode immediately reverts to surawali.
 // ─────────────────────────────────────────────────────────────
 
 import type { AppMode, ModeConfig } from "./types";
 import { surawaliConfig } from "@/modes/surawali/config";
 import { emotionRemediationConfig } from "@/modes/emotion-remediation/config";
 
-const MODE_STORAGE_KEY = "ks_active_mode_flag";
-
 /**
  * SSR / module-level fallback.
- * Kept for compatibility with code that imports the constant directly
- * (e.g. module-level head-meta in __root.tsx). Always resolves to
- * "surawali" because Surawali is the default mode.
+ * Always resolves to "surawali" because Surawali is the default mode.
  */
 export const ACTIVE_APP_MODE: AppMode = "surawali";
 
@@ -34,7 +27,8 @@ export const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
 
 /**
  * Check whether a string value corresponds to the Emotion Remediation flag.
- * Handles variations like "1", "1/home", "1?home", "1%2fhome", "true", "emotion".
+ * Only ?flag=1 (or ?flag=1/home, ?flag=1?home) resolves to emotion_remediation.
+ * ?flag=2, ?flag=abc, etc. resolve to false (surawali).
  */
 export function isEmotionFlagValue(val: unknown): boolean {
   if (val === undefined || val === null) return false;
@@ -45,141 +39,61 @@ export function isEmotionFlagValue(val: unknown): boolean {
     // ignore
   }
   if (!str) return false;
-  return (
-    str === "1" ||
-    str.startsWith("1") ||
-    str === "true" ||
-    str === "emotion" ||
-    str === "emotion_remediation"
-  );
+  return str === "1" || str.startsWith("1/") || str.startsWith("1?") || str.startsWith("1#");
 }
 
 /**
- * Check whether a string value explicitly requests Surawali mode.
- */
-export function isSurawaliFlagValue(val: unknown): boolean {
-  if (val === undefined || val === null) return false;
-  const str = String(val).trim().toLowerCase();
-  return (
-    str === "0" ||
-    str === "false" ||
-    str === "surawali" ||
-    str === "default"
-  );
-}
-
-/**
- * Read the active application mode at runtime.
+ * Read the active application mode at runtime from the provided search params or browser URL.
  *
- * Resolution order:
- *   1. Explicit `search` argument (string or object from TanStack Router)
- *   2. `window.location.search` (browser URL bar)
- *   3. `window.location.href` (URL parsing fallback for path/hash quirks)
- *   4. `sessionStorage` & `localStorage` (persisted from earlier flagged visits)
- *
- * During SSR (window is undefined), defaults to "surawali".
+ * Current URL determines the mode:
+ *   flag === "1"  → "emotion_remediation"
+ *   anything else → "surawali"
  */
 export function getActiveMode(search?: string | Record<string, unknown>): AppMode {
-  let explicitFlag: string | null = null;
+  let flagValue: string | null = null;
 
-  // 1. Check explicit search argument
+  // 1. Check explicit search argument (from TanStack Router)
   if (typeof search === "string" && search.trim().length > 0) {
     try {
       const q = search.startsWith("?") ? search : `?${search}`;
       const params = new URLSearchParams(q);
       if (params.has("flag")) {
-        explicitFlag = params.get("flag");
+        flagValue = params.get("flag");
       }
     } catch {
       // ignore
     }
   } else if (search && typeof search === "object") {
     if ("flag" in search && search.flag !== undefined && search.flag !== null && search.flag !== "") {
-      explicitFlag = String(search.flag);
+      flagValue = String(search.flag);
     }
   }
 
-  // 2. Check window.location.search (most reliable on client)
-  if (explicitFlag === null && typeof window !== "undefined" && window.location.search) {
+  // 2. Check window.location.search fallback on client if no search arg provided
+  if (flagValue === null && typeof window !== "undefined" && window.location?.search) {
     try {
       const params = new URLSearchParams(window.location.search);
       if (params.has("flag")) {
-        explicitFlag = params.get("flag");
+        flagValue = params.get("flag");
       }
     } catch {
       // ignore
     }
   }
 
-  // 3. Check window.location.href fallback (e.g. if query was encoded or in hash)
-  if (explicitFlag === null && typeof window !== "undefined" && window.location.href) {
-    try {
-      const href = window.location.href;
-      const match = href.match(/[?&]flag=([^&#]*)/i);
-      if (match && match[1] !== undefined) {
-        explicitFlag = decodeURIComponent(match[1]);
-      } else if (/[?&]flag(?=[&#]|$)/i.test(href)) {
-        explicitFlag = "1";
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  // Handle explicit flag in current URL
-  if (explicitFlag !== null) {
-    if (isEmotionFlagValue(explicitFlag)) {
-      if (typeof window !== "undefined") {
-        try {
-          sessionStorage.setItem(MODE_STORAGE_KEY, "1");
-          localStorage.setItem(MODE_STORAGE_KEY, "1");
-        } catch {
-          // ignore
-        }
-      }
-      return "emotion_remediation";
-    } else if (isSurawaliFlagValue(explicitFlag)) {
-      if (typeof window !== "undefined") {
-        try {
-          sessionStorage.removeItem(MODE_STORAGE_KEY);
-          localStorage.removeItem(MODE_STORAGE_KEY);
-        } catch {
-          // ignore
-        }
-      }
-      return "surawali";
-    }
-  }
-
-  // 4. Check sessionStorage & localStorage (persisted from previous navigation)
-  if (typeof window !== "undefined") {
-    try {
-      const sessionVal = sessionStorage.getItem(MODE_STORAGE_KEY);
-      const localVal = localStorage.getItem(MODE_STORAGE_KEY);
-      if (isEmotionFlagValue(sessionVal) || isEmotionFlagValue(localVal)) {
-        return "emotion_remediation";
-      }
-    } catch {
-      // ignore
-    }
+  // 3. Resolve mode: only flag=1 triggers emotion_remediation
+  if (flagValue !== null && isEmotionFlagValue(flagValue)) {
+    return "emotion_remediation";
   }
 
   return "surawali";
 }
 
 /**
- * Explicitly clear the persisted mode flag.
- * Call this when the user logs out or explicitly switches to Surawali mode.
+ * No-op helper for backwards compatibility.
  */
 export function clearModeFlag(): void {
-  if (typeof window !== "undefined") {
-    try {
-      sessionStorage.removeItem(MODE_STORAGE_KEY);
-      localStorage.removeItem(MODE_STORAGE_KEY);
-    } catch {
-      // Ignore
-    }
-  }
+  // Stateless mode: no persistent storage to clear.
 }
 
 /**

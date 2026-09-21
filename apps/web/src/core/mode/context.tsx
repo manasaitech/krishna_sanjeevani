@@ -30,12 +30,12 @@ export function ModeProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   const mode = useMemo(() => {
-    // getActiveMode() checks URL params + sessionStorage, so it resolves
-    // correctly even when TanStack Router strips ?flag=1 during navigation.
-    const res = getActiveMode();
-    console.log("[ModeProvider memo]", { locationHref: location.href, res });
+    // Mode is derived directly from the current URL location search
+    const searchParam = location.search || location.searchStr;
+    const res = getActiveMode(searchParam);
+    console.log("[ModeProvider memo]", { locationHref: location.href, searchParam, res });
     return res;
-  }, [location.href]);
+  }, [location.search, location.searchStr, location.href]);
 
   const config = useMemo(() => {
     return MODE_CONFIGS[mode];
