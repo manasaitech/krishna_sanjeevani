@@ -96,9 +96,19 @@ function LoginScreen() {
 
   const handleGoogleSignIn = () => {
     if ((window as any).google) {
-      (window as any).google.accounts.id.prompt();
+      (window as any).google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed()) {
+          const reason = notification.getNotDisplayedReason?.() || "origin_blocked";
+          console.warn("[Google Sign-In] Prompt not displayed:", reason);
+          setShowEmailForm(true);
+          toast.info("Google Sign-In prompt unavailable for this origin. Please sign in with email/password.");
+        } else if (notification.isSkippedMoment()) {
+          console.warn("[Google Sign-In] Prompt skipped:", notification.getSkippedReason?.());
+        }
+      });
     } else {
-      toast.error("Google Sign-In is loading. Please try again.");
+      setShowEmailForm(true);
+      toast.error("Google Sign-In is unavailable. Please use email & password.");
     }
   };
 
