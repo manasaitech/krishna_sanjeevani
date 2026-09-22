@@ -485,7 +485,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hlsRef.current = null;
       }
       if (audioRef.current) {
+        audioRef.current.onerror = null;
         audioRef.current.pause();
+        audioRef.current.removeAttribute("src");
         audioRef.current.src = "";
       }
     };
@@ -610,6 +612,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
+    audio.onerror = null;
     audio.src = "";
 
     setCurrent(t);
@@ -642,6 +645,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       // Auto-fallback handler if individual asset is unavailable
       audio.onerror = () => {
+        // Do not trigger fallback if track playback was stopped, cancelled, or changed
+        if (!currentRef.current || currentRef.current.id !== t.id) {
+          return;
+        }
         console.warn(`Stream for ${t.id} encountered error, falling back to primary emotion stream...`);
         if (!audio.src.includes("em_song_001")) {
           audio.src = `${origin}/emotion/content/songs/em_song_001/stream`;
@@ -852,6 +859,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const stop = useCallback(() => {
     const audio = audioRef.current;
     if (audio) {
+      audio.onerror = null;
       audio.pause();
     }
     setPlaying(false);
@@ -864,8 +872,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     const audio = audioRef.current;
     if (audio) {
+      audio.onerror = null;
       audio.pause();
+      audio.removeAttribute("src");
       audio.src = "";
+      audio.load();
     }
     setCurrent(null);
     setPlaying(false);
