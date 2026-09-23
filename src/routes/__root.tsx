@@ -12,7 +12,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider, useApp } from "../lib/app-state";
 import { Toaster } from "../components/ui/sonner";
 import { queryClient } from "../router";
@@ -42,9 +41,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-6">
@@ -77,7 +73,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 // Mode-aware head meta — reads branding from the active mode config at build time
 const modeBranding = getModeConfig().branding;
-const titleStr = `${modeBranding.appName} — ${modeBranding.tagline}`;
+const titleStr = "Krishna Sanjeevani — The Divine Therapeutic Music";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   validateSearch: (search: Record<string, unknown>): { flag?: string } => ({
@@ -103,17 +99,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "description",
         content: modeBranding.description,
       },
+      { name: "application-name", content: "Krishna Sanjeevani" },
       { name: "theme-color", content: modeBranding.themeColor },
+      { property: "og:site_name", content: "Krishna Sanjeevani" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://krishnasanjeevani.com" },
       { property: "og:title", content: titleStr },
-      { name: "twitter:title", content: titleStr },
       { property: "og:description", content: modeBranding.description },
+      { property: "og:image", content: "https://krishnasanjeevani.com/logo.webp" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: titleStr },
       { name: "twitter:description", content: modeBranding.description },
-      ...(modeBranding.ogImageUrl ? [
-        { property: "og:image", content: modeBranding.ogImageUrl },
-        { name: "twitter:image", content: modeBranding.ogImageUrl },
-      ] : []),
+      { name: "twitter:image", content: "https://krishnasanjeevani.com/logo.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -123,7 +120,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: modeBranding.faviconUrl || "/favicon.png", type: "image/png" },
+      { rel: "canonical", href: "https://krishnasanjeevani.com" },
+      { rel: "manifest", href: "/site.webmanifest" },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -137,6 +138,19 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" data-category="devotional">
       <head>
         <HeadContent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Krishna Sanjeevani",
+              alternateName: ["Krishna Sanjeevani Therapeutic Ragas"],
+              url: "https://krishnasanjeevani.com",
+              image: "https://krishnasanjeevani.com/logo.webp",
+            }),
+          }}
+        />
       </head>
       <body>
         {children}

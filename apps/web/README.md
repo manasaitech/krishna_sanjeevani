@@ -762,18 +762,6 @@ Create an emotional, peaceful experience.
 
 The final UI should be indistinguishable from a professionally designed application on Dribbble or Behance and should be ready to hand off for React + Tailwind CSS implementation.
 
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://krishna-sanjeevani-flow.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/33cdb47b-0718-4d9a-b1ab-9830bf632bc7).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
 ## Development
 
 Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).

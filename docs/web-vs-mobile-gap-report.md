@@ -171,7 +171,7 @@ This is the **single largest gap** between the two apps.
 | Status bar styling | ✅ `StatusBar.tsx` (custom) | ✅ `expo-status-bar` | Parity |
 | Route guard (auth redirect) | ✅ `RouteGuard` in `__root.tsx` | ✅ `index.tsx` redirects to `/welcome` or `/(tabs)/home` | Parity |
 | 404 Not Found page | ✅ `NotFoundComponent` | ❌ No equivalent | **Gap** |
-| Error boundary | ✅ `ErrorComponent` with retry + Lovable error reporting | ❌ No error boundary | **Gap** |
+| Error boundary | ✅ `ErrorComponent` with retry | ❌ No error boundary | **Gap** |
 | Programs list page | ✅ `/programs` dedicated page | ❌ No dedicated programs browse page | **Gap** |
 | Recently played page | ✅ `/recent` page | ❌ No equivalent (history is in home's "Continue Listening") | **Gap** |
 
@@ -182,7 +182,6 @@ This is the **single largest gap** between the two apps.
 | Feature | Web | Mobile | Gap |
 |---|---|---|---|
 | Global error boundary | ✅ TanStack Router `errorComponent` | ❌ None | **Gap** |
-| Error reporting to Lovable | ✅ `lovable-error-reporting.ts` | ❌ None | **Gap** |
 | Console error interception | ✅ `error-capture.ts` wraps `console.error` | ❌ None | **Gap** |
 | Server-side error page | ✅ `error-page.ts` | N/A (no SSR) | Platform difference |
 
@@ -245,8 +244,7 @@ This is the **single largest gap** between the two apps.
 
 | # | Gap | Impact |
 |---|---|---|
-| 13 | **No error reporting** — no equivalent of Lovable error capture | Reduced observability |
-| 14 | **Missing `http.put()` helper** — no PUT method in mobile SDK | Cannot call PUT endpoints from mobile SDK |
+| 13 | **Missing `http.put()` helper** — no PUT method in mobile SDK | Cannot call PUT endpoints from mobile SDK |
 
 ---
 
